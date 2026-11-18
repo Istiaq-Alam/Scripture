@@ -1379,6 +1379,7 @@ a {
   line-height: 1.35;
   color: #fff;
   display: -webkit-box;
+  line-clamp: 3;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -1429,6 +1430,7 @@ a {
   color: #2e433f;
   display: -webkit-box;
   text-align: justify;
+  line-clamp: 4;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
@@ -2708,6 +2710,7 @@ html:lang(bn) body :not([class^="fa-"]):not([class*=" fa-"]) {
   flex: 1;
   min-width: 0;
   display: -webkit-box;
+  line-clamp: 2;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
