@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NACOM Visual Sitemap</title>
+<style>
+:root{--bg:#0f172a;--card:#111827;--line:#334155;--text:#f8fafc;--muted:#94a3b8;--accent:#22c55e}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(135deg,#0f172a,#1e293b);color:var(--text)}
+.container{max-width:1100px;margin:auto;padding:40px 20px}
+.header{text-align:center;margin-bottom:36px}
+.header h1{font-size:40px;margin:0}
+.header p{color:var(--muted)}
+.card{background:rgba(17,24,39,.75);backdrop-filter:blur(10px);border:1px solid #1f2937;border-radius:24px;padding:28px}
+.tree, .tree ul{list-style:none;margin:0;padding-left:28px;position:relative}
+.tree ul:before{content:"";position:absolute;left:12px;top:0;bottom:8px;border-left:2px solid var(--line)}
+.tree li{position:relative;margin:10px 0}
+.tree li:before{content:"";position:absolute;left:-16px;top:15px;width:16px;border-top:2px solid var(--line)}
+details{overflow:hidden}
+summary{cursor:pointer;display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:#0b1220;border:1px solid #1f2937;font-weight:600;list-style:none}
+summary::-webkit-details-marker{display:none}
+summary .arrow{transition:.25s}details[open]>summary .arrow{transform:rotate(90deg)}
+.leaf{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;background:#0b1220;border:1px solid #1f2937}
+.icon{width:34px;height:34px;border-radius:10px;background:rgba(34,197,94,.15);display:grid;place-items:center}
+a{color:var(--text);text-decoration:none}a:hover{color:var(--accent)}
+.footer{margin-top:24px;text-align:center;color:var(--muted);font-size:14px}
+button{background:var(--accent);border:none;padding:10px 16px;border-radius:10px;font-weight:700;cursor:pointer}
+.actions{display:flex;gap:12px;justify-content:center;margin:20px 0}
+</style></head><body>
+<div class="container"><div class="header"><h1>🌿 NACOM Visual Sitemap</h1><p>Generated from sitemap.xml • 17 pages</p></div>
+<div class="actions"><button onclick="expandAll()">Expand All</button><button onclick="collapseAll()">Collapse All</button><button onclick="window.print()">Print / Save PDF</button></div>
+<div class="card"><ul class="tree">
+<li><details open><summary><span class="arrow">▶</span><span class="icon">🏠</span>Home</summary><ul><li><details><summary><span class="arrow">▶</span><span class="icon">📁</span>About</summary><ul><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/about.html" target="_blank">About</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/team.html" target="_blank">Team</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/executive.html" target="_blank">Executive</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/partner.html" target="_blank">Partner</a></div></li></ul></details></li><li><details><summary><span class="arrow">▶</span><span class="icon">📁</span>Our Work</summary><ul><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/projects.html" target="_blank">Projects</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/themetic.html" target="_blank">Themetic</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/themasing.html" target="_blank">Themasing</a></div></li></ul></details></li><li><details><summary><span class="arrow">▶</span><span class="icon">📁</span>Resources</summary><ul><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/publication.html" target="_blank">Publication</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/document.html" target="_blank">Document</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/iec.html" target="_blank">Iec</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/convention.html" target="_blank">Convention</a></div></li></ul></details></li><li><details><summary><span class="arrow">▶</span><span class="icon">📁</span>News & Events</summary><ul><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/news.html" target="_blank">News</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/event.html" target="_blank">Event</a></div></li></ul></details></li><li><details><summary><span class="arrow">▶</span><span class="icon">📁</span>Media</summary><ul><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/image.html" target="_blank">Image</a></div></li><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/video.html" target="_blank">Video</a></div></li></ul></details></li><li><details><summary><span class="arrow">▶</span><span class="icon">📁</span>Contact</summary><ul><li><div class="leaf"><span class="icon">📄</span><a href="https://nacom.variationbd.com/contact.html" target="_blank">Contact</a></div></li></ul></details></li></ul></details></li></ul></div><div class="footer">Designed as a client-friendly interactive sitemap.</div></div><script>function expandAll(){document.querySelectorAll("details").forEach(d=>d.open=true)}function collapseAll(){document.querySelectorAll("details").forEach((d,i)=>d.open=i===0)}</script></body></html>

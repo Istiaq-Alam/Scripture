@@ -1,0 +1,357 @@
+/* ============================================================
+   carousel.css — all carousel styles
+   ============================================================ */
+
+/* ── Base shell ─────────────────────────────────────────────── */
+.carousel {
+  position: relative;
+  -webkit-user-select: none;
+  user-select: none;
+  /* NO overflow:hidden here — it clips pagination & arrows */
+}
+
+/* ── Nav arrows (shared) ─────────────────────────────────────── */
+.carousel-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  z-index: 10;
+  pointer-events: none;
+  padding: 0 15px 0 15px;
+}
+.carousel-nav button {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background .25s ease, transform .2s ease, opacity .2s ease;
+  
+}
+.carousel-nav button svg { display: block; }
+.carousel-nav button svg path { stroke: currentColor; }
+.carousel-nav button.disabled {
+  opacity: .35;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ── Pagination dots (shared) ────────────────────────────────── */
+.carousel-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 20px;
+}
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  opacity: .3;
+  cursor: pointer;
+  transition: width .3s ease, opacity .3s ease;
+  display: block;
+}
+.carousel-dot.active {
+  width: 28px;
+  opacity: 1;
+}
+.swiper-pagination-lock { display: none !important; }
+
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  TYPE: HERO                                              ║
+   ╚══════════════════════════════════════════════════════════╝ */
+
+/* The section wrapper styles live in style.css (.hero-section — no extra bg) */
+
+/* The carousel box — overflow hidden only on the swiper part, not the dots */
+/* ╔════════════════════════════════════════════════════════════╗
+   ║  TYPE: HERO — full-bleed slider, no border-radius          ║
+   ╚════════════════════════════════════════════════════════════╝ */
+.carousel--hero {
+  /* no border radius — full bleed */
+}
+
+/* Swiper track: clips images edge-to-edge. Height is owned by
+   .hero-carousel in style.css (700px / 560px mobile). */
+.carousel--hero .swiper {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+.carousel--hero .swiper-slide {
+  width: 100%;
+  height: 100%;
+}
+
+/* Pagination dots overlaid on the image */
+.carousel--hero .carousel-dot { background: #fff; }
+
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  TYPE: CARDS                                             ║
+   ╚══════════════════════════════════════════════════════════╝ */
+.carousel--cards {
+  padding-inline: 80px;
+}
+
+.carousel--cards .swiper {
+  overflow: visible;   /* show side cards peeking in */
+}
+
+.carousel--cards .swiper-slide {
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: stretch;
+  min-height: 500px;
+}
+
+.carousel--cards .carousel-pagination { padding-top: 32px; }
+.carousel--cards .carousel-dot        { background: var(--green); }
+
+.carousel--cards .carousel-nav button {
+  background: var(--green);
+  color: #fff;
+}
+.carousel--cards .carousel-nav button:hover:not(.disabled) {
+  background: var(--green-dark);
+  transform: scale(1.08);
+}
+
+
+/* ╔══════════════════════════════════════════════════════════╗
+   ║  TYPE: LOGOS                                             ║
+   ╚══════════════════════════════════════════════════════════╝ */
+.carousel--logos {
+  overflow: hidden;   /* clip the infinite strip */
+  margin-top: 30px;
+  mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 10%,
+    black 90%,
+    transparent 100%
+  );
+}
+
+.carousel--logos .swiper {
+  overflow: visible;
+}
+
+.carousel--logos .swiper-slide {
+  width: auto !important;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.carousel--logos .logo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 80px;
+  padding: 0 16px;
+  filter: grayscale(0);
+  opacity: .9;
+  transition: filter .3s ease, opacity .3s ease, transform .3s ease;
+  cursor: pointer;
+}
+.carousel--logos .logo-item:hover {
+  filter: grayscale(0);
+  opacity: 1;
+  transform: scale(1.1);
+}
+.carousel--logos .logo-item img {
+  height: 72px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+  display: block;
+}
+
+/* No controls for logos */
+.carousel--logos .carousel-nav,
+.carousel--logos .carousel-pagination { display: none !important; }
+
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .carousel--cards                 { padding-inline: 0; overflow: hidden; }
+  .carousel--cards .carousel-nav  { display: none; }
+}
+
+@media (max-width: 640px) {
+  .carousel--logos .logo-item img  { height: 30px; }
+}
+
+/* ===========================================================
+   TYPE: NEWS — modern auto-sliding news headline carousel
+   Headlines only (no card), slide right→left, autoplay pauses
+   on hover so the text stops and is readable; each headline
+   links to the news detail page.
+=========================================================== */
+.news-section {
+  padding: 96px 0 104px;
+  background: #f7f9f7;
+  overflow: hidden; /* the peeking side slides clip here */
+}
+
+.news-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 44px;
+}
+.news-head h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-top: 10px;
+  font-family: var(--font-display);
+  color: var(--text-dark);
+}
+
+/* — Headline slider: 1 mobile → 2 tablet → 3 desktop —
+   overflow hidden clips the loop's adjacent slides so exactly
+   3 (2 tablet / 1 mobile) columns show and the sides stay blank */
+.carousel--news .swiper { overflow: hidden; }
+.carousel--news .swiper-slide {
+  height: auto;
+  min-height: 150px;
+  display: flex;
+}
+/* hairline divider between adjacent headline columns (≥720px = 2+ per view) */
+@media (min-width: 720px) {
+  .carousel--news .swiper-slide .news-heading {
+    border-left: 1px solid #e2e9e2;
+  }
+}
+
+.news-heading {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 150px;
+  padding: 14px clamp(10px, 2.4vw, 30px);
+  text-align: left;
+  transition: background 0.3s ease;
+}
+.news-heading__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--text-muted, #6b756e);
+}
+.news-heading__dot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--green, #4e9a4a);
+}
+.news-heading__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.4vw, 1.65rem);
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-dark);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.3s ease;
+}
+.news-heading__title .arrow {
+  display: inline-block;
+  color: var(--green, #4e9a4a);
+  margin-left: 8px;
+  transition: transform 0.3s ease;
+}
+.news-heading:hover .news-heading__title {
+  color: var(--green-dark, #2f6b45);
+}
+.news-heading:hover .news-heading__title .arrow {
+  transform: translateX(6px);
+}
+
+/* — Prev / next buttons float at the container edges — */
+.carousel--news .news-nav {
+  position: absolute;
+  top: 50%;
+  margin-top: -34px; /* visually centered on the cards (above dots) */
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #e2e9e2;
+  color: var(--green-dark, #2f6b45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 5;
+  box-shadow: 0 8px 20px rgba(20, 36, 27, 0.1);
+  transition: background 0.25s ease, color 0.25s ease;
+}
+.carousel--news .news-nav:hover {
+  background: var(--green, #4e9a4a);
+  color: #fff;
+}
+.carousel--news .news-nav--prev { left: -22px; }
+.carousel--news .news-nav--next { right: -22px; }
+@media (max-width: 760px) {
+  .carousel--news .news-nav { display: none; }
+}
+
+/* "View All News" — below the slider, right-aligned, 15px gap
+   (same treatment as "View All Projects" in the projects section) */
+.news-section .btn.btn-outline {
+  display: flex;
+  width: fit-content;
+  margin-left: auto;
+  margin-top: 15px;
+}
+
+/* — Bullet pagination: pill dots in the theme green — */
+.carousel--news .carousel-pagination { padding-top: 28px; }
+.carousel--news .carousel-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--green, #4e9a4a);
+  border-radius: 99px;
+  opacity: 0.25;
+}
+.carousel--news .carousel-dot.active {
+  width: 28px;
+  opacity: 1;
+}
+
+[data-theme="dark"] .news-section { background: var(--dark-bg-2, #f4f7f4); }

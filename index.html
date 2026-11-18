@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nacom</title>
+    <link
+      rel="shortcut icon"
+      href="assets/img/nacom-logo-1.png"
+      type="image/x-icon"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
+
+    <!-- new font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/leaflet.css" />
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link rel="stylesheet" href="assets/css/carousel.css" />
+    <link rel="stylesheet" href="assets/css/projects.css" />
+  </head>
+  <body>
+    <!-- ============ HEADER ============ -->
+    <header class="site-header">
+      <div class="container header-inner">
+        <a href="/" class="logo">
+          <img src="assets/img/nacom-logo-1.png" alt="NACOM logo" />
+          <span class="logo-name">Nature Conservation Management</span>
+        </a>
+
+        <div class="right">
+          <nav class="main-nav" id="mainNav" aria-label="Main navigation">
+            <ul>
+              <li id="drop">
+                <button type="button">
+                  <a href="/projects.html">
+                    <span data-longs="nav.project">Our Works</span>
+                    <i
+                      class="fa-solid fa-angle-down caret"
+                      aria-hidden="true"
+                    ></i>
+                  </a>
+                </button>
+                <div class="dropdown-content">
+                  <a href="/projects.html"
+                    ><span data-longs="nav.drpo1">Current Work</span></a
+                  >
+                  <a href="/project.html"
+                    ><span data-longs="nav.drpo2">Past Work</span></a
+                  >
+                </div>
+              </li>
+              <li id="drop">
+                <button type="button">
+                  <span data-longs="nav.resources">Resources</span>
+                  <i
+                    class="fa-solid fa-angle-down caret"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+                <div class="dropdown-content">
+                  <a href="/publication.html"
+                    ><span data-longs="nav.drre1">Publications</span></a
+                  >
+                  <a href="/document.html"
+                    ><span data-longs="nav.drre2">Documents</span></a
+                  >
+                  <a href="/iec.html"
+                    ><span data-longs="nav.drre4">IEC Materials</span></a
+                  >
+                </div>
+              </li>
+              <li id="drop">
+                <button type="button">
+                  <span data-longs="nav.gallery">Media</span>
+                  <i
+                    class="fa-solid fa-angle-down caret"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+                <div class="dropdown-content">
+                  <a href="/image.html"
+                    ><span data-longs="nav.imgs">Photos</span></a
+                  >
+                  <a href="/video.html"
+                    ><span data-longs="nav.vdos">Videos</span></a
+                  >
+                </div>
+              </li>
+              <li id="drop">
+                <button type="button">
+                  <a href="/about.html">
+                    <span data-longs="nav.about">About Us</span>
+                    <i
+                      class="fa-solid fa-angle-down caret"
+                      aria-hidden="true"
+                    ></i>
+                  </a>
+                </button>
+                <div class="dropdown-content">
+                  <a href="/executive.html"
+                    ><span data-longs="nav.exec">Executive Committee</span></a
+                  >
+                  <a href="/team.html"
+                    ><span data-longs="nav.team">Team</span></a
+                  >
+                  <a href="/partner.html"
+                    ><span data-longs="nav.partners">Partners</span></a
+                  >
+                  <a href="/themetic.html"
+                    ><span data-longs="nav.themat">Thematic Area</span></a
+                  >
+                </div>
+              </li>
+            </ul>
+          </nav>
+          <div class="header-actions">
+            <div class="lang-toggle-wrap">
+              <div class="switch">
+                <input
+                  id="language-toggle"
+                  class="check-toggle check-toggle-round-flat"
+                  type="checkbox"
+                />
+                <label for="language-toggle"></label>
+                <span class="on">ENG</span>
+                <span class="off">বাংলা</span>
+              </div>
+            </div>
+            <button
+              class="icon-btn theme-toggle"
+              id="themeToggle"
+              aria-label="Toggle dark mode"
+              title="Switch to dark mode"
+            >
+              <span class="theme-icon" id="themeIcon">🌙</span>
+            </button>
+            <button class="icon-btn menu-btn" id="menuToggle" aria-label="Menu">
+              ☰
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ HERO CAROUSEL ============ -->
+    <section class="hero-section" aria-label="Featured stories">
+      <div class="hero-carousel carousel carousel--hero" id="heroSlider">
+        <button
+          class="carousel-nav-btn carousel-prev"
+          aria-label="Previous slide"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+        <button class="carousel-nav-btn carousel-next" aria-label="Next slide">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
+
+        <div class="swiper">
+          <div class="swiper-wrapper">
+            <!-- Slide 1 -->
+            <div class="swiper-slide">
+              <div
+                class="hero-slide"
+                style="background-image: url(&quot;assets/img/48.jpeg&quot;)"
+              >
+                <div class="hero-content">
+                  <div class="hero-eyebrow">Nature Conservation</div>
+                  <h1 class="hero-title">
+                    Protecting Nature, Empowering Communities
+                  </h1>
+                  <p class="hero-desc">
+                    Since 1987, NACOM has been conserving biodiversity and
+                    building resilient, pro-environment communities across
+                    Bangladesh.
+                  </p>
+                  <a href="/projects.html" class="btn btn-shine"
+                    >Explore Our Projects <span class="arrow">→</span></a
+                  >
+                  <div class="hero-stat">
+                    <span class="stat-number">1987</span>
+                    <span class="stat-label">Founded in Bangladesh</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 2 -->
+            <div class="swiper-slide">
+              <div
+                class="hero-slide"
+                style="background-image: url(&quot;assets/img/8638.jpeg&quot;)"
+              >
+                <div class="hero-content">
+                  <div class="hero-eyebrow">Clean Water Initiative</div>
+                  <h1 class="hero-title">
+                    Every Drop of Water is a Human Right
+                  </h1>
+                  <p class="hero-desc">
+                    Providing clean drinking water to communities across coastal
+                    Bangladesh through sustainable water infrastructure.
+                  </p>
+                  <a href="#" class="btn btn-shine"
+                    >Support Now <span class="arrow">→</span></a
+                  >
+                  <div class="hero-stat">
+                    <span class="stat-number">2M+</span>
+                    <span class="stat-label">People Reached Worldwide</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Slide 3 -->
+            <div class="swiper-slide">
+              <div
+                class="hero-slide"
+                style="
+                  background-image: url(&quot;https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?q=80&w=1600&auto=format&fit=crop&quot;);
+                "
+              >
+                <div class="hero-content">
+                  <div class="hero-eyebrow">Education For All</div>
+                  <h1 class="hero-title">
+                    Build a Future Through the Power of Education
+                  </h1>
+                  <p class="hero-desc">
+                    Empowering the next generation with environmental education
+                    and sustainable livelihood skills.
+                  </p>
+                  <a href="#" class="btn btn-shine"
+                    >Learn More <span class="arrow">→</span></a
+                  >
+                  <div class="hero-stat">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Schools Reached Globally</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="carousel-pagination"></div>
+      </div>
+    </section>
+
+    <!-- ============ FEATURE CARDS ============ -->
+    <section class="features">
+      <div class="container features-grid">
+        <div class="feature-card">
+          <span class="numba">100</span>
+          <p data-longs="fet.pr">Projects</p>
+        </div>
+        <div class="feature-card">
+          <span class="numba">23000</span>
+          <p data-longs="fet.be">Beneficiaries</p>
+        </div>
+        <div class="feature-card">
+          <span class="numba">50</span>
+          <p data-longs="fet.co">Species Conservation</p>
+        </div>
+        <div class="feature-card">
+          <span class="numba">24</span>
+          <p data-longs="fet.cd">Covered Districts</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ABOUT / INFORMATION SECTION ============ -->
+    <section class="about">
+      <div class="container about-inner">
+        <div class="about-media">
+          <div class="media-shape"></div>
+          <img class="img-back" src="assets/img/birds.jpg" alt="" />
+          <img
+            class="img-front"
+            src="https://images.unsplash.com/photo-1542810634-71277d95dcbb?q=80&w=800&auto=format&fit=crop"
+            alt=""
+          />
+        </div>
+        <div class="about-content">
+          <span class="eyebrow" data-longs="ab.eye">Nacom at a Glance</span>
+          <h4 data-longs="ab.h4">
+            Nature Conservation Management (NACOM) is the pioneer,
+            non-government, pro-environment organization in Bangladesh, founded
+            in 1987.
+          </h4>
+          <div class="about-list">
+            <div class="about-item">
+              <div class="about-item-icon">
+                <img src="assets/img/target.png" alt="target" />
+              </div>
+              <div class="about-item-text">
+                <h4 data-longs="ab.item.mh">Mission</h4>
+                <p data-longs="ab.item.mp">
+                  NACOM’s mission is to engage in activities to ensure
+                  protection of nature while empowering local communities
+                </p>
+              </div>
+            </div>
+            <div class="about-item">
+              <div class="about-item-icon">
+                <img src="assets/img/vision.png" alt="vision" />
+              </div>
+              <div class="about-item-text">
+                <h4 data-longs="ab.item.vh">Vision</h4>
+                <p data-longs="ab.item.vp">
+                  “Protection of Nature for Better Human Life”
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- map section -->
+
+
+
+    <section class="map-section">
+      <div class="container">
+        <div class="map-layout">
+          <!-- Left: info panel -->
+          <div class="map-info">
+            <span class="eyebrow" data-longs="map.eye"></span>
+            <h2>Our Footprint around<br />the country</h2>
+            <p>
+              We operate across six continents, delivering clean water,
+              education, medical aid, and food security to those who need it
+              most.
+            </p>
+
+            <ul class="map-legend">
+              <li>
+                <span class="legend-dot legend-dot--active"></span> Ongoing Initiative
+              </li>
+              <li>
+                <span class="legend-dot legend-dot--completed"></span>Completed Initiative
+              </li>
+            </ul>
+
+            <div class="map-stats">
+              <div class="map-stat">
+                <strong>64</strong>
+                <p>Districts</p>
+              </div>
+              <div class="map-stat">
+                <strong>480+</strong>
+                <p>Projects</p>
+              </div>
+              <div class="map-stat">
+                <strong>2M+</strong>
+                <p>Lives Impacted</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: map frame 600×450 -->
+          <div class="map-frame-wrap">
+            <!-- <div id="projectMap"></div> -->
+            <div id="projectMap" data-eco-map="all" class="homemap"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ WHY CHOOSE US ============ -->
+    <section class="why-section">
+      <!-- Decorative background dots -->
+      <div class="why-bg-dots"></div>
+      <div class="container">
+        <!-- Section header -->
+        <div class="why-header">
+          <span class="eyebrow" data-longs="why.eyeh">✤ Thematic Area</span>
+        </div>
+        <!-- 3-col layout: features | image | features -->
+        <div class="why-grid">
+          <!-- Left feature boxes -->
+          <div class="why-col why-col--left">
+            <!-- 1 -->
+            <div class="why-box" data-image="assets/img/project3.jpeg">
+              <div class="why-box__icon why-box__icon--green">
+                <img
+                  src="assets/img/icons/air.png"
+                  alt="air"
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da1">Pollution Control</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 2 -->
+            <div
+              class="why-box"
+              data-image="https://images.unsplash.com/photo-1505118380757-91f5f5632de0?q=80&w=800&auto=format&fit=crop"
+            >
+              <div class="why-box__icon why-box__icon--orange">
+                <img
+                  src="assets/img/icons/disaster.png"
+                  alt="risk"
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da2">Disaster Risk Reduction</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 3 -->
+            <div class="why-box" data-image="assets/img/2.jpeg">
+              <div class="why-box__icon why-box__icon--green">
+                <img
+                  src="assets/img/icons/community.png"
+                  alt=""
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da3">Community Mobilization</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 4 -->
+            <div
+              class="why-box"
+              data-image="https://images.unsplash.com/photo-1488459716781-31db52582fe9?q=80&w=800&auto=format&fit=crop"
+            >
+              <div class="why-box__icon why-box__icon--orange">
+                <img
+                  src="assets/img/icons/security.png"
+                  alt="food"
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da4">Food Security and Nutrition</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 5 -->
+            <div
+              class="why-box"
+              data-image="https://images.unsplash.com/photo-1542810634-71277d95dcbb?q=80&w=800&auto=format&fit=crop"
+            >
+              <div class="why-box__icon why-box__icon--green">
+                <img
+                  src="assets/img/icons/women.png"
+                  alt="women"
+                  style="width: 36px; height: 36px"
+                />
+              </div>
+              <span data-longs="why.da5">Women and Youth Engagement</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 6 -->
+            <div class="why-box" data-image="assets/img/project2.jpg">
+              <div class="why-box__icon why-box__icon--orange">
+                <img
+                  src="assets/img/icons/water.png"
+                  alt="water"
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da6">Water, Sanitation and Hygiene</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+          </div>
+
+          <!-- Center image -->
+          <div class="why-col why-col--center">
+            <div class="why-box" data-image="assets/img/1.png">
+              <div class="why-box__icon why-box__icon--green">
+                <img
+                  src="assets/img/icons/energy.png"
+                  alt=""
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da7">Capacity Building and Awareness</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 8 -->
+            <div class="why-box" data-image="assets/img/3.png">
+              <div class="why-box__icon why-box__icon--orange">
+                <img
+                  src="assets/img/icons/oil.png"
+                  alt="linking"
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da8">Linking Private Sectors</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 9 -->
+            <div class="why-box" data-image="assets/img/8638.jpeg">
+              <div class="why-box__icon why-box__icon--green">
+                <img
+                  src="assets/img/icons/climate.png"
+                  alt="climate"
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da9">Climate Change and Resilience</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 10 -->
+            <div class="why-box" data-image="assets/img/nature.webp">
+              <div class="why-box__icon why-box__icon--orange">
+                <img
+                  src="assets/img/icons/treen.png"
+                  alt="gas"
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da10">Natural Resource Management</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 11 -->
+            <div class="why-box" data-image="assets/img/Project1.jpg">
+              <div class="why-box__icon why-box__icon--green">
+                <img
+                  src="assets/img/icons/livinghood.png"
+                  alt="live"
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da11">Livelihood Support Services</span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- 12 -->
+            <div class="why-box" data-image="assets/img/birds.jpg">
+              <div class="why-box__icon why-box__icon--orange">
+                <img
+                  src="assets/img/icons/tree.png"
+                  alt=""
+                  style="width: 40px; height: 40px"
+                />
+              </div>
+              <span data-longs="why.da12">Environment and Social Impact </span>
+              <div class="why-box__corner why-box__corner--tl"></div>
+              <div class="why-box__corner why-box__corner--tr"></div>
+              <div class="why-box__corner why-box__corner--bl"></div>
+              <div class="why-box__corner why-box__corner--br"></div>
+            </div>
+            <!-- image -->
+          </div>
+          <!-- 7 -->
+          <!-- Right feature boxes -->
+          <div class="why-col why-col--right">
+            <div class="why-image-frame">
+              <img
+                src="assets/img/hands-holding-seedling-with-soil.jpg"
+                alt="Hands holding a seedling in soil"
+              />
+            </div>
+          </div>
+        </div>
+        <!-- .why-grid -->
+      </div>
+    </section>
+
+    <!-- themetic area will be there -->
+
+    <!-- ============ CAUSES CARD CAROUSEL ============
+     type: 'cards' | dynamic via JS data array | autoplay + hover pause
+     ============================================ -->
+    <section class="project-section">
+      <div class="container project-head">
+        <div>
+          <span class="eyebrow">Significent Initiatives</span>
+          <h2></h2>
+        </div>
+        
+      </div>
+      <div class="container">
+        <div class="projects-grid" id="homeProjectsGrid"></div>
+        <a href="/projects.html" class="btn btn-shine btn-outline"
+          >View All Projects <span class="arrow">→</span></a
+        >
+      </div>
+    </section>
+
+    <!-- add new section for news and evnet -->
+     <section class="news-section">
+      <div class="container news-head">
+        <div>
+          <span class="eyebrow">News and Events</span>
+          <h2>Latest News &amp; Events</h2>
+        </div>
+      </div>
+      <div class="container">
+        <div class="carousel carousel--news" id="newsSlider">
+          <div class="swiper">
+            <div class="swiper-wrapper"><!-- slides injected by JS --></div>
+          </div>
+          <button class="news-nav news-nav--prev carousel-prev" aria-label="Previous">
+            <i class="fa-solid fa-chevron-left"></i>
+          </button>
+          <button class="news-nav news-nav--next carousel-next" aria-label="Next">
+            <i class="fa-solid fa-chevron-right"></i>
+          </button>
+          <div class="carousel-pagination"></div>
+        </div>
+        <a href="news.html" class="btn btn-shine btn-outline"
+          >View All News <span class="arrow">→</span></a
+        >
+      </div>
+    </section>
+
+    <!-- ============ PARTNERS LOGO CAROUSEL ============
+     type: 'logos' | static slides | infinite scroll | no controls make more visible.
+     ============================================ -->
+    <section class="partners-section">
+      <div class="container partners-head">
+        <span class="eyebrow">Networks and Partners</span>
+        <p>Trusted by organizations making real impact worldwide</p>
+      </div>
+
+      <div class="carousel carousel--logos" id="logoSlider">
+        <div class="swiper">
+          <div class="swiper-wrapper">
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/adb.webp" alt="1" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/aec.png" alt="2" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/bcct.png" alt="3" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/BFD.png" alt="4" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/bpc.png" alt="5" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/giz.png" alt="6" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/did.png" alt="7" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/dida.png" alt="9" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/desn.png" alt="10" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/im.png" alt="12" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/irg.png" alt="13" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/Ricardo.svg.webp" alt="14" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/departmentGob.png" alt="15" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/wr.png" alt="16" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/Pkst.png" alt="17" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/spl.png" alt="18" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/unep.png" alt="19" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/smec.png" alt="20" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/cida.png" alt="21" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/cdkn.png" alt="22" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/dnccc.png" alt="23" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/who.png" alt="24" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/vs.png" alt="25" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/kncf.png" alt="26" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/undp.png" alt="27" />
+              </div>
+            </div>
+            <div class="swiper-slide">
+              <div class="logo-item">
+                <img src="assets/img/variation.png" alt="28" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ============ FOOTER ============ -->
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div class="footer-col footer-about">
+          <a href="/" class="logo footer-logo">
+            <img src="assets/img/nacom-logo-1.png" alt="nacom-logo" />
+            <span class="logo-icon"></span>
+          </a>
+          <p>
+            We leverage real environmental data to tailor projects that maximize
+            ecology benefit in your region.
+          </p>
+          <div class="footer-socials">
+            <a
+              href="https://www.facebook.com/nacom.bd/"
+              aria-label="Facebook"
+              target="_blank"
+              ><i class="fa-brands fa-facebook-f"></i
+            ></a>
+            <a
+              href="https://x.com/NacomSocial"
+              aria-label="Twitter"
+              target="_blank"
+              ><i class="fa-brands fa-x-twitter"></i
+            ></a>
+            <a
+              href="https://www.youtube.com/channel/UCJP64fe-TF5zyZSDLjrueRw"
+              target="_blank"
+              aria-label="Instagram"
+              ><i class="fa-brands fa-youtube"></i
+            ></a>
+            <a
+              href="https://www.linkedin.com/in/nacombd87"
+              aria-label="LinkedIn"
+              ><i class="fa-brands fa-linkedin-in"></i
+            ></a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/about.html">About Us</a></li>
+            <li><a href="/themetic.html">Our Services</a></li>
+            <li><a href="/projects.html">Projects</a></li>
+            <li><a href="#">Volunteers</a></li>
+            <li><a href="/news.html">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact Us</h4>
+          <ul class="footer-contact">
+            <li>
+              <i class="fa-solid fa-location-dot" style="font-size: 20px"></i>
+              House: 20-21, Road: 12, Block: F, Niketan, Gulshan-1, Dhaka-1212,
+              Bangladesh
+            </li>
+            <li>
+              <i class="fa-regular fa-envelope" style="font-size: 20px"></i>
+              info@nacom.org
+            </li>
+            <li>
+              <i class="fa-solid fa-phone" style="font-size: 20px"></i>
+              +88-02-41080301
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="container footer-bottom-inner">
+          <p>© 2026 VCL. All Rights Reserved.</p>
+          <ul class="footer-legal">
+            <li><a href="#">Privacy Policy</a></li>
+            <li><a href="#">Terms of Service</a></li>
+          </ul>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="assets/js/carousel.js"></script>
+    <script src="assets/js/script.js"></script>
+    <script src="assets/js/projects-data.js"></script>
+    <script src="assets/js/projects.js"></script>
+    <!-- <script src="assets/js/map.js"></script> -->
+    <script src="assets/js/leaflet.js"></script>
+    <script src="assets/js/lang.js"></script>
+    <script src="assets/js/Divisions.js"></script>
+    <script src="assets/js/bd-districts.js"></script>
+    <script src="assets/js/newmap.js"></script>
+    <!-- <script src="assets/js/projects.js"></script> -->
+  </body>
+</html>

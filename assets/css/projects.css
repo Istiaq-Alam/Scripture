@@ -1,0 +1,1037 @@
+/* ===========================================================
+   projects.css
+   Tokens
+=========================================================== */
+:root {
+  --pine-950: #0f1c16;
+  --pine-900: #14251d;
+  --pine-800: #1b2e24;
+  --mint-100: #eaf3ea;
+  --mint-050: #f4f9f4;
+  --ink: #10201a;
+  --paper: #f5f7f3;
+  --stone-400: #9aa69b;
+  --leaf-500: #6f9b5e;
+  --amber-500: #e0a83f;
+ 
+  --font-display: "myriadb", sans-serif;
+  --font-body: "Lato", "Noto Serif Bengali", sans-serif;
+ 
+  --radius-card: 18px;
+  --radius-organic: 34px 18px 18px 18px; /* signature: soft leaf-like corner */
+}
+ 
+* { box-sizing: border-box; }
+ 
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  /* background: var(--mint-100); */
+  color: var(--ink);
+}
+ 
+/* ===========================================================
+   Layout
+=========================================================== */
+.projects-page {
+  display: grid;
+  /* minmax(0,1fr): lets the right column shrink so the table scrolls
+     horizontally inside its wrap instead of overflowing the page */
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
+  gap: 15px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+.projects-main {
+  min-width: 0;
+}
+
+@media (max-width: 860px) {
+  .projects-page {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+ 
+/* ===========================================================
+   Sidebar
+=========================================================== */
+.filters-sidebar {
+  background: var(--pine-950);
+  border-radius: var(--radius-card);
+  padding: 24px 20px;
+  align-self: start;
+  position: sticky;
+  top: 110px;
+  display: flex;
+  flex-direction: column;
+  margin-top: 60px;
+  gap: 24px;
+}
+ 
+@media (max-width: 860px) {
+  .filters-sidebar { position: static; }
+}
+ 
+.filter-block__title {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--mint-050);
+  margin: 0 0 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(234, 243, 234, 0.15);
+}
+ 
+.filter-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+ 
+.filter-list::-webkit-scrollbar { width: 6px; }
+.filter-list::-webkit-scrollbar-thumb { background: var(--pine-800); border-radius: 4px; }
+ 
+.filter-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--mint-100);
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+ 
+.filter-option:hover { background: var(--pine-800); }
+ 
+.filter-option input {
+  accent-color: var(--leaf-500);
+  margin-right: 8px;
+}
+ 
+.filter-option__label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+ 
+.filter-option__count {
+  font-size: 12px;
+  color: var(--stone-400);
+}
+ 
+.clear-filters {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid rgba(234, 243, 234, 0.3);
+  color: var(--mint-100);
+  font-family: var(--font-body);
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+ 
+.clear-filters:hover {
+  border-color: var(--amber-500);
+  color: var(--amber-500);
+}
+ 
+/* ===========================================================
+   Status filter pills
+=========================================================== */
+.status-filters {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+ 
+.status-btn {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--mint-050);
+  color: var(--pine-900);
+  border: 1px solid rgba(15, 28, 22, 0.12);
+  padding: 9px 18px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.12s ease;
+}
+ 
+.status-btn:hover { transform: translateY(-1px); }
+ 
+.status-btn.is-active {
+  background: var(--pine-950);
+  color: var(--mint-100);
+  border-color: var(--pine-950);
+}
+
+/* ===========================================================
+   Toolbar (status pills + search + year dropdown)
+=========================================================== */
+.projects-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.projects-toolbar .status-filters {
+  margin-bottom: 0;
+}
+
+.toolbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+/* Keyword search — sits beside the status pills */
+.search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-wrap i {
+  position: absolute;
+  left: 13px;
+  font-size: 13px;
+  color: var(--stone-400);
+  pointer-events: none;
+}
+
+.search-input {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--ink);
+  padding: 9px 14px 9px 36px;
+  width: 230px;
+  max-width: 100%;
+  border: 1px solid rgba(15, 28, 22, 0.15);
+  border-radius: 999px;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.search-input::placeholder {
+  color: var(--stone-400);
+}
+
+.search-input:focus {
+  border-color: var(--leaf-500);
+  box-shadow: 0 0 0 3px rgba(111, 155, 94, 0.15);
+}
+
+/* Year dropdown — quick single-select on top of the table */
+.year-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.year-select-wrap > i {
+  position: absolute;
+  left: 13px;
+  font-size: 13px;
+  color: var(--stone-400);
+  pointer-events: none;
+}
+
+.year-select {
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  padding: 9px 34px 9px 36px;
+  border: 1px solid rgba(15, 28, 22, 0.15);
+  border-radius: 999px;
+  background-color: #fff;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%2314201a' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.year-select:focus {
+  border-color: var(--leaf-500);
+  box-shadow: 0 0 0 3px rgba(111, 155, 94, 0.15);
+}
+
+@media (max-width: 640px) {
+  .projects-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .projects-toolbar .status-filters {
+    justify-content: flex-start;
+  }
+  .toolbar-controls {
+    margin-left: 0;
+    width: 100%;
+  }
+  .search-wrap {
+    flex: 1;
+  }
+  .search-input {
+    width: 60%;
+  }
+  .year-select-wrap {
+    flex: 0 0 150px;
+  }
+  .year-select {
+    width: 100%;
+  }
+}
+ 
+/* ===========================================================
+   Cards tabel
+=========================================================== */
+.projects-table-wrap {
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+ 
+.projects-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  /* no forced min-width: columns below are sized to fit the sidebar layout,
+     so the table only scrolls horizontally on the narrowest screens */
+}
+
+.projects-table thead th {
+  font-family: var(--font-display);
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 12px;
+  background: var(--pine-900, #0f2a24);
+  color: #fff;
+  /* let long headers like "Development Partner" wrap onto two lines */
+  white-space: normal;
+  vertical-align: middle;
+}
+
+/* The partner header wraps onto two lines and takes less space */
+.projects-table thead th.col-patner {
+  max-width: 115px;
+}
+
+/* Mid desktop: everything still fits with the filter sidebar visible,
+   so trim the name column + paddings instead of side-scrolling.
+   (Full title + dates + budget stay visible on the detail page and in
+   the stacked-card mobile view.) */
+@media (max-width: 1150px) and (min-width: 861px) {
+  .projects-page {
+    grid-template-columns: minmax(190px, 220px) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1150px) and (min-width: 861px) {
+  .projects-table .col-name__text {
+    max-width: 190px;
+  }
+  .projects-table tbody td.col-id {
+    width: 52px;
+  }
+  .projects-table thead th,
+  .projects-table tbody td {
+    padding: 11px 8px;
+  }
+}
+
+/* Tight desktops: drop the two lowest-priority columns.
+   (Full data — dates, budget — still shows on the detail page and in
+   the stacked-card view on tablets/phones.) */
+@media (max-width: 1150px) and (min-width: 861px) {
+  .projects-table thead th.col-date,
+  .projects-table td.col-date {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) and (min-width: 861px) {
+  .projects-table thead th.col-budget,
+  .projects-table td.col-budget {
+    display: none;
+  }
+}
+
+.projects-table tbody td {
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  vertical-align: middle;
+}
+
+/* Project name: max 2 tidy lines, full title on hover via title attr */
+.col-name__text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.35;
+  /* keeps the name on a diet so the whole row fits without side scrolling */
+  max-width: 300px;
+}
+
+.col-image img {
+  border-radius: 10px;
+}
+
+/* Status pill badge in the table */
+.status-pill {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.status-pill--ongoing {
+  background: rgba(224, 168, 63, 0.16);
+  color: #a8720e;
+}
+
+.status-pill--completed {
+  background: rgba(111, 155, 94, 0.18);
+  color: #4c7a3f;
+}
+ 
+.projects-table tbody tr:last-child td {
+  border-bottom: none;
+}
+ 
+.projects-table tbody tr:hover {
+  background: rgba(0, 0, 0, 0.02);
+}
+ 
+.projects-table .col-action {
+  text-align: right;
+}
+
+/* serial number cells (body only — the th keeps its white header color) */
+.projects-table tbody td.col-id {
+  width: 64px;
+  color: rgba(16, 32, 26, 0.7);
+}
+
+.projects-table thead th.col-id {
+  white-space: nowrap;
+}
+ 
+.projects-table .view-btn {
+  display: inline-block;
+  padding: 7px 15px;
+  border-radius: 999px; /* pill */
+  background: var(--mint-400, #7fd8b5);
+  color: var(--pine-900, #0f2a24);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+ 
+.projects-table .view-btn:hover {
+  background: var(--mint-500, #5cc79f);
+}
+ 
+/* Stacked "cards" layout for the whole single-column band (≤860px):
+   the table never side-scrolls; every field shows with its data-label */
+@media (max-width: 860px) {
+  .projects-table {
+    min-width: 0;
+  }
+  .projects-table-wrap {
+    border: none;
+    border-radius: 0;
+    overflow: visible;
+  }
+  .projects-table thead {
+    display: none;
+  }
+  .projects-table,
+  .projects-table tbody,
+  .projects-table tr,
+  .projects-table td {
+    display: block;
+    width: 100%;
+  }
+  .projects-table tr {
+    margin: 0 0 14px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(15, 28, 22, 0.05);
+  }
+  .projects-table tr:last-child {
+    margin-bottom: 0;
+  }
+  .projects-table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 9px 14px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-size: 13.5px;
+    word-break: break-word;
+  }
+  .projects-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: rgba(15, 28, 22, 0.6);
+    flex-shrink: 0;
+  }
+  /* Name gets its own full-width block with the label above the value */
+  .projects-table td.col-name {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  .col-name__text {
+    max-width: 100%;
+    -webkit-line-clamp: 3;
+  }
+  .projects-table .col-action {
+    justify-content: flex-end;
+    border-bottom: none;
+  }
+  .projects-table .col-action::before {
+    content: none;
+  }
+}
+
+/* Phones: the sidebar filter section is hidden entirely;
+   the top search box + year dropdown remain */
+@media (max-width: 640px) {
+  .filters-sidebar {
+    display: none;
+  }
+
+  .projects-page {
+    padding: 24px 14px 48px;
+  }
+}
+/* ===========================================================
+   Empty state
+=========================================================== */
+.no-results {
+  text-align: center;
+  padding: 48px 0;
+  color: var(--pine-800);
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+ 
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .project-card,
+  .card-image img,
+  .status-btn {
+    transition: none;
+  }
+}
+
+/* ===========================================================
+   Home page project cards
+=========================================================== */
+.home-projects-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .home-projects-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .home-projects-grid { grid-template-columns: 1fr; }
+}
+
+.project-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--pine-800);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid rgba(15, 28, 22, 0.08);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.project-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(15, 28, 22, 0.12);
+}
+
+.card-image {
+  aspect-ratio: 3 / 3;
+  overflow: hidden;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.card-body {
+  padding: 18px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--paper);
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2; /* Change this number to your desired line count */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.badgu {
+  align-self: flex-start;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 4px 12px;
+  border-radius: 999px;
+}
+
+.badgu--ongoing {
+  background: rgba(224, 168, 63, 0.15);
+  color: var(--amber-500);
+}
+
+.badgu--completed {
+  background: rgba(111, 155, 94, 0.15);
+  color: var(--leaf-500);
+}
+
+.card-meta {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.card-meta__text {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #fff;
+}
+
+.card-meta .view-btn {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--mint-100);
+  color: var(--pine-950);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.card-meta .view-btn:hover {
+  background: #9aa69b;
+}
+/* ===========================================================
+   Bangla mode: all visible page text in Noto Serif Bengali.
+   Font Awesome icon elements are excluded so their glyphs
+   keep rendering via the icon font.
+=========================================================== */
+html:lang(bn) .projects-page,
+html:lang(bn) .site-footer,
+html:lang(bn) .projects-page *:not([class^="fa-"]):not([class*=" fa-"]),
+html:lang(bn) .site-footer *:not([class^="fa-"]):not([class*=" fa-"]) {
+  font-family: "Noto Serif Bengali", "Noto Sans Bengali", "UNBangla", serif;
+}
+
+/* ===========================================================
+   REDESIGN (2026f) — filter dropdown buttons on top,
+   full-width table below, modern table look
+=========================================================== */
+
+/* — Layout: no more sidebar grid — */
+.projects-page {
+  display: block;
+  max-width: var(--container-width, 1280px);
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+/* ===========================================================
+   Toolbar: search + modern dropdown filter buttons
+=========================================================== */
+.projects-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+
+.search-wrap {
+  flex: 1 1 240px;
+  min-width: 220px;
+}
+.search-input {
+  width: 60%;
+  padding: 10px 14px 10px 36px;
+  font-size: 13.5px;
+}
+
+.toolbar-filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* — One dropdown button per filter — */
+.filter-dd {
+  position: relative;
+}
+
+.filter-dd__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--pine-900, #14251d);
+  background: #fff;
+  border: 1px solid rgba(15, 28, 22, 0.15);
+  border-radius: 999px;
+  padding: 9px 16px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background 0.18s ease, color 0.18s ease;
+}
+.filter-dd__btn > i {
+  font-size: 12.5px;
+  color: var(--leaf-500, #6f9b5e);
+}
+.filter-dd__btn:hover {
+  border-color: var(--leaf-500, #6f9b5e);
+  box-shadow: 0 0 0 3px rgba(111, 155, 94, 0.12);
+}
+
+.filter-dd.open .filter-dd__btn {
+  border-color: var(--leaf-500, #6f9b5e);
+  box-shadow: 0 0 0 3px rgba(111, 155, 94, 0.16);
+  background: var(--mint-050, #f4f9f4);
+}
+
+/* trigger with an active filter = filled dark pill */
+.filter-dd.has-filter .filter-dd__btn {
+  background: var(--pine-950, #0f1c16);
+  color: #fff;
+  border-color: var(--pine-950, #0f1c16);
+}
+.filter-dd.has-filter .filter-dd__btn > i {
+  color: var(--mint-100, #eaf3ea);
+}
+
+.filter-dd__count {
+  background: var(--leaf-500, #6f9b5e);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.filter-dd.has-filter .filter-dd__count {
+  background: var(--amber-500, #e0a83f);
+  color: var(--pine-950, #0f1c16);
+}
+
+.filter-dd__chev {
+  font-size: 10px;
+  color: var(--stone-400, #9aa69b);
+  transition: transform 0.2s ease;
+}
+.filter-dd.open .filter-dd__chev {
+  transform: rotate(180deg);
+}
+
+/* — Dropdown panel with the checkbox options — */
+.filter-dd__panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  min-width: 250px;
+  max-width: 320px;
+  background: #fff;
+  border: 1px solid rgba(15, 28, 22, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 18px 44px rgba(15, 40, 20, 0.16);
+  padding: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+.filter-dd.open .filter-dd__panel {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+/* the two right-most filters open towards the left edge */
+.filter-dd.panel-right .filter-dd__panel {
+  left: auto;
+  right: 0;
+}
+
+/* Option lists are now on light panels (they used to sit in
+   the dark sidebar) — overrides the old dark theme colors */
+.filter-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.filter-list::-webkit-scrollbar { width: 6px; }
+.filter-list::-webkit-scrollbar-thumb {
+  background: rgba(15, 28, 22, 0.18);
+  border-radius: 4px;
+}
+.filter-option {
+  color: var(--ink, #10201a);
+  border-radius: 9px;
+  padding: 8px 10px;
+  transition: background 0.15s ease;
+}
+.filter-option:hover { background: var(--mint-050, #f4f9f4); }
+.filter-option input { accent-color: var(--leaf-500, #6f9b5e); margin-right: 8px; }
+.filter-option__count { color: var(--stone-400, #9aa69b); }
+
+/* — Status options render as rows inside their dropdown — */
+.status-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.status-btn {
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink, #10201a);
+  background: transparent;
+  border: none;
+  border-radius: 9px;
+  padding: 9px 12px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.status-btn:hover { background: var(--mint-050, #f4f9f4); }
+.status-btn.is-active {
+  background: var(--pine-950, #0f1c16);
+  color: var(--mint-100, #eaf3ea);
+  border-color: transparent;
+}
+
+/* — Clear filters: light ghost pill (was on the dark sidebar) — */
+.clear-filters {
+  background: none;
+  border: 1px solid rgba(224, 168, 63, 0.55);
+  color: #a8720e;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 9px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.clear-filters:hover {
+  background: rgba(224, 168, 63, 0.12);
+}
+
+/* ===========================================================
+   Modern full-width table (desktop only — ≤860px keeps the
+   stacked card layout defined above)
+=========================================================== */
+@media (min-width: 861px) {
+  .projects-table-wrap {
+    width: 100%;
+    background: #fff;
+    border: 1px solid rgba(15, 28, 22, 0.08);
+    border-radius: 18px;
+    box-shadow: 0 2px 10px rgba(15, 28, 22, 0.05);
+  }
+
+  .projects-table {
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .projects-table thead th {
+    background: var(--mint-050, #f4f9f4);
+    color: var(--pine-900, #14251d);
+    font-size: 12.5px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 15px 16px;
+    border-bottom: 1px solid rgba(15, 28, 22, 0.08);
+  }
+
+  /* full width table restores room — no narrow cap on this header */
+  .projects-table thead th.col-patner { max-width: none; }
+  .projects-table .col-name__text { max-width: 420px; }
+
+  .projects-table tbody td {
+    padding: 15px 16px;
+    color: var(--ink, #10201a);
+    font-size: 13.5px;
+    border-bottom: 1px solid rgba(15, 28, 22, 0.06);
+  }
+
+  .projects-table tbody tr {
+    transition: background 0.15s ease;
+  }
+  .projects-table tbody tr:hover {
+    background: rgba(111, 155, 94, 0.07);
+  }
+
+  .projects-table tbody td.col-id {
+    width: 54px;
+    color: var(--stone-400, #9aa69b);
+  }
+
+  /* tight desktops: drop the lowest-priority columns */
+  @media (max-width: 1100px) {
+    .projects-table thead th.col-date,
+    .projects-table td.col-date { display: none; }
+  }
+  @media (max-width: 940px) {
+    .projects-table thead th.col-budget,
+    .projects-table td.col-budget { display: none; }
+  }
+}
+
+[data-theme="dark"] .filter-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* tighter page padding on phones (kept from the previous design) */
+@media (max-width: 640px) {
+  .projects-page {
+    padding: 24px 14px 48px;
+  }
+}
+
+/* ===========================================================
+   Pagination — bottom right, pill page buttons
+=========================================================== */
+.projects-pagination[hidden] { display: none; }
+
+.projects-pagination {
+  display: flex;
+  justify-content: flex-end;   /* pinned to the right below the table */
+  align-items: center;
+  gap: 6px;
+  padding: 20px 0 0;
+}
+
+.pp-btn,
+.pp-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(15, 28, 22, 0.15);
+  background: #fff;
+  color: var(--pine-900, #14251d);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease,
+    background 0.18s ease, color 0.18s ease;
+}
+.pp-btn i { font-size: 12px; }
+
+.pp-btn:hover:not(:disabled),
+.pp-num:hover:not(.is-active) {
+  border-color: var(--leaf-500, #6f9b5e);
+  box-shadow: 0 0 0 3px rgba(111, 155, 94, 0.12);
+}
+
+.pp-num.is-active {
+  background: var(--pine-950, #0f1c16);
+  border-color: var(--pine-950, #0f1c16);
+  color: #fff;
+  cursor: default;
+}
+
+.pp-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
+.pp-gap {
+  color: var(--stone-400, #9aa69b);
+  padding: 0 2px;
+  user-select: none;
+}
