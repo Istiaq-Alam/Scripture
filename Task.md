@@ -1,0 +1,8 @@
+Task 1 : Inspect the nacom project list page. those all are demo project list. So we need to apply real information and description there, So there is a word file in the assets folder named Project List of NACOM-26-10-2026.docx 
+take the project list and informations from this word files and apply it into the main project list. inspect the requrired information and project list. then apply it. 
+
+Task 2 : in the header nav bar hide the media section that we will work on the media page later. until then keep it commented or hide it.
+
+Task 3 : After placeing all the project list and descriptions in the projects then make the project.html as they should follow the filter and the filter should works. Under the Our Works option when user click on "Current work" then the project list should be shown as filtered by "On going projects" and then user click on the "Past work" then the project list should be shown as filtered by "Completed Projects"
+
+Task 4 : Under the About us option there is team page. and in the team page the images should be placed from the assets/team folder and the names should be taken from the images names. also make the team person cards adoptive as the image placeholder should place the image in the team image and those cards should not crop the image. and then remove the read more option on the team's cards. all the team cards should be place in the team page.right now there is paging in the team page. I didnot want that paging so keep all the team cards in the team page. 

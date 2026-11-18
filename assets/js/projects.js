@@ -53,6 +53,7 @@ class ProjectsFilter {
     );
     this.populateYearDropdown();
     this.bindStatusButtons();
+    this.readStatusFromUrl();
     this.bindLists();
     this.bindYearDropdown();
     this.bindSearch();
@@ -163,10 +164,37 @@ class ProjectsFilter {
         btn.setAttribute("aria-selected", "true");
         this.state.status = btn.dataset.status;
         this.updateTriggerLabels();
+        this.syncUrlStatus();
         this.resetPage();
         this.render();
       });
     });
+  }
+
+  /**
+   * "Our Works" menu deep-links: Current Work -> ?status=ongoing,
+   * Past Work -> ?status=completed. Apply that to the pills before the
+   * first render so the table, its label and the URL all agree.
+   */
+  readStatusFromUrl() {
+    const status = new URLSearchParams(window.location.search).get("status");
+    if (status !== "ongoing" && status !== "completed") return;
+
+    this.state.status = status;
+    this.statusButtons.forEach((btn) => {
+      const match = btn.dataset.status === status;
+      btn.classList.toggle("is-active", match);
+      btn.setAttribute("aria-selected", match ? "true" : "false");
+    });
+    this.updateTriggerLabels();
+  }
+
+  /** Keep the address bar shareable when the status pill changes. */
+  syncUrlStatus() {
+    const url = new URL(window.location.href);
+    if (this.state.status === "all") url.searchParams.delete("status");
+    else url.searchParams.set("status", this.state.status);
+    window.history.replaceState(null, "", url);
   }
 
   bindLists() {
@@ -463,7 +491,8 @@ function homeCardTemplate(project) {
   return `
     <article class="project-card">
       <div class="card-image">
-        <img src="${project.image}" alt="${project.title}" loading="lazy">
+        <!-- Home teaser uses the shared placeholder until project photography is final. -->
+        <img src="assets/img/placeholder.png" alt="" loading="lazy">
       </div>
       <div class="card-body">
         <h3 class="card-title">${project.title}</h3>

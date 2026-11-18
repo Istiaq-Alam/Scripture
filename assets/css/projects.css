@@ -318,6 +318,11 @@ body {
   border-radius: 12px;
   border: 1px solid rgba(0, 0, 0, 0.08);
 }
+
+/* Pagination scrolls the table to the top; clear the sticky header */
+.projects-table-wrap {
+  scroll-margin-top: 92px;
+}
  
 .projects-table {
   width: 100%;
@@ -382,6 +387,11 @@ body {
   .projects-table td.col-budget {
     display: none;
   }
+}
+
+/* Start dates are month + year only now, so keep them on one line */
+.projects-table td.col-date {
+  white-space: nowrap;
 }
 
 .projects-table tbody td {
