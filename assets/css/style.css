@@ -2083,13 +2083,16 @@ html[lang="bn"] body {
 
 .profile-icon-wrap {
   padding: 0px 0px 10px 0px;
+  background: var(--dark-bg-2, #10201a);
 }
 
+/* Portraits come in mixed shapes, so show the whole photo inside a
+   consistent 4:3 frame instead of cropping it. */
 .profile-icon {
   width: 100%;
-  height: 300px;
-  object-fit: cover;
-  /* border-radius: 14px; */
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: contain;
   display: block;
 }
 
@@ -2184,7 +2187,7 @@ html[lang="bn"] body {
     padding: 6px;
   }
   .profile-icon {
-    height: 250px;
+    aspect-ratio: 1 / 1;
   }
   .profile-name {
     font-size: 19px;
