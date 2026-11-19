@@ -105,6 +105,8 @@ function renderNewsHeadline(n) {
 //  INIT ALL CAROUSELS
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+  // Carousels only exist on pages that load carousel.js
+  if (typeof Carousel !== 'undefined') {
 
   // 1. Hero — static, fade, 3 slides, autoplay every 3s
   new Carousel('#heroSlider', {
@@ -129,6 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
     renderFn: renderNewsHeadline,
     delay: 3200,
   });
+
+  }
   // ── Mobile menu toggle ──────────────────────────────────────
 });
 
@@ -163,7 +167,7 @@ menuToggle.addEventListener('click', () => {
 });
 
 // re-measure if a dropdown inside the mobile menu opens/closes content height
-mainNav.querySelectorAll('li#drop > button').forEach(btn => {
+mainNav.querySelectorAll('li.drop > button').forEach(btn => {
   btn.addEventListener('click', () => {
     if (!mq.matches) return; // desktop uses hover, ignore
     btn.parentElement.classList.toggle('open');

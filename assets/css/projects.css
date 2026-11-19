@@ -858,6 +858,23 @@ html:lang(bn) .site-footer *:not([class^="fa-"]):not([class*=" fa-"]) {
   right: 0;
 }
 
+/* phones: span the panel across the filter bar so it stays in the viewport */
+@media (max-width: 480px) {
+  .toolbar-filters {
+    position: relative;
+  }
+  .filter-dd {
+    position: static;
+  }
+  .filter-dd__panel,
+  .filter-dd.panel-right .filter-dd__panel {
+    left: 0;
+    right: 0;
+    min-width: 0;
+    max-width: none;
+  }
+}
+
 /* Option lists are now on light panels (they used to sit in
    the dark sidebar) — overrides the old dark theme colors */
 .filter-list {

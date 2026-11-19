@@ -39,7 +39,7 @@ html:lang(bn) [data-longs-html] {
 /* Bangla mode: every menu item (top-level links, dropdown triggers and
    dropdown panel items) at 18px — unified with the English 16px size */
 html:lang(bn) .main-nav a,
-html:lang(bn) .main-nav li#drop > button,
+html:lang(bn) .main-nav li.drop > button,
 html:lang(bn) .dropdown-content a {
   font-size: 18px;
   font-family: "Noto Serif Bengali";
@@ -357,11 +357,11 @@ a {
 
 /* new for dropbutton */
 
-.main-nav li#drop.active > button {
+.main-nav li.drop.active > button {
   color: var(--green-dark);
   font-weight: 700;
 }
-.main-nav li#drop.active > button::after {
+.main-nav li.drop.active > button::after {
   width: 100%;
 }
 
@@ -395,11 +395,11 @@ a {
 /* dropdown */
 
 /* Make the dropdown trigger look identical to a normal nav link */
-.main-nav li#drop {
+.main-nav li.drop {
   position: relative;
 }
 
-.main-nav li#drop > button {
+.main-nav li.drop > button {
   background: none;
   border: none;
   font-family: inherit;
@@ -417,7 +417,7 @@ a {
 }
 
 /* reuse the same underline-on-hover effect as .main-nav a */
-.main-nav li#drop > button::after {
+.main-nav li.drop > button::after {
   content: "";
   position: absolute;
   bottom: 0;
@@ -429,26 +429,26 @@ a {
   transition: width 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.main-nav li#drop > button a {
+.main-nav li.drop > button a {
   position: static; /* the inner <a> shouldn't manage its own underline */
 }
-.main-nav li#drop > button a::after {
+.main-nav li.drop > button a::after {
   display: none;
 }
 
-.main-nav li#drop:hover > button {
+.main-nav li.drop:hover > button {
   color: var(--green-dark);
 }
-.main-nav li#drop:hover > button::after {
+.main-nav li.drop:hover > button::after {
   width: 100%;
 }
 
 /* rotate the caret when open */
-.main-nav li#drop .caret {
+.main-nav li.drop .caret {
   transition: transform 0.25s ease;
 }
-.main-nav li#drop:hover .caret,
-.main-nav li#drop.open .caret {
+.main-nav li.drop:hover .caret,
+.main-nav li.drop.open .caret {
   transform: rotate(180deg);
 }
 
@@ -476,7 +476,7 @@ a {
 }
 
 /* invisible bridge over the trigger→panel gap: hovering the strip
-   above the panel still counts as being inside li#drop */
+   above the panel still counts as being inside li.drop */
 .dropdown-content::before {
   content: "";
   position: absolute;
@@ -490,8 +490,8 @@ a {
   box-shadow: 0 24px 48px rgba(0, 0, 0, 0.45);
 }
 
-.main-nav li#drop:hover .dropdown-content,
-.main-nav li#drop.open .dropdown-content {
+.main-nav li.drop:hover .dropdown-content,
+.main-nav li.drop.open .dropdown-content {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
@@ -1086,7 +1086,7 @@ a {
     padding: 20px;
   }
 
-  .main-nav li#drop .dropdown-content {
+  .main-nav li.drop .dropdown-content {
     position: static;
     transform: none;
     opacity: 1;
@@ -1096,7 +1096,7 @@ a {
     display: none;
     padding-left: 12px;
   }
-  .main-nav li#drop.open .dropdown-content {
+  .main-nav li.drop.open .dropdown-content {
     display: block;
   }
 
@@ -1851,6 +1851,9 @@ a {
   gap: 14px;
 }
 .footer-col ul a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
   font-size: 0.9rem;
   transition: color 0.2s ease;
 }
@@ -1862,6 +1865,7 @@ a {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-height: 24px;
   font-size: 0.9rem;
   line-height: 1.5;
 }
@@ -1882,6 +1886,11 @@ a {
 .footer-legal {
   display: flex;
   gap: 24px;
+}
+.footer-legal a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
 }
 .footer-legal a:hover {
   color: var(--green);
@@ -2580,10 +2589,10 @@ html[lang="bn"] body {
 [data-theme="dark"] .main-nav a:hover {
   color: #fff;
 }
-[data-theme="dark"] .main-nav li#drop:hover > button {
+[data-theme="dark"] .main-nav li.drop:hover > button {
   color: #fff;
 }
-[data-theme="dark"] .main-nav li#drop.active > button {
+[data-theme="dark"] .main-nav li.drop.active > button {
   color: #fff;
 }
 
