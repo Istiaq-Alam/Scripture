@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>blogsh — a blog that thinks it's a shell</title>
+<link rel="icon" href='data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><rect width="16" height="16" fill="%23020804"/><rect x="3" y="4" width="8" height="8" fill="%233dff77"/></svg>'>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  /* ---------- phosphor themes ---------- */
+  body[data-theme="green"]{ --fg:#3dff77; --dim:#1d9e4e; --bright:#c8ffdd; --bg:#020804; --glow:rgba(61,255,119,.20); }
+  body[data-theme="amber"]{ --fg:#ffb000; --dim:#b37b00; --bright:#ffe3ad; --bg:#0a0600; --glow:rgba(255,176,0,.18); }
+  body[data-theme="ice"]  { --fg:#8fd6ff; --dim:#4d90b3; --bright:#e8f8ff; --bg:#02070a; --glow:rgba(143,214,255,.18); }
+
+  *{ box-sizing:border-box; margin:0; }
+  html,body{ height:100%; }
+  body{
+    background:var(--bg); color:var(--fg);
+    font-family:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size:15px; line-height:1.5; overflow:hidden;
+  }
+  ::selection{ background:var(--fg); color:var(--bg); }
+
+  /* ---------- status bar (tmux-ish) ---------- */
+  #statusbar{
+    position:fixed; top:0; left:0; right:0; height:28px; z-index:20;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 12px; font-size:12px; letter-spacing:.02em; user-select:none;
+    background:color-mix(in srgb, var(--fg) 12%, var(--bg));
+    border-bottom:1px solid color-mix(in srgb, var(--fg) 28%, transparent);
+  }
+  .sb-right{ display:flex; gap:18px; }
+  .sb-item{ cursor:pointer; opacity:.85; }
+  .sb-item:hover{ opacity:1; text-decoration:underline; text-underline-offset:3px; }
+  .sb-off{ opacity:.38; }
+  .sb-dot{ display:inline-block; width:8px; height:8px; background:var(--fg); margin-right:8px; vertical-align:-1px; animation:blink 1.06s linear infinite; }
+
+  /* ---------- screen ---------- */
+  #screen{ position:fixed; top:28px; left:0; right:0; bottom:0; overflow-y:auto; overflow-x:hidden; cursor:text; }
+  #screen::-webkit-scrollbar{ width:10px; }
+  #screen::-webkit-scrollbar-thumb{ background:color-mix(in srgb, var(--fg) 30%, transparent); }
+  #screen::-webkit-scrollbar-track{ background:transparent; }
+  #page{
+    max-width:100ch; margin:0 auto; padding:14px 20px 14px;
+    min-height:100%; display:flex; flex-direction:column;
+    text-shadow:0 0 4px var(--glow); /* phosphor bloom */
+    animation:crtFlicker 4.3s linear infinite;
+  }
+  #output{ flex:0 0 auto; }
+  .line{ white-space:pre-wrap; overflow-wrap:break-word; min-height:1.5em; }
+  .ls{ display:flex; flex-wrap:wrap; gap:0 22px; }
+  .b, b{ color:var(--bright); font-weight:700; }
+  .d{ color:var(--dim); }
+  .u{ text-decoration:underline; text-underline-offset:3px; }
+  .inv{ background:var(--fg); color:var(--bg); padding:0 6px; font-weight:500; }
+  a{ color:var(--bright); text-decoration:underline; text-underline-offset:3px; }
+
+  /* ---------- prompt ---------- */
+  #form{ flex:0 0 auto; margin-top:auto; padding-top:6px; white-space:pre-wrap; word-break:break-all; }
+  #cursor{ background:var(--fg); color:var(--bg); animation:blink 1.06s linear infinite; }
+  #ghost{ color:var(--fg); opacity:.5; animation:ghostFlicker 2.1s steps(1,end) infinite; }
+  #ghost.flash{ animation:ghostFlash .16s steps(2,end) 1, ghostFlicker 2.1s steps(1,end) .16s infinite; }
+
+  /* ---------- markdown ---------- */
+  .md > :first-child{ margin-top:2px; }
+  .md-h1{ font-size:1.15em; font-weight:700; color:var(--bright); margin:14px 0 6px; }
+  .md-h2{ font-weight:700; color:var(--bright); margin:16px 0 4px; border-bottom:1px solid var(--dim); padding-bottom:3px; }
+  .md-h3,.md-h4{ font-weight:700; color:var(--bright); margin:12px 0 4px; }
+  .md-p{ margin:4px 0; }
+  .md-pre{ margin:8px 0; padding:4px 0 4px 12px; border-left:2px solid var(--dim); overflow-x:auto; }
+  .md-li{ margin:2px 0; padding-left:14px; text-indent:-14px; }
+  .md-bq{ border-left:2px solid var(--dim); padding-left:12px; margin:6px 0; opacity:.85; font-style:italic; }
+  .md-hr{ border-top:1px dashed var(--dim); margin:10px 0; }
+  .ic{ color:var(--bright); background:color-mix(in srgb, var(--fg) 10%, transparent); padding:0 4px; border-radius:2px; }
+  .md i{ font-style:italic; }
+
+  /* ---------- reveal cascade ---------- */
+  .rv{ opacity:0; animation:rise .16s ease-out forwards; }
+
+  /* ---------- hidden real input ---------- */
+  #kbd{
+    position:fixed; bottom:0; left:0; width:2px; height:2px; opacity:0;
+    border:0; padding:0; background:transparent; color:transparent;
+    caret-color:transparent; font-size:16px; z-index:-1;
+  }
+
+  /* ---------- CRT overlays ---------- */
+  #fx-scan{ position:fixed; inset:0; z-index:30; pointer-events:none;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px); }
+  #fx-vig{ position:fixed; inset:0; z-index:29; pointer-events:none;
+    background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.34) 100%); }
+  #fx-roll{ position:fixed; inset:0; z-index:31; pointer-events:none; overflow:hidden; }
+  #fx-roll::before{ content:""; position:absolute; left:0; right:0; height:130px; top:-150px;
+    background:linear-gradient(180deg, transparent, rgba(255,255,255,.03), transparent);
+    animation:roll 7s linear infinite; }
+
+  @keyframes blink{ 0%,52%{opacity:1} 53%,100%{opacity:0} }
+  @keyframes ghostFlicker{ 0%{opacity:.5} 12%{opacity:.62} 13%{opacity:.4} 38%{opacity:.55} 39%{opacity:.45} 67%{opacity:.6} 68%{opacity:.48} 100%{opacity:.5} }
+  @keyframes ghostFlash{ 0%{opacity:1} 50%{opacity:.15} 100%{opacity:.6} }
+  @keyframes crtFlicker{ 0%,100%{opacity:1} 50%{opacity:.982} 73%{opacity:.992} }
+  @keyframes roll{ from{ top:-150px } to{ top:110% } }
+  @keyframes rise{ from{ opacity:0; transform:translateY(3px) } to{ opacity:1; transform:none } }
+
+  @media (max-width:620px){
+    body{ font-size:13.5px; }
+    #page{ padding:10px 12px; }
+    #statusbar{ font-size:11px; }
+    .sb-right{ gap:12px; }
+  }
+</style>
+</head>
+<body data-theme="green">
+
+  <div id="statusbar">
+    <div class="sb-left"><span class="sb-dot"></span><span class="b">blogsh</span> 1.0 · tty1</div>
+    <div class="sb-right">
+      <span class="sb-item" id="sbSound" title="toggle keypress sound">snd off</span>
+      <span class="sb-item" id="sbCrt"   title="toggle scanlines">crt on</span>
+      <span class="sb-item" id="sbTheme" title="cycle phosphor">green</span>
+      <span class="sb-item" id="sbClock">--:--</span>
+    </div>
+  </div>
+
+  <div id="screen">
+    <div id="page">
+      <div id="output"></div>
+      <div id="form"><span id="ps1"></span><span id="before"></span><span id="cursor">&nbsp;</span><span id="after"></span><span id="ghost"></span></div>
+    </div>
+  </div>
+
+  <input id="kbd" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="terminal input">
+
+  <div id="fx-vig"></div>
+  <div id="fx-scan"></div>
+  <div id="fx-roll"></div>
+
+<script>
+'use strict';
+
+/* ============================== helpers ============================== */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const pad = (s,n) => String(s).padEnd(n);
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+/* ============================== content ============================== */
+const POSTS = [
+{ file:'hello-world-again.md', title:'hello world, again', tags:['meta'], date:'2026-01-07', body:
+`# hello world, again
+
+Every personal site eventually becomes a terminal. This is a law of
+nature, like entropy and left-pad.
+
+I wanted three things:
+
+- no feed, no infinite scroll, no algorithmic anything
+- text first, semantics second, pixels a distant third
+- a cursor that blinks at exactly **1.06 s** — the cadence of the old
+  DEC glass, the only correct heartbeat for a caret
+
+> The browser is a mainframe we happen to rent by the month. Might as
+> well get a shell.
+
+So this site *is* a shell. \`ls\` lists things. \`cat\` reads them. There
+is no home page, because a home page is just \`pwd\` with ambitions.
+
+If you feel lost: that is correct. Run \`help\`.` },
+
+{ file:'writing-a-shell-in-2025.md', title:'writing a shell in the year of our lord 2025', tags:['cli'], date:'2026-01-05', body:
+`# writing a shell in the year of our lord 2025
+
+The plan was "a simple blog". Sixty screen-hours later I had a
+tokenizer, a virtual filesystem, and strong opinions about cursor
+frequencies. Classic scope creep — but in one file.
+
+What building blogsh taught me:
+
+- A command line is just a *very opinionated form*: one field,
+  infinite submit buttons.
+- Ghost text is the best UX pattern ever invented. Fight me.
+- \`Tab\` completion is twenty lines of code and one hundred percent of
+  the delight.
+
+\`\`\`js
+const ghost = completions(tok)
+  .filter(c => c.startsWith(input))
+  .reduce(commonPrefix, input);
+\`\`\`
+
+Frameworks were avoided the way one avoids stepping on a plug. The
+whole shell is a few hundred lines of vanilla JS — which is both the
+implementation and the entire dependency tree.
+
+Try \`theme amber\` if your retinas want 1979 instead of 1984.` },
+
+{ file:'ship-it-on-a-friday.md', title:'ship it on a friday', tags:['career'], date:'2025-12-19', body:
+`# ship it on a friday
+
+A hot take, stated plainly: **Friday deploys build character.**
+
+- Monday you are brave. Friday you are *careful*. Guess which one
+  writes better code.
+- A deploy you watch all weekend teaches monitoring better than any
+  rotation ever will.
+- Nothing focuses a retrospective like survivorship.
+
+\`\`\`diff
+- #deploy_fridays: false
++ #deploy_fridays: true   # we die like men
+\`\`\`
+
+(Disclaimer: this post is satire in the same way that sailing toward a
+storm is "research". Rollback is a love language. Test in production,
+but bring a parachute.)
+
+Next week: *cancelling the standup*, and other fiction.` },
+
+{ file:'the-crt-was-right.md', title:'the CRT was right', tags:['retro'], date:'2025-12-02', body:
+`# the CRT was right
+
+Modern displays lie. A CRT never showed you a pixel it didn't earn.
+
+Three properties of the glass tank we abandoned, and why I want them
+back:
+
+1. **Phosphor decay.** Characters faded the way memories do.
+   Persistence of vision was a feature, not a flaw.
+2. **Scanlines.** The beam wrote every line by hand, like a monk. You
+   could *see the effort*.
+3. **The 1.06 s cursor blink.** Slow enough to read as patience, fast
+   enough to read as a pulse.
+
+\`\`\`c
+/* the only correct cursor */
+while (alive) {
+    invert(caret);
+    usleep(530000);  /* ×2 = 1.06 s, as decreed */
+}
+\`\`\`
+
+You can run \`scanlines off\` on this page. The beam will be
+disappointed, but it will respect your choice. Barely.` },
+
+{ file:'tab-completion-is-love.md', title:'tab completion is a love language', tags:['cli'], date:'2025-11-14', body:
+`# tab completion is a love language
+
+Some people show affection with flowers. Shell authors show it with
+keybindings.
+
+Tab completion is the rare interface that **learns you**: press \`Tab\`
+once and it finishes your thought; press it twice and it quietly lists
+the alternatives, like a friend reading the menu out loud.
+
+On this page, the grey text ahead of your caret is a ghost of the
+thing you are about to type. It flickers, because all good ghosts do.
+Accept it with \`Tab\`.
+
+- one \`Tab\` — accept the guess
+- two \`Tab\`s — "close, but: here are your options"
+- \`↑\` — the past, replayable
+
+A shell that makes you type whole words is a shell that does not
+respect your wrists. Design is empathy, at 9600 baud.` },
+
+{ file:'monospace-or-nothing.md', title:'monospace or nothing', tags:['typography'], date:'2025-10-30', body:
+`# monospace or nothing
+
+A proportional font on a terminal is a lie about the shape of
+information. In a monospace world:
+
+- columns *line up*, because columns are a promise
+- \`code\` and prose weigh the same, because they are equals
+- ascii art is possible, and therefore mandatory
+
+\`\`\`text
+ ┌────────────────────┐
+ │  80 × 25           │  ← enough room for a whole civilization
+ └────────────────────┘
+\`\`\`
+
+Kerning is just the universe being inconsistent. Monospace is the
+correction of that error: every character gets exactly 1/80th of the
+line — a tiny, perfect equality of pixels.
+
+This page is set in IBM Plex Mono, heir to the faces that ran the
+electric typewriter and the first shared machines. It has slashed-zero
+energy, and it knows it.` },
+
+{ file:'in-praise-of-boring-text-files.md', title:'in praise of boring text files', tags:['retro'], date:'2025-10-08', body:
+`# in praise of boring text files
+
+Databases divorce you. Formats abandon you. The plain text file — the
+UTF-8, opens-anywhere, survives-anything text file — is the phoenix of
+data: it comes back from whatever fire you throw at it.
+
+My rules for artifacts that last:
+
+1. If a human can read it in a terminal, it is eternal.
+2. If it needs a viewer, it needs a maintainer.
+3. \`README.md\` over a wiki. \`CHANGELOG.md\` over a dashboard. Dates
+   over "recently".
+
+Twenty years from now some kid will \`cat\` these posts out of a
+tarball, on hardware I cannot imagine, and the cursor will still blink
+at 1.06 seconds. Boring is a feature. Boring is *durability*.` },
+];
+
+const PROJECTS = [
+{ dir:'blogsh', desc:'the shell you are inside right now', date:'2026-01-02', readme:
+`# blogsh
+
+The shell you are currently inside. One HTML file, zero dependencies,
+a few hundred lines of vanilla JS posing as a VT102.
+
+## features
+
+- tab completion with flickering ghost text
+- persistent history on ↑/↓
+- mailx-style composer (\`mail\` — end the body with a lone \`.\`)
+- phosphor themes: \`theme green|amber|ice\`
+- toggleable CRT raster: \`scanlines on|off\`
+- a cursor blinking at exactly 1.06 s, as decreed
+
+## philosophy
+
+If it doesn't fit in one file, it doesn't ship. If it needs a build
+step, it isn't a shell. The terminal won in 1979; the rest is nostalgia
+pointed in the wrong direction.` },
+
+{ dir:'phosphor.js', desc:'2 kB of electron-gun cosplay', date:'2025-09-17', readme:
+`# phosphor.js
+
+A 2 kB library that makes any DOM look like it is being drawn by an
+electron gun in real time.
+
+## usage
+
+\`\`\`js
+phosphor(document.body, {
+  decay: 0.12,      // afterglow persistence
+  raster: true,     // scanlines
+  blink: 1060       // cursor period, ms — non-negotiable
+});
+\`\`\`
+
+## status
+
+- [x] scanline raster
+- [x] phosphor bloom (subtle, tasteful, non-cheesy)
+- [ ] actual electrons (pending hardware donation)` },
+
+{ dir:'dotfiles-of-doom', desc:'fourteen years of .vimrc sediment', date:'2024-06-01', readme:
+`# dotfiles-of-doom
+
+Fourteen years of \`.vimrc\` sediment, carbon-dated by comment style.
+Archaeological layers:
+
+- **2009** — \`set number\`. innocence.
+- **2012** — four hundred lines of vimscript. a regret era.
+- **2017** — the great whitespace war (tabs won, again)
+- **2021** — everything rewritten in lua at 3 a.m.
+- **2024** — back to \`set number\`. the circle closes.
+
+## highlights
+
+\`alias please='sudo'\` — the only alias that ever mattered.
+
+> "your config is a diary you accidentally published"
+> — everyone, eventually` },
+];
+
+const TOPICS = [...new Set(POSTS.flatMap(p => p.tags))]; // meta retro cli typography career
+
+const BANNER = [
+'█   █  █  ███',
+'█  █  █ █  █ ',
+'███   ███  █ ',
+'█  █  █ █  █ ',
+'█   █  █  ███',
+];
+
+/* ============================== prefs ============================== */
+const prefs = Object.assign(
+  { sound:false, scan:true, theme:'green' },
+  JSON.parse(localStorage.getItem('blogsh:prefs') || '{}')
+);
+const savePrefs = () => localStorage.setItem('blogsh:prefs', JSON.stringify(prefs));
+
+function applyTheme(t){
+  document.body.dataset.theme = t; prefs.theme = t;
+  $('sbTheme').textContent = t; savePrefs();
+}
+function applyScan(){
+  $('fx-scan').style.display = prefs.scan ? '' : 'none';
+  $('sbCrt').textContent = 'crt ' + (prefs.scan ? 'on' : 'off');
+  $('sbCrt').classList.toggle('sb-off', !prefs.scan);
+}
+function applySound(){
+  $('sbSound').textContent = 'snd ' + (prefs.sound ? 'on' : 'off');
+  $('sbSound').classList.toggle('sb-off', !prefs.sound);
+}
+
+/* ============================== sound (WebAudio, opt-in) ============================== */
+let AC = null;
+function ac(){
+  if(!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if(AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function click(){ // keypress: filtered noise burst + tiny tick
+  if(!prefs.sound) return;
+  try{
+    const a = ac(), t = a.currentTime, dur = .03;
+    const buf = a.createBuffer(1, a.sampleRate * dur, a.sampleRate);
+    const d = buf.getChannelData(0);
+    for(let i = 0; i < d.length; i++) d[i] = (Math.random()*2-1) * Math.pow(1 - i/d.length, 2);
+    const src = a.createBufferSource(); src.buffer = buf;
+    const bp = a.createBiquadFilter(); bp.type = 'bandpass';
+    bp.frequency.value = 1700 + Math.random()*700; bp.Q.value = 1.1;
+    const g = a.createGain(); g.gain.value = .13;
+    src.connect(bp); bp.connect(g); g.connect(a.destination); src.start();
+    const o = a.createOscillator(); o.type = 'square';
+    o.frequency.value = 2300 + Math.random()*400;
+    const g2 = a.createGain();
+    g2.gain.setValueAtTime(.016, t); g2.gain.exponentialRampToValueAtTime(.0001, t+.015);
+    o.connect(g2); g2.connect(a.destination); o.start(t); o.stop(t+.02);
+  }catch(e){}
+}
+function thock(){ // enter: low body thump
+  if(!prefs.sound) return;
+  try{
+    const a = ac(), t = a.currentTime;
+    const o = a.createOscillator(); o.type = 'sine';
+    o.frequency.setValueAtTime(165, t); o.frequency.exponentialRampToValueAtTime(58, t+.06);
+    const g = a.createGain();
+    g.gain.setValueAtTime(.14, t); g.gain.exponentialRampToValueAtTime(.0001, t+.08);
+    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+.09);
+  }catch(e){}
+}
+function beepErr(){
+  if(!prefs.sound) return;
+  try{
+    const a = ac(), t = a.currentTime;
+    const o = a.createOscillator(); o.type = 'square'; o.frequency.value = 130;
+    const g = a.createGain();
+    g.gain.setValueAtTime(.05, t); g.gain.exponentialRampToValueAtTime(.0001, t+.12);
+    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t+.13);
+  }catch(e){}
+}
+
+/* ============================== dom refs & printing ============================== */
+const output = $('output'), screenEl = $('screen'), kbd = $('kbd');
+const ps1El = $('ps1'), beforeEl = $('before'), cursorEl = $('cursor'), afterEl = $('after'), ghostEl = $('ghost');
+
+function scrollEnd(){ screenEl.scrollTop = screenEl.scrollHeight; }
+function addLine(html = ''){ const d = document.createElement('div'); d.className = 'line'; d.innerHTML = html; output.appendChild(d); scrollEnd(); return d; }
+function err(msg){ addLine(`<span class="inv">blogsh: ${esc(msg)}</span>`); beepErr(); }
+
+let seqN = 0, skipNow = false; // sequential reveals (boot, man pages) — any key skips
+async function printSeq(lines, ms = 60){
+  seqN++;
+  for(const l of lines){ if(!skipNow) await delay(ms); addLine(l); }
+  seqN--; skipNow = false;
+}
+function cascade(el){ // staggered reveal of rendered markdown blocks
+  [...el.children].forEach((c, i) => {
+    c.classList.add('rv'); c.style.animationDelay = (i * 14) + 'ms';
+  });
+}
+
+/* ============================== prompt / VFS state ============================== */
+let cwd = '~'; // '~' | topic | 'projects'
+const pathStr = () => cwd === '~' ? '~/blog' : '~/blog/' + cwd;
+function ps1HTML(){
+  return `<span class="b">kai@novastack</span><span class="d">:</span><span class="u">${esc(pathStr())}</span><span class="d">$</span> `;
+}
+let mailPromptHTML = null; // when composing mail the PS1 is replaced
+function updatePrompt(){ ps1El.innerHTML = mailPromptHTML !== null ? mailPromptHTML : ps1HTML(); }
+
+/* ============================== markdown ============================== */
+function inline(s){
+  s = esc(s);
+  const codes = [];
+  s = s.replace(/`([^`]+)`/g, (m, c) => { codes.push(c); return '\u0000' + (codes.length-1) + '\u0000'; });
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  s = s.replace(/\*([^*]+)\*/g, '<i>$1</i>');
+  s = s.replace(/\u0000(\d+)\u0000/g, (m, i) => `<span class="ic">${codes[i]}</span>`);
+  return s;
+}
+function md(src){
+  const lines = src.split('\n'), out = [];
+  let i = 0, para = [];
+  const flush = () => { if(para.length){ out.push(`<div class="md-p">${para.map(inline).join('<br>')}</div>`); para = []; } };
+  while(i < lines.length){
+    const ln = lines[i];
+    if(/^\s*```/.test(ln)){                       // fenced code
+      flush(); i++; const buf = [];
+      while(i < lines.length && !/^\s*```/.test(lines[i])) buf.push(lines[i++]);
+      i++;
+      out.push(`<pre class="md-pre">${esc(buf.join('\n'))}</pre>`);
+    } else if(/^#{1,4} /.test(ln)){
+      flush(); const n = ln.match(/^#+/)[0].length;
+      out.push(`<div class="md-h${n}">${inline(ln.replace(/^#+ /, ''))}</div>`); i++;
+    } else if(/^- /.test(ln)){
+      flush();
+      while(i < lines.length && /^- /.test(lines[i])){
+        out.push(`<div class="md-li"><span class="d">•</span> ${inline(lines[i].slice(2))}</div>`); i++;
+      }
+    } else if(/^\d+\. /.test(ln)){
+      flush(); let n = 0;
+      while(i < lines.length && /^\d+\. /.test(lines[i])){
+        n++;
+        out.push(`<div class="md-li"><span class="d">${n}.</span> ${inline(lines[i].replace(/^\d+\. /, ''))}</div>`); i++;
+      }
+    } else if(/^> /.test(ln)){
+      flush();
+      const buf = [];
+      while(i < lines.length && /^> /.test(lines[i])){ buf.push(lines[i].slice(2)); i++; }
+      out.push(`<div class="md-bq">${buf.map(inline).join('<br>')}</div>`);
+    } else if(/^(---+|===+)$/.test(ln.trim())){
+      flush(); out.push('<div class="md-hr"></div>'); i++;
+    } else if(ln.trim() === ''){ flush(); i++; }
+    else { para.push(ln); i++; }
+  }
+  flush();
+  return out.join('');
+}
+
+/* ============================== reading files ============================== */
+function postVisible(p){ return cwd === '~' || p.tags.includes(cwd); }
+function resolveRead(name){
+  const base = name.replace(/\.md$/, '');
+  const p = POSTS.find(p => p.file === name || p.file.replace(/\.md$/, '') === base);
+  if(p && postVisible(p)) return { post: p };
+  const pr = PROJECTS.find(x => x.dir === name || x.dir === base ||
+    name === x.dir + '/README.md' || name === x.dir + '/README');
+  if(pr && (cwd === '~' || cwd === 'projects')) return { project: pr };
+  return null;
+}
+function ruleHtml(left){
+  return `<span class="d">── ${esc(left)} ${'─'.repeat(Math.max(2, 72 - left.length))}</span>`;
+}
+function printPost(p){
+  const left = `${p.file} · ${p.date} · ${p.tags.join(' ')}`;
+  addLine(ruleHtml(left));
+  const el = document.createElement('div'); el.className = 'md';
+  el.innerHTML = md(p.body); output.appendChild(el);
+  cascade(el); scrollEnd();
+}
+function printProject(pr){
+  addLine(ruleHtml(`${pr.dir}/README.md · ${pr.date}`));
+  const el = document.createElement('div'); el.className = 'md';
+  el.innerHTML = md(pr.readme); output.appendChild(el);
+  cascade(el); scrollEnd();
+}
+
+/* ============================== commands ============================== */
+const CMDS = [
+  ['help',     'print this manual, man style',        a => cmdHelp()],
+  ['ls',       'list posts, projects and topics',      cmdLs],
+  ['cat',      'print a post or README (markdown)',    cmdCat],
+  ['cd',       'filter by topic (cd .. goes back)',    cmdCd],
+  ['pwd',      'print where you are',                  () => addLine(pathStr())],
+  ['whoami',   'the about page',                       () => cmdWhoami()],
+  ['mail',     'compose a letter, mailx style',        cmdMail],
+  ['grep',     'search every post and README',         cmdGrep],
+  ['history',  'replay your command history',          cmdHistory],
+  ['theme',    'phosphor: green | amber | ice',        cmdTheme],
+  ['scanlines','toggle the CRT raster',                () => toggleScan(null)],
+  ['sound',    'toggle keypress acoustics',            () => toggleSound(null)],
+  ['neofetch', 'vital statistics, with feeling',       () => cmdNeofetch()],
+  ['cowsay',   'a consultant, speaking',               cmdCowsay],
+  ['date',     'the date, straight from the CMOS',     () => addLine(esc(new Date().toString()))],
+  ['echo',     'say it back',                          a => addLine(esc(a.join(' ')))],
+  ['clear',    'wipe the screen (or Ctrl+L)',          () => { output.innerHTML = ''; }],
+  ['man',      'read the manual for a command',        cmdMan],
+  ['sudo',     'attempt privilege escalation',         cmdSudo],
+  ['exit',     'log out (and back in)',                () => cmdExit()],
+];
+const ALIAS = { ll: ['ls','-l'], la: ['ls','-la'] };
+
+function cmdLs(args){
+  const flags = (args.find(a => a[0] === '-') || '').split('');
+  const long = flags.includes('l');
+  const entries = [];
+  if(cwd === 'projects'){
+    PROJECTS.forEach(p => entries.push({ name: p.dir + '/', dir:true, ref:p, perm:'drwxr-xr-x' }));
+  } else {
+    if(cwd === '~'){
+      TOPICS.forEach(t => entries.push({ name: t + '/', dir:true, perm:'drwxr-xr-x' }));
+      entries.push({ name:'projects/', dir:true, perm:'drwxr-xr-x' });
+    }
+    POSTS.filter(postVisible).forEach(p => entries.push({ name:p.file, ref:p, perm:'-rw-r--r--' }));
+  }
+  if(!entries.length){
+    addLine(`<span class="d">(empty — nothing tagged '${esc(cwd)}' yet)</span>`); return;
+  }
+  if(long){
+    entries.forEach(e => {
+      const size = e.ref ? (e.ref.body || e.ref.readme || '').length : 4096;
+      const date = e.ref ? e.ref.date : '2025-11-02';
+      let comment = '';
+      if(e.ref && e.ref.title) comment = `<span class="d">   # ${esc(e.ref.title)} [${e.ref.tags.join(',')}]</span>`;
+      if(e.ref && e.ref.desc)  comment = `<span class="d">   # ${esc(e.ref.desc)}</span>`;
+      addLine(`${e.perm}  kai  tty  ${String(size).padStart(6)}  ${date}  ` +
+              `<span class="${e.dir ? 'b' : ''}">${esc(e.name)}</span>${comment}`);
+    });
+    addLine(`<span class="d">total ${entries.length}</span>`);
+  } else {
+    const box = document.createElement('div'); box.className = 'ls';
+    entries.forEach(e => {
+      const s = document.createElement('span');
+      if(e.dir) s.className = 'b';
+      s.textContent = e.name; box.appendChild(s);
+    });
+    output.appendChild(box); scrollEnd();
+    if(cwd === '~')
+      addLine(`<span class="d">${POSTS.length} posts · ${PROJECTS.length} projects · 'cd &lt;topic&gt;' filters · 'ls -l' for details</span>`);
+    else if(cwd === 'projects')
+      addLine(`<span class="d">'cat &lt;name&gt;' opens a README</span>`);
+    else
+      addLine(`<span class="d">${entries.length} posts tagged '${esc(cwd)}'</span>`);
+  }
+}
+
+function cmdCat(args){
+  const targets = args.filter(a => !a.startsWith('-'));
+  if(!targets.length){ err("usage: cat <post>.md — try 'ls' first"); return; }
+  for(const a of targets){
+    const r = resolveRead(a);
+    if(!r){
+      err(`cat: ${a}: No such file or directory`);
+      addLine(`<span class="d">   (hint: 'ls' lists what exists here)</span>`);
+      continue;
+    }
+    if(r.post) printPost(r.post); else printProject(r.project);
+  }
+}
+
+function cmdCd(args){
+  const arg = args[0];
+  let dest = '~', note = '';
+  if(arg && arg !== '~' && arg !== '~/blog'){
+    const t = arg.replace(/\/+$/, '');
+    if(t === '..'){ dest = '~'; note = `→ back at ~/blog — all ${POSTS.length} posts`; }
+    else if(t === 'projects'){ dest = 'projects'; note = `→ the project wing — 'cat &lt;name&gt;' opens a README`; }
+    else if(TOPICS.includes(t)){ dest = t; note = `→ filtering by '${esc(t)}' — 'ls' to see it, 'cd ..' back`; }
+    else {
+      err(`cd: no such topic: ${arg}`);
+      addLine(`<span class="d">   topics: ${TOPICS.join(' · ')} · projects</span>`);
+      return;
+    }
+  } else {
+    note = `→ back at ~/blog — all ${POSTS.length} posts`;
+  }
+  cwd = dest; updatePrompt();
+  addLine(`<span class="d">${note}</span>`);
+}
+
+function cmdWhoami(){
+  const FACE = [
+    '   .-----.',
+    '  / _   _ \\',
+    ' |  o   o  |',
+    ' |    .    |',
+    ' |   ___   |',
+    '  \\       /',
+    "   '-----'",
+  ];
+  const NOTE = ['', 'kai', 'systems tinkerer · terminal maximalist', 'professional tab-presser', '(self-portrait, drawn from memory)', '', ''];
+  FACE.forEach((f, i) => {
+    const note = NOTE[i] || '';
+    let right = '';
+    if(i === 1) right = `<span class="b">${esc(note)}</span>`;
+    else if(note) right = `<span class="d">${esc(note)}</span>`;
+    addLine(`<span class="b">${esc(pad(f, 16))}</span>${right}`);
+  });
+  addLine('');
+  const sect = (label, lines) => lines.forEach((t, j) =>
+    addLine((j === 0 ? `<span class="b">${esc(pad(label, 10))}</span>` : `<span class="d">${esc(pad('', 10))}</span>`) + esc(t)));
+  sect('BIO', ['I write software by day and opinions by night. This blog is where', 'the opinions compile.']);
+  sect('BELIEFS', ['· the terminal won — we just haven\u2019t admitted it yet',
+                   '· every config file is a diary entry',
+                   '· 640K was, in fact, a personal insult',
+                   '· monospace is a human right']);
+  sect('CURRENT', ['building   blogsh — the shell you are inside right now',
+                   'reading    "The Soul of a New Machine", again',
+                   'hearing    fans. just fans.']);
+  addLine(`<span class="b">${esc(pad('CONTACT', 10))}</span>run <b>mail kai@novastack.dev</b> — the composer is built in`);
+  addLine(`<span class="d">${esc(pad('', 10))}</span><span class="d">gpg 0x1C0FFEE BADF00D — trust nothing, verify everything</span>`);
+}
+
+/* ---- mail: a mailx-style state machine ---- */
+let mail = null;
+function cmdMail(args){
+  if(mail) return;
+  const to = args[0] || '';
+  if(to && !to.includes('@')){ err(`mail: ${to}: that doesn't look like an address`); return; }
+  mail = { step: to ? 'subject' : 'to', to, subject:'', body:[] };
+  addLine(`<span class="d">(composing — end the body with a lone '.' on its own line · Esc cancels)</span>`);
+  if(mail.step === 'to'){ setMailPrompt('To: '); }
+  else { addLine(`<span class="d">To:</span> ${esc(mail.to)}`); setMailPrompt('Subject: '); }
+}
+function setMailPrompt(label, dim){
+  mailPromptHTML = `<span class="d">${esc(label)}</span>`;
+  updatePrompt();
+}
+function mailEcho(label, v){ addLine(`<span class="d">${esc(label)}</span>${esc(v)}`); }
+function mailEnter(){
+  const v = kbd.value; kbd.value = '';
+  if(mail.step === 'to'){
+    mailEcho('To: ', v);
+    if(!v.trim()){ err('mail: recipient required (or Esc to abort)'); return; }
+    mail.to = v.trim(); mail.step = 'subject'; setMailPrompt('Subject: ');
+  } else if(mail.step === 'subject'){
+    mailEcho('Subject: ', v);
+    mail.subject = v.trim(); mail.step = 'body';
+    addLine(`<span class="d">(body — finish with '.')</span>`);
+    setMailPrompt('> ');
+  } else if(mail.step === 'body'){
+    mailEcho('> ', v);
+    if(v.trim() === '.'){
+      mail.step = 'confirm';
+      addLine(`<span class="d">────────────────────────────</span>`);
+      addLine(`<span class="d">   To:</span> ${esc(mail.to)}`);
+      addLine(`<span class="d">   Subject:</span> ${esc(mail.subject || '(none)')}`);
+      addLine(`<span class="d">   Body:</span> ${mail.body.length} line${mail.body.length === 1 ? '' : 's'}`);
+      mailPromptHTML = `<span class="b">send via your mail client?</span> <span class="d">[y/N]</span> `;
+      updatePrompt();
+    } else {
+      mail.body.push(v);
+    }
+  } else if(mail.step === 'confirm'){
+    if(/^(y|yes)$/i.test(v.trim())) sendMail();
+    else abortMail(`very well. the letter stays here, unsent.`);
+  }
+}
+async function sendMail(){
+  const { to, subject, body } = mail;
+  mail = null; mailPromptHTML = null; updatePrompt();
+  await printSeq([
+    `Trying mail.novastack.dev (203.0.113.7)... <span class="d">connected</span>`,
+    `220 mail.novastack.dev ESMTP ready`,
+    `250 OK — MAIL FROM &lt;kai@novastack.dev&gt; accepted`,
+    `250 OK — RCPT TO &lt;${esc(to)}&gt;`,
+    `354 go ahead, end with .`,
+    `250 OK — queued as 6C1FF`,
+  ], 260);
+  addLine(`<span class="b">Message queued.</span> <span class="d">Handing off to your mail client…</span>`);
+  const href = 'mailto:' + encodeURIComponent(to) +
+    '?subject=' + encodeURIComponent(subject || '(no subject)') +
+    '&body=' + encodeURIComponent(body.join('\n'));
+  setTimeout(() => { window.location.href = href; }, 900);
+}
+function abortMail(msg){
+  mail = null; mailPromptHTML = null; updatePrompt();
+  addLine(`<span class="d">(${msg || 'unsent. it joins the drafts folder of history.'})</span>`);
+}
+
+/* ---- grep ---- */
+function cmdGrep(args){
+  const q = args.join(' ').trim();
+  if(!q){ err('usage: grep <term>'); return; }
+  const ql = q.toLowerCase();
+  const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  let hits = 0;
+  const scan = (label, text) => text.split('\n').forEach(ln => {
+    if(hits >= 40) return;
+    if(ln.toLowerCase().includes(ql)){
+      hits++;
+      const h = esc(ln.trim()).replace(rx, m => `<b>${m}</b>`);
+      addLine(`<span class="d">${esc(label)}:</span> ${h}`);
+    }
+  });
+  POSTS.forEach(p => scan(p.file, p.body));
+  PROJECTS.forEach(p => scan(p.dir + '/README.md', p.readme));
+  if(!hits) addLine(`<span class="d">grep: nothing matches '${esc(q)}' — even the easter eggs are safe</span>`);
+}
+
+function cmdHistory(){
+  hist.forEach((h, i) => addLine(`<span class="d">${String(i+1).padStart(3)}</span>  ${esc(h)}`));
+}
+
+function cmdTheme(args){
+  const t = args[0];
+  if(!t){
+    addLine(`themes: <b>green</b> · <b>amber</b> · <b>ice</b> <span class="d">(current: ${prefs.theme})</span>`); return;
+  }
+  if(['green','amber','ice'].includes(t)){
+    applyTheme(t);
+    const note = { green:'P1 phosphor — the classic.', amber:'P3 — a 1979 newsroom at 2 a.m.', ice:'P4 — cold, precise, slightly smug.' }[t];
+    addLine(`phosphor set to <b>${t}</b>. <span class="d">${note}</span>`);
+  } else err(`theme: unknown phosphor '${t}' (green | amber | ice)`);
+}
+function toggleScan(v){
+  prefs.scan = v === null ? !prefs.scan : v === 'on';
+  applyScan(); savePrefs();
+  addLine(prefs.scan
+    ? `scanlines <b>on</b>. <span class="d">the beam approves.</span>`
+    : `scanlines <b>off</b>. <span class="d">the beam withholds judgment.</span>`);
+}
+function toggleSound(v){
+  prefs.sound = v === null ? !prefs.sound : v === 'on';
+  applySound(); savePrefs();
+  addLine(prefs.sound
+    ? `sound <b>on</b>. <span class="d">every keystroke now has a body.</span>`
+    : `sound <b>off</b>. <span class="d">typing in silence, like a ninja.</span>`);
+  if(prefs.sound) click();
+}
+function cmdSudo(args){
+  if(!args.length){ err('usage: sudo &lt;reckless idea&gt;'); return; }
+  addLine(`<span class="inv">kai is not in the sudoers file. This incident will be reported.</span>`);
+  addLine(`<span class="d">(reported to whom, exactly? sleep well.)</span>`);
+}
+function cmdCowsay(args){
+  const m = (args.join(' ') || 'moo. also: cat the-crt-was-right.md').slice(0, 56);
+  addLine(' ' + '_'.repeat(m.length + 2));
+  addLine(`&lt; ${esc(m)} &gt;`);
+  addLine(' ' + '-'.repeat(m.length + 2));
+  ['        \\   ^__^',
+   '         \\  (oo)\\_______',
+   '            (__)\\       )\\/\\',
+   '                ||----w |',
+   '                ||     ||'].forEach(l => addLine(l));
+}
+function cmdNeofetch(){
+  const up = (performance.now() / 1000) | 0;
+  const info = [
+    ['', `<span class="b">kai@novastack</span>`],
+    ['', `<span class="d">──────────────</span>`],
+    ['OS',      'BlogOS 1.06 (phosphor-x86_64)'],
+    ['Host',    'tty1 · 80×25 · raster ' + (prefs.scan ? 'on' : 'off')],
+    ['Kernel',  'nostalgia-6.1.06-tty'],
+    ['Shell',   'blogsh 1.0 — one file, no framework'],
+    ['Theme',   prefs.theme + ' phosphor'],
+    ['Posts',   POSTS.length + ' · projects ' + PROJECTS.length],
+    ['Uptime',  (up / 60 | 0) + 'm ' + (up % 60) + 's (of this session)'],
+    ['Memory',  '640K — enough for anyone'],
+    ['Font',    'IBM Plex Mono'],
+    ['',        `<span class="d">░▒▓ the terminal won ▓▒░</span>`],
+  ];
+  info.forEach((r, i) => {
+    const art = BANNER[i] || '';
+    const left = `<span class="b">${esc(pad(art, 16))}</span>`;
+    if(!r[0]) addLine(left + r[1]);
+    else addLine(left + `<span class="b">${esc(pad(r[0] + ':', 9))}</span>${esc(r[1])}`);
+  });
+}
+async function cmdExit(){
+  mail = null; mailPromptHTML = null;
+  await printSeq(['logout', 'Connection to novastack closed.'], 300);
+  await delay(500);
+  output.innerHTML = '';
+  boot();
+}
+
+/* ============================== man pages ============================== */
+const invW = t => `<span class="inv">${t}</span>`;
+const boldW = t => `<span class="b">${esc(t)}</span>`;
+function manSmall(name, syn, desc, extra){
+  const L = [];
+  L.push(invW(esc(pad(name.toUpperCase() + '(1)', 46)) + esc('blogsh 1.0')));
+  L.push(''); L.push(boldW('NAME'));
+  L.push('    ' + esc(name + ' — ' + desc));
+  L.push(''); L.push(boldW('SYNOPSIS'));
+  L.push('    ' + esc(syn));
+  if(extra && extra.length){
+    L.push(''); L.push(boldW('DESCRIPTION'));
+    extra.forEach(e => L.push('    ' + esc(e)));
+  }
+  L.push('');
+  L.push(invW(esc(pad('blogsh 1.0', 46)) + esc('January 2026')));
+  return L;
+}
+function manHelp(){
+  const L = [];
+  L.push(invW('BLOGSH(1)                       User Commands                       BLOGSH(1)'));
+  L.push(''); L.push(boldW('NAME'));
+  L.push('    blogsh — a personal blog pretending to be a shell');
+  L.push(''); L.push(boldW('SYNOPSIS'));
+  L.push('    command [arguments]   …   typed at the prompt below');
+  L.push(''); L.push(boldW('DESCRIPTION'));
+  L.push('    This entire site is a command line. No menus. No buttons. No');
+  L.push('    infinite scroll. Type things. Press Tab. Trust the cursor — it');
+  L.push('    blinks at exactly 1.06 s, the only correct cadence.');
+  L.push(''); L.push(boldW('COMMANDS'));
+  CMDS.forEach(c => L.push('    ' + esc(pad(c[0], 12)) + `<span class="d">${esc(c[1])}</span>`));
+  L.push(''); L.push(boldW('KEYS'));
+  L.push('    Tab         complete the command or filename (ghost text)');
+  L.push('    Tab Tab     list the alternatives');
+  L.push('    ↑ / ↓       walk through your command history');
+  L.push('    Ctrl+L      clear the screen      Ctrl+C   cancel the line');
+  L.push(''); L.push(boldW('EASTER EGGS'));
+  L.push('    At least four. Proceed carefully: try sudo, then feel shame.');
+  L.push('');
+  L.push(invW('blogsh 1.0                     January 2026                      BLOGSH(1)'));
+  return L;
+}
+const MAN = {
+  blogsh: manHelp, help: manHelp,
+  ls:  () => manSmall('ls', 'ls [-la]', 'list posts, projects and topics in the current directory',
+    ['Without flags, names print in columns; directories carry a trailing',
+     'slash and render bright. "ls -l" adds permissions, sizes, dates and',
+     'a dim comment with title and tags.']),
+  cat: () => manSmall('cat', 'cat <file.md> [more.md ...]', 'print a post, rendered from markdown',
+    ['Filenames tolerate a missing .md extension. From ~/blog/projects you',
+     'can "cat blogsh" and the README is fetched for you.']),
+  cd:  () => manSmall('cd', 'cd <topic> | cd .. | cd ~', 'change the current topic filter',
+    ['Topics are flat tags: ' + TOPICS.join(', ') + '. "cd projects" enters',
+     'the project wing. "cd .." or a bare "cd" returns to ~/blog.']),
+  whoami: () => manSmall('whoami', 'whoami', 'the about page',
+    ['A self-portrait, some beliefs, and a fingerprint you should not',
+     'trust but probably will.']),
+  mail: () => manSmall('mail', 'mail [addr]', 'compose a letter, mailx style',
+    ['End the body with a single "." on its own line. Esc aborts. On',
+     'confirmation your default mail client takes over — nothing leaves',
+     'this page by itself.']),
+  grep: () => manSmall('grep', 'grep <term>', 'search every post and README',
+    ['Case-insensitive. Matches are emboldened, like grep always dreamed.']),
+  theme: () => manSmall('theme', 'theme <green|amber|ice>', 'select the phosphor',
+    ['green — P1, the classic. amber — P3, newsroom. ice — P4, precise.']),
+  scanlines: () => manSmall('scanlines', 'scanlines [on|off]', 'toggle the CRT raster overlay',
+    ['With no argument, toggles. The beam has opinions about this.']),
+  sound: () => manSmall('sound', 'sound [on|off]', 'toggle keypress acoustics (opt-in)',
+    ['Synthesized locally: a filtered noise burst per key, a thump on',
+     'Enter. No files, no network, just math.']),
+  neofetch: () => manSmall('neofetch', 'neofetch', 'vital statistics, with feeling',
+    ['Uptime is real. Memory is a lie. The logo is load-bearing.']),
+  cowsay: () => manSmall('cowsay', 'cowsay [msg]', 'a consultant, speaking',
+    ['Charges by the syllable.']),
+  sudo: () => manSmall('sudo', 'sudo <command>', 'attempt privilege escalation',
+    ['You are not in the sudoers file. This incident will be reported.']),
+  man:  () => manSmall('man', 'man <command>', 'read the manual for a command',
+    ['You are already here. Recursion acknowledged.']),
+  exit: () => manSmall('exit', 'exit', 'log out, then get logged back in',
+    ['Like a hotel, but the hallway is also your room.']),
+  clear: () => manSmall('clear', 'clear', 'wipe the screen', ['Ctrl+L does the same, faster.']),
+  history: () => manSmall('history', 'history', 'replay your command history',
+    ['Persists in localStorage, for when future-you wants to judge',
+     'present-you.']),
+  date: () => manSmall('date', 'date', 'the date, straight from the CMOS', []),
+  echo: () => manSmall('echo', 'echo [args...]', 'say it back', []),
+  pwd:  () => manSmall('pwd', 'pwd', 'print working directory', []),
+};
+function cmdMan(args){
+  const a = args[0];
+  if(!a){ err('What manual page do you want? (try: man blogsh)'); return; }
+  const gen = MAN[a] || MAN[a.replace(/\.md$/, '')];
+  if(!gen){ err(`No manual entry for ${a}`); return; }
+  printSeq(gen(), 14);
+}
+function cmdHelp(){ printSeq(manHelp(), 12); }
+
+/* ============================== exec / history / completion ============================== */
+let hist = JSON.parse(localStorage.getItem('blogsh:hist') || '[]');
+let histIdx = null, draft = '';
+
+function lev(a, b){
+  const m = Array.from({length: a.length + 1}, (_, i) => [i]);
+  for(let j = 0; j <= b.length; j++) m[0][j] = j;
+  for(let i = 1; i <= a.length; i++)
+    for(let j = 1; j <= b.length; j++)
+      m[i][j] = Math.min(m[i-1][j] + 1, m[i][j-1] + 1, m[i-1][j-1] + (a[i-1] === b[j-1] ? 0 : 1));
+  return m[a.length][b.length];
+}
+function suggest(name){
+  let best = null, bd = 3;
+  for(const c of CMDS){ const d = lev(name, c[0]); if(d < bd){ bd = d; best = c[0]; } }
+  return best ? `did you mean '${best}'?` : `try 'help' for the manual`;
+}
+function exec(line){
+  if(!line) return;
+  const parts = line.split(/\s+/);
+  let name = parts[0]; let args = parts.slice(1);
+  if(ALIAS[name]){ const a = ALIAS[name]; args = [...a.slice(1), ...args]; name = a[0]; }
+  const c = CMDS.find(c => c[0] === name);
+  if(!c){ err(`command not found: ${name} — ${suggest(name)}`); return; }
+  try{ c[2](args); }catch(e){ err('internal fault: ' + e.message); }
+}
+
+function histUp(){
+  if(mail || !hist.length) return;
+  if(histIdx === null){ draft = kbd.value; histIdx = hist.length; }
+  histIdx = Math.max(0, histIdx - 1);
+  kbd.value = hist[histIdx]; caretEnd();
+}
+function histDown(){
+  if(mail || histIdx === null) return;
+  histIdx++;
+  if(histIdx >= hist.length){ histIdx = null; kbd.value = draft; }
+  else kbd.value = hist[histIdx];
+  caretEnd();
+}
+function caretEnd(){ kbd.setSelectionRange(kbd.value.length, kbd.value.length); }
+
+function completionsFor(cmd){
+  if(!cmd) return CMDS.map(c => c[0]).concat(Object.keys(ALIAS));
+  switch(cmd){
+    case 'cat': {
+      const files = (cwd === '~' ? POSTS : POSTS.filter(p => p.tags.includes(cwd))).map(p => p.file);
+      return files.concat(PROJECTS.map(p => p.dir));
+    }
+    case 'cd': return [...TOPICS, 'projects', '..', '~'];
+    case 'man': return CMDS.map(c => c[0]).concat(['blogsh']);
+    case 'theme': return ['green', 'amber', 'ice'];
+    case 'scanlines': case 'sound': return ['on', 'off'];
+    case 'mail': return ['kai@novastack.dev'];
+    default: return [];
+  }
+}
+function lcp(arr){
+  let p = arr[0];
+  for(const s of arr){ let i = 0; while(i < p.length && p[i] === s[i]) i++; p = p.slice(0, i); }
+  return p;
+}
+function listColumns(items){
+  const d = document.createElement('div'); d.className = 'ls d';
+  items.forEach(i => { const s = document.createElement('span'); s.textContent = i; d.appendChild(s); });
+  output.appendChild(d); scrollEnd();
+}
+function onTab(){
+  if(mail) return;
+  ghostEl.classList.remove('flash'); void ghostEl.offsetWidth; ghostEl.classList.add('flash');
+  const v = kbd.value;
+  const sp = v.lastIndexOf(' ');
+  const cmd = v.slice(0, sp).trim().split(/\s+/)[0] || '';
+  const tok = v.slice(sp + 1);
+  const pool = completionsFor(cmd).filter(x => tok && x.toLowerCase().startsWith(tok.toLowerCase()));
+  if(!pool.length){
+    if(!tok.trim()) listColumns(CMDS.map(c => c[0])); // Tab on empty: list everything
+    return;
+  }
+  if(pool.length === 1) kbd.value = v.slice(0, sp + 1) + pool[0] + ' ';
+  else {
+    const cp = lcp(pool);
+    if(cp.length > tok.length) kbd.value = v.slice(0, sp + 1) + cp;
+    else listColumns(pool);
+  }
+  caretEnd();
+}
+function updateGhost(){
+  ghostEl.textContent = '';
+  if(mail) return;
+  const v = kbd.value, c = kbd.selectionStart ?? v.length;
+  if(c !== v.length) return;                       // ghost only at end of line
+  const sp = v.lastIndexOf(' ');
+  const cmd = v.slice(0, sp).trim().split(/\s+/)[0] || '';
+  const tok = v.slice(sp + 1);
+  if(!tok) return;
+  const pool = completionsFor(cmd).filter(x => x.toLowerCase().startsWith(tok.toLowerCase()));
+  if(!pool.length) return;
+  const g = pool.length === 1 ? pool[0].slice(tok.length)
+                              : lcp(pool).slice(tok.length);
+  if(g) ghostEl.textContent = g;
+}
+
+/* ============================== input plumbing ============================== */
+function echoLine(raw){ addLine(ps1HTML() + esc(raw)); }
+function onEnter(){
+  thock();
+  if(mail){ mailEnter(); return; }
+  const raw = kbd.value;
+  echoLine(raw);
+  const line = raw.trim();
+  if(line && hist[hist.length - 1] !== line){
+    hist.push(line); if(hist.length > 60) hist.shift();
+    localStorage.setItem('blogsh:hist', JSON.stringify(hist));
+  }
+  histIdx = null; draft = '';
+  kbd.value = ''; caretEnd();
+  exec(line);
+}
+kbd.addEventListener('keydown', e => {
+  if(seqN > 0) skipNow = true;                     // any key fast-forwards reveals
+  if(e.key.length === 1 || e.key === 'Backspace') click();
+  if(e.key === 'Enter'){ e.preventDefault(); onEnter(); }
+  else if(e.key === 'Tab'){ e.preventDefault(); onTab(); }
+  else if(e.key === 'ArrowUp'){ e.preventDefault(); histUp(); }
+  else if(e.key === 'ArrowDown'){ e.preventDefault(); histDown(); }
+  else if(e.key === 'c' && e.ctrlKey){
+    e.preventDefault();
+    addLine(ps1HTML() + esc(kbd.value) + '^C');
+    kbd.value = ''; caretEnd();
+  }
+  else if(e.key === 'l' && e.ctrlKey){ e.preventDefault(); output.innerHTML = ''; }
+  else if(e.key === 'u' && e.ctrlKey){ e.preventDefault(); kbd.value = ''; }
+  else if(e.key === 'Escape' && mail){ abortMail(); }
+});
+kbd.addEventListener('input', () => {             // restart blink on keystroke, like real terminals
+  cursorEl.style.animation = 'none'; void cursorEl.offsetHeight; cursorEl.style.animation = '';
+});
+document.addEventListener('pointerdown', e => {
+  if(e.target.closest('.sb-item')) return;
+  setTimeout(() => kbd.focus(), 0);
+});
+
+/* render loop: mirror hidden input → visible line + ghost */
+function sync(){
+  const v = kbd.value, c = kbd.selectionStart ?? v.length;
+  beforeEl.textContent = v.slice(0, c);
+  cursorEl.textContent = v.slice(c, c + 1) || ' ';
+  afterEl.textContent = v.slice(c + 1);
+  updateGhost();
+  requestAnimationFrame(sync);
+}
+requestAnimationFrame(sync);
+
+/* ============================== status bar ============================== */
+ $('sbSound').addEventListener('click', () => toggleSound(null));
+ $('sbCrt').addEventListener('click', () => toggleScan(null));
+ $('sbTheme').addEventListener('click', () => {
+  const order = ['green', 'amber', 'ice'];
+  applyTheme(order[(order.indexOf(prefs.theme) + 1) % order.length]);
+});
+function clock(){
+  const d = new Date();
+  $('sbClock').textContent = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+setInterval(clock, 15000); clock();
+
+/* ============================== boot ============================== */
+async function stepLine(left, right){
+  const n = Math.max(3, 24 - left.length);
+  const d = addLine(esc(left));
+  for(let k = 0; k <= n && !skipNow; k++){
+    d.textContent = left + ' ' + '.'.repeat(k);
+    await delay(26);
+  }
+  d.innerHTML = `<span>${esc(left)} ${'.'.repeat(n)}</span>  <span class="d">${esc(right)}</span>`;
+  scrollEnd();
+}
+async function boot(){
+  cwd = '~'; mail = null; mailPromptHTML = null; updatePrompt();
+  $('form').style.visibility = 'hidden';
+  seqN++; skipNow = false;
+  await stepLine('NOVASTACK BIOS v2.4.1', '65536 KB OK');
+  await stepLine('probing tty1', 'phosphor P1 · 80×25');
+  await stepLine('mounting /posts', POSTS.length + ' entries');
+  await stepLine('mounting /projects', PROJECTS.length + ' entries');
+  await stepLine('loading blogsh', 'v1.0 — one file, no framework');
+  seqN--; skipNow = false;
+  addLine('');
+  BANNER.forEach(r => addLine(`<span class="b">${esc(r)}</span>`));
+  addLine(`<span class="d">a blog that thinks it's a shell</span>`);
+  addLine('');
+  const ll = new Date(Date.now() - 86400000 * 2.7);
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const mons = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const hh = String(ll.getHours()).padStart(2,'0'), mm = String(ll.getMinutes()).padStart(2,'0'), ss = String(ll.getSeconds()).padStart(2,'0');
+  addLine(`<span class="d">Last login: ${days[ll.getDay()]} ${mons[ll.getMonth()]} ${ll.getDate()} ${hh}:${mm}:${ss} on tty1</span>`);
+  addLine(`No mail. Yet. <span class="d">('mail' fixes that.)</span>`);
+  addLine('');
+  addLine(`Type <b>help</b> for the manual. <span class="d">Then 'ls'.</span>`);
+  addLine(`<span class="d">tip: Tab completes · ↑ recalls · try 'theme amber' if 1984 calls</span>`);
+  $('form').style.visibility = 'visible';
+  updatePrompt(); scrollEnd(); kbd.focus();
+}
+
+/* ============================== init ============================== */
+applyTheme(prefs.theme); applyScan(); applySound();
+if(window.matchMedia && matchMedia('(pointer:fine)').matches) kbd.focus();
+boot();
+</script>
+</body>
+</html>
