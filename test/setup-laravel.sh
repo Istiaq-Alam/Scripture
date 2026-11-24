@@ -99,6 +99,80 @@ apt_php_package() {
     esac
 }
 
+# ------------------------------------------------------------------------------
+# Helpers: install missing requirements (only after the user confirms)
+# ------------------------------------------------------------------------------
+detect_pkg_manager() {
+    local pm
+    for pm in apt-get dnf pacman zypper; do
+        if command -v "$pm" >/dev/null 2>&1; then printf '%s' "$pm"; return 0; fi
+    done
+    printf ''
+}
+
+pkg_name_for() { # logical name, package manager
+    local name="$1" pm="$2"
+    case "$name" in
+        php-cli)
+            case "$pm" in
+                pacman) echo "php" ;;
+                zypper) echo "php8-cli" ;;
+                *) echo "php-cli" ;;
+            esac
+            ;;
+        *) echo "$name" ;;
+    esac
+}
+
+pkg_for_php_ext() { # extension, package manager, php minor version
+    local ext="$1" pm="$2" minor="$3"
+    case "$pm" in
+        apt-get) PHP_MINOR="$minor"; apt_php_package "$ext" ;;
+        pacman)
+            case "$ext" in
+                pdo_mysql) echo "php" ;;
+                pdo_pgsql) echo "php-pgsql" ;;
+                pdo_sqlite) echo "php-sqlite" ;;
+            esac
+            ;;
+        *)
+            case "$ext" in
+                pdo_mysql) echo "php-mysql" ;;
+                pdo_pgsql) echo "php-pgsql" ;;
+                pdo_sqlite) echo "php-sqlite3" ;;
+            esac
+            ;;
+    esac
+}
+
+install_packages() { # native package names...
+    local pm
+    [ "$#" -gt 0 ] || return 0
+    pm="$(detect_pkg_manager)"
+    case "$pm" in
+        apt-get) apt_update_once; $SUDO apt-get install -y "$@" ;;
+        dnf)     $SUDO dnf install -y "$@" ;;
+        pacman)  $SUDO pacman -Sy --noconfirm --needed "$@" ;;
+        zypper)  $SUDO zypper --non-interactive install "$@" ;;
+        *)       return 1 ;;
+    esac
+}
+
+# Signature-checked Composer installer (same source the official docs use).
+install_composer() {
+    EXPECTED_SIG="$(php -r "copy('https://composer.github.io/installer.sig', 'php://stdout');" 2>/dev/null | tr -d '[:space:]' || true)"
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+    ACTUAL_SIG="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
+
+    if [ -n "$EXPECTED_SIG" ] && [ "$EXPECTED_SIG" != "$ACTUAL_SIG" ]; then
+        rm -f composer-setup.php
+        return 1
+    fi
+
+    $SUDO php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+    rm -f composer-setup.php
+}
+
 ensure_php_ext() {
     local ext="$1" pkg
 
@@ -117,7 +191,11 @@ ensure_php_ext() {
 
     pkg="$(apt_php_package "$ext")"
     if [ -n "$pkg" ] && command -v apt-get >/dev/null 2>&1; then
-        echo -e "  ${YELLOW}[WARN]${NC} PHP extension ${ext} missing, installing ${pkg}..."
+        echo -e "  ${YELLOW}[WARN]${NC} PHP extension ${ext} is missing (package ${pkg})."
+        if ! ui_confirm "Download and install ${pkg} now?" "y"; then
+            echo -e "  ${RED}[SKIP]${NC} ${ext} was not installed."
+            return 1
+        fi
         apt_update_once
         $SUDO apt-get install -y "$pkg" >/dev/null 2>&1 || true
         if have_php_ext "$ext"; then
@@ -682,22 +760,6 @@ ui_step() { # current total title
     echo ""
 }
 
-ensure_display_tools() {
-    local missing=() tool
-    for tool in figlet lolcat; do
-        command -v "$tool" >/dev/null 2>&1 || missing+=("$tool")
-    done
-    [ ${#missing[@]} -eq 0 ] && return 0
-
-    if command -v apt-get >/dev/null 2>&1; then
-        echo -e "${YELLOW}[INFO] Installing display tools: ${missing[*]}${NC}"
-        apt_update_once
-        $SUDO apt-get install -y "${missing[@]}" >/dev/null 2>&1 || true
-    fi
-}
-
-ensure_display_tools
-
 # ------------------------------------------------------------------------------
 # Cover screen
 # ------------------------------------------------------------------------------
@@ -729,37 +791,144 @@ echo ""
 # ------------------------------------------------------------------------------
 ui_step 1 6 "Requirements"
 
-if ! command -v php &>/dev/null; then
-    echo -e "${RED}[ERROR] PHP is not installed or not in PATH.${NC}"
+PM="$(detect_pkg_manager)"
+MISSING_NAMES=()
+MISSING_PKGS=()
+ALL_PKGS=()
+NEED_COMPOSER=0
+
+add_requirement() { # logical name
+    local pkg
+    MISSING_NAMES+=("$1")
+    pkg="$(pkg_name_for "$1" "$PM")"
+    [ -z "$pkg" ] && return 0
+    MISSING_PKGS+=("$pkg")
+    ALL_PKGS+=("$pkg")
+    return 0
+}
+
+# PHP CLI (the runtime everything else depends on)
+if command -v php >/dev/null 2>&1; then
+    SYSTEM_PHP_BIN="$(command -v php)"
+    echo -e "${GREEN}[OK]${NC} PHP CLI ${BOLD}$(php_full_version "$SYSTEM_PHP_BIN")${NC} (${SYSTEM_PHP_BIN})"
+else
+    SYSTEM_PHP_BIN=""
+    echo -e "${YELLOW}[..]${NC} PHP CLI not found"
+    add_requirement php-cli
+fi
+
+# Display + tooling used by the wizard
+for tool in figlet lolcat git unzip curl; do
+    if command -v "$tool" >/dev/null 2>&1; then
+        echo -e "${GREEN}[OK]${NC} ${tool}"
+        ALL_PKGS+=("$(pkg_name_for "$tool" "$PM")")
+    else
+        echo -e "${YELLOW}[..]${NC} ${tool} will be installed"
+        add_requirement "$tool"
+    fi
+done
+
+# Composer
+if [ -n "$COMPOSER_BIN" ]; then
+    echo -e "${GREEN}[OK]${NC} Composer"
+else
+    echo -e "${YELLOW}[..]${NC} Composer will be installed"
+    NEED_COMPOSER=1
+fi
+
+# PHP database drivers the wizard can provision
+SYS_PHP_MINOR=""
+if [ -n "$SYSTEM_PHP_BIN" ]; then
+    SYS_PHP_MINOR="$(php_short_version "$SYSTEM_PHP_BIN")"
+    for ext in pdo_mysql pdo_pgsql pdo_sqlite; do
+        if have_php_ext "$ext" "$SYSTEM_PHP_BIN"; then
+            echo -e "${GREEN}[OK]${NC} ${ext}"
+            ext_pkg="$(pkg_for_php_ext "$ext" "$PM" "$SYS_PHP_MINOR")"
+            [ -n "$ext_pkg" ] && ALL_PKGS+=("$ext_pkg")
+        else
+            echo -e "${YELLOW}[..]${NC} ${ext} will be installed"
+            ext_pkg="$(pkg_for_php_ext "$ext" "$PM" "$SYS_PHP_MINOR")"
+            if [ -n "$ext_pkg" ]; then
+                MISSING_NAMES+=("$ext")
+                MISSING_PKGS+=("$ext_pkg")
+                ALL_PKGS+=("$ext_pkg")
+            fi
+        fi
+    done
+fi
+
+# ------------------------------------------------------------------------------
+# One confirmation: download/update everything from here, before any other step
+# ------------------------------------------------------------------------------
+if [ ${#MISSING_NAMES[@]} -gt 0 ] || [ "$NEED_COMPOSER" = "1" ]; then
+    echo ""
+
+    if [ "$NEED_COMPOSER" = "1" ]; then
+        MISSING_NAMES+=("composer")
+    fi
+
+    ui_panel "MISSING REQUIREMENTS" \
+        "${MISSING_NAMES[*]}" \
+        "" \
+        "Everything is downloaded and updated here, then the remaining" \
+        "steps run without installing anything else."
+
+    if ui_confirm "Download, install and update them now?" "y"; then
+        mapfile -t INSTALL_PKGS < <(printf '%s\n' "${ALL_PKGS[@]}" "${MISSING_PKGS[@]}" | awk 'NF && !seen[$0]++')
+        if [ ${#INSTALL_PKGS[@]} -gt 0 ]; then
+            ui_spin "Installing and updating system packages" install_packages "${INSTALL_PKGS[@]}" || true
+        fi
+        if [ "$NEED_COMPOSER" = "1" ]; then
+            ui_spin "Installing Composer" install_composer || true
+            COMPOSER_BIN="$(command -v composer || true)"
+        elif [ -n "$COMPOSER_BIN" ] && [ -n "$SYSTEM_PHP_BIN" ]; then
+            # Keep an existing Composer on its latest release.
+            ( "$SYSTEM_PHP_BIN" "$COMPOSER_BIN" self-update --no-interaction >/dev/null 2>&1 || true )
+        fi
+    else
+        echo -e "  ${YELLOW}[WARN]${NC} Continuing without installing the missing requirements."
+        echo -e "  ${MUTED}Some visuals or database drivers may fall back or be unavailable.${NC}"
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# Verification: one tick per requirement after the download step
+# ------------------------------------------------------------------------------
+echo ""
+ui_banner_plain() { printf '  %b%s%b\n' "$BOLD" "$1" "$NC"; }
+ui_banner_plain "Verified requirements"
+
+check_ok() { printf '  %b✔%b %s\n' "$GREEN" "$NC" "$1"; }
+check_no() { printf '  %b✖%b %s\n' "$RED" "$NC" "$1"; }
+
+if command -v php >/dev/null 2>&1; then
+    SYSTEM_PHP_BIN="$(command -v php)"
+    check_ok "PHP CLI $(php_full_version "$SYSTEM_PHP_BIN") - $(command -v php)"
+else
+    check_no "PHP CLI is still missing - install PHP 8.2+ and run the script again"
     exit 1
 fi
 
-SYSTEM_PHP_BIN="$(command -v php)"
-echo -e "${GREEN}[OK]${NC} System PHP CLI: ${BOLD}$(php_full_version "$SYSTEM_PHP_BIN")${NC} (${SYSTEM_PHP_BIN})"
+for tool in figlet lolcat git unzip curl; do
+    if command -v "$tool" >/dev/null 2>&1; then check_ok "$tool"; else check_no "$tool"; fi
+done
 
-if [ -z "$COMPOSER_BIN" ]; then
-    echo -e "${YELLOW}[WARN] Composer not found. Installing Composer globally...${NC}"
-    EXPECTED_SIG="$(php -r "copy('https://composer.github.io/installer.sig', 'php://stdout');" 2>/dev/null | tr -d '[:space:]' || true)"
-    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-    ACTUAL_SIG="$(php -r "echo hash_file('sha384', 'composer-setup.php');")"
-
-    if [ -n "$EXPECTED_SIG" ] && [ "$EXPECTED_SIG" != "$ACTUAL_SIG" ]; then
-        rm -f composer-setup.php
-        echo -e "${RED}[ERROR] Composer installer signature mismatch, refusing to install.${NC}"
-        exit 1
-    fi
-
-    $SUDO php composer-setup.php --install-dir=/usr/local/bin --filename=composer
-    rm -f composer-setup.php
-    COMPOSER_BIN="$(command -v composer || true)"
-
-    if [ -z "$COMPOSER_BIN" ]; then
-        echo -e "${RED}[ERROR] Composer could not be installed.${NC}"
-        exit 1
-    fi
+COMPOSER_BIN="$(command -v composer || true)"
+if [ -n "$COMPOSER_BIN" ]; then
+    COMPOSER_VER="$("$SYSTEM_PHP_BIN" "$COMPOSER_BIN" --version --no-ansi 2>/dev/null | head -n1 | sed 's/^Composer version //' || true)"
+    check_ok "Composer ${COMPOSER_VER:-installed}"
+else
+    check_no "Composer is still missing - install it and run the script again"
+    exit 1
 fi
 
-echo -e "${GREEN}[OK]${NC} Composer: ${BOLD}${COMPOSER_BIN}${NC}"
+for ext in pdo_mysql pdo_pgsql pdo_sqlite; do
+    if have_php_ext "$ext" "$SYSTEM_PHP_BIN"; then
+        check_ok "${ext}"
+    else
+        check_no "${ext} (that database option will ask before installing its driver)"
+    fi
+done
 
 # ------------------------------------------------------------------------------
 # STEP 2: Environment & PHP Runtime Selection
@@ -1048,12 +1217,18 @@ ensure_sqlsrv_driver() {
 
     if [ "$ms_odbc_ready" = "0" ] && command -v apt-get >/dev/null 2>&1; then
         apt_update_once
-        if apt-cache show msodbcsql18 >/dev/null 2>&1; then
-            echo -e "  ${YELLOW}[INFO]${NC} Installing Microsoft ODBC Driver 18..."
-            ( $SUDO ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev >/dev/null 2>&1 ) || true
-        elif apt-cache show msodbcsql17 >/dev/null 2>&1; then
-            echo -e "  ${YELLOW}[INFO]${NC} Installing Microsoft ODBC Driver 17..."
-            ( $SUDO ACCEPT_EULA=Y apt-get install -y msodbcsql17 unixodbc-dev >/dev/null 2>&1 ) || true
+        if apt-cache show msodbcsql18 >/dev/null 2>&1 || apt-cache show msodbcsql17 >/dev/null 2>&1; then
+            if ui_confirm "Download and install the Microsoft ODBC driver now?" "y"; then
+                if apt-cache show msodbcsql18 >/dev/null 2>&1; then
+                    echo -e "  ${YELLOW}[INFO]${NC} Installing Microsoft ODBC Driver 18..."
+                    ( $SUDO ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev >/dev/null 2>&1 ) || true
+                else
+                    echo -e "  ${YELLOW}[INFO]${NC} Installing Microsoft ODBC Driver 17..."
+                    ( $SUDO ACCEPT_EULA=Y apt-get install -y msodbcsql17 unixodbc-dev >/dev/null 2>&1 ) || true
+                fi
+            else
+                echo -e "  ${RED}[SKIP]${NC} Skipped the ODBC driver install."
+            fi
         fi
         if odbcinst -q -d 2>/dev/null | grep -qi "SQL Server"; then
             ms_odbc_ready="1"
@@ -1071,9 +1246,11 @@ ensure_sqlsrv_driver() {
     fi
 
     if ! command -v pecl >/dev/null 2>&1; then
-        apt_update_once
-        $SUDO apt-get install -y "php${PHP_MINOR}-dev" >/dev/null 2>&1 || \
-            $SUDO apt-get install -y php-dev >/dev/null 2>&1 || true
+        if ui_confirm "Download and install the PHP build tools needed for pdo_sqlsrv?" "y"; then
+            apt_update_once
+            $SUDO apt-get install -y "php${PHP_MINOR}-dev" >/dev/null 2>&1 || \
+                $SUDO apt-get install -y php-dev >/dev/null 2>&1 || true
+        fi
     fi
 
     if command -v pecl >/dev/null 2>&1; then
@@ -1128,9 +1305,13 @@ case "$DB_CONN" in
             }
         else
             if ! command -v mysql >/dev/null 2>&1; then
-                echo -e "${YELLOW}[WARN] Native MySQL/MariaDB not found. Installing default-mysql-server...${NC}"
-                apt_update_once
-                $SUDO apt-get install -y default-mysql-server || true
+                echo -e "${YELLOW}[WARN] Native MySQL/MariaDB server not found.${NC}"
+                if ui_confirm "Download and install default-mysql-server now?" "y"; then
+                    apt_update_once
+                    $SUDO apt-get install -y default-mysql-server || true
+                else
+                    echo -e "  ${RED}[SKIP]${NC} Skipped the MySQL/MariaDB server install."
+                fi
             fi
 
             if [ -x "/opt/lampp/lampp" ]; then
@@ -1170,9 +1351,13 @@ case "$DB_CONN" in
         require_php_ext_for_db pdo_pgsql || exit 1
 
         if ! command -v psql >/dev/null 2>&1; then
-            echo -e "${YELLOW}[WARN] PostgreSQL not found. Installing postgresql...${NC}"
-            apt_update_once
-            $SUDO apt-get install -y postgresql postgresql-contrib || true
+            echo -e "${YELLOW}[WARN] PostgreSQL server not found.${NC}"
+            if ui_confirm "Download and install postgresql now?" "y"; then
+                apt_update_once
+                $SUDO apt-get install -y postgresql postgresql-contrib || true
+            else
+                echo -e "  ${RED}[SKIP]${NC} Skipped the PostgreSQL server install."
+            fi
         fi
 
         if ! command -v psql >/dev/null 2>&1; then
