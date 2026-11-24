@@ -895,8 +895,7 @@ fi
 # Verification: one tick per requirement after the download step
 # ------------------------------------------------------------------------------
 echo ""
-ui_banner_plain() { printf '  %b%s%b\n' "$BOLD" "$1" "$NC"; }
-ui_banner_plain "Verified requirements"
+printf '  %b%s%b\n' "$BOLD" "Verified requirements" "$NC"
 
 check_ok() { printf '  %b✔%b %s\n' "$GREEN" "$NC" "$1"; }
 check_no() { printf '  %b✖%b %s\n' "$RED" "$NC" "$1"; }
