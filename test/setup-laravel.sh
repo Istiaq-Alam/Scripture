@@ -14,11 +14,15 @@ set -e
 # ------------------------------------------------------------------------------
 # Colors & global state
 # ------------------------------------------------------------------------------
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-CYAN='\033[0;36m'
+GREEN='\033[38;5;114m'
+YELLOW='\033[38;5;179m'
+RED='\033[38;5;203m'
+CYAN='\033[38;5;111m'
+ACCENT='\033[38;5;111m'
+MUTED='\033[38;5;244m'
+BORDER='\033[38;5;238m'
 BOLD='\033[1m'
+DIM='\033[2m'
 NC='\033[0m'
 
 CURRENT_DIR="$(pwd)"
@@ -214,11 +218,11 @@ db_ping() {
     ' 2>&1
 }
 
-db_driver_label() {
+driver_state() {
     if have_php_ext "$1"; then
-        printf '%binstalled%b' "$GREEN" "$NC"
+        printf 'driver ready'
     else
-        printf '%bmissing%b' "$RED" "$NC"
+        printf 'driver missing'
     fi
 }
 
@@ -255,33 +259,205 @@ as_postgres() {
 }
 
 # ------------------------------------------------------------------------------
-# Helpers: output
+# UI layer (opencode-inspired terminal interface)
 # ------------------------------------------------------------------------------
-banner() {
-    local text="$1"
-    if command -v figlet >/dev/null 2>&1; then
-        if command -v lolcat >/dev/null 2>&1; then
-            figlet -w 120 -f standard "$text" | lolcat || true
-        else
-            figlet -w 120 -f standard "$text" || true
-        fi
+IS_TTY=0
+if [ -t 0 ] && [ -t 1 ] && [ "${TERM:-dumb}" != "dumb" ]; then
+    IS_TTY=1
+fi
+
+ui_width() {
+    local w=""
+    if [ -t 1 ]; then w="$(tput cols 2>/dev/null || true)"; fi
+    [ -z "$w" ] && w="${COLUMNS:-80}"
+    case "$w" in ''|*[!0-9]*) w=80 ;; esac
+    [ "$w" -gt 100 ] && w=100
+    [ "$w" -lt 60 ] && w=60
+    printf '%s' "$w"
+}
+
+ui_clear() { if [ "$IS_TTY" = "1" ]; then printf '\033[H\033[2J'; fi; }
+ui_cursor_hide() { if [ "$IS_TTY" = "1" ]; then printf '\033[?25l'; fi; }
+ui_cursor_show() { if [ "$IS_TTY" = "1" ]; then printf '\033[?25h'; fi; }
+trap ui_cursor_show EXIT
+
+ui_rule() {
+    printf '%b%s%b\n' "$BORDER" "$(printf '─%.0s' $(seq 1 "$(ui_width)"))" "$NC"
+}
+
+ui_section() {
+    echo ""
+    printf '%b%s%b\n' "$BOLD" "$1" "$NC"
+    ui_rule
+}
+
+ui_kv() {
+    printf '  %b%-16s%b %s\n' "$MUTED" "$1" "$NC" "$2"
+}
+
+# Draws a rounded panel; text is wrapped to the terminal width.
+ui_panel() {
+    local title="$1"; shift
+    local w inner head dashes line seg pad
+    w="$(ui_width)"; inner=$((w - 4)); [ "$inner" -lt 40 ] && inner=40
+
+    if [ -n "$title" ]; then
+        head="─ ${title} "
+        dashes=$((w - 2 - ${#head}))
+        [ "$dashes" -lt 1 ] && dashes=1
+        printf '%b╭%s%s╮%b\n' "$BORDER" "$head" "$(printf '─%.0s' $(seq 1 "$dashes"))" "$NC"
     else
-        echo -e "${CYAN}${BOLD}>>> ${text} <<<${NC}"
+        printf '%b╭%s╮%b\n' "$BORDER" "$(printf '─%.0s' $(seq 1 $((w - 2))))" "$NC"
+    fi
+
+    for line in "$@"; do
+        if [ -z "$line" ]; then
+            printf '%b│%b%*s%b│%b\n' "$BORDER" "$NC" $((w - 2)) "" "$NC" "$BORDER"
+            continue
+        fi
+        while IFS= read -r seg; do
+            pad=$((inner - ${#seg}))
+            [ "$pad" -lt 0 ] && pad=0
+            printf '%b│%b %s%*s %b│%b\n' "$BORDER" "$NC" "$seg" "$pad" "" "$NC" "$BORDER"
+        done < <(printf '%s\n' "$line" | fold -s -w "$inner")
+    done
+
+    printf '%b╰%s╯%b\n' "$BORDER" "$(printf '─%.0s' $(seq 1 $((w - 2))))" "$NC"
+}
+
+ui_logo() {
+    local text="$1" w line pad
+    w="$(ui_width)"
+    if ! command -v figlet >/dev/null 2>&1; then
+        printf '%b%s%b\n' "$ACCENT" "$text" "$NC"
+        return 0
+    fi
+    figlet -w 120 -f standard "$text" | while IFS= read -r line; do
+        pad=$(( (w - ${#line}) / 2 ))
+        [ "$pad" -lt 0 ] && pad=0
+        printf '%*s%s\n' "$pad" "" "$line"
+    done | { if command -v lolcat >/dev/null 2>&1; then lolcat; else cat; fi; }
+}
+
+ui_menu_row() { # selected label desc width
+    local sel="$1" label="$2" desc="$3" w="$4" text pad
+    if [ "$sel" = "1" ]; then
+        text="❯ ${label}"
+        [ -n "$desc" ] && text="${text}  ${desc}"
+        pad=$(( w + 1 - ${#text} ))
+        [ "$pad" -lt 0 ] && pad=0
+        printf '\033[2K\033[48;5;237m\033[38;5;252m %s%*s\033[0m\n' "$text" "$pad" ""
+    else
+        printf '\033[2K   %s' "$label"
+        [ -n "$desc" ] && printf '  %b%s%b' "$MUTED" "$desc" "$NC"
+        printf '\n'
     fi
 }
 
-step_header() {
-    local title="$1"
-    echo ""
-    if command -v figlet >/dev/null 2>&1; then
-        if command -v lolcat >/dev/null 2>&1; then
-            figlet -w 120 -f small "$title" | lolcat || true
-        else
-            figlet -w 120 -f small "$title" || true
-        fi
-    else
-        echo -e "${CYAN}${BOLD}--- ${title} ---${NC}"
+# Arrow-key single select. Options are "label|description" strings.
+# Sets MENU_RESULT to the 1-based index. Falls back to numbers without a TTY.
+menu_select() {
+    local prompt="$1" def="$2"; shift 2
+    local -a labels=() descs=()
+    local item i n sel key rest w desc avail ans
+    for item in "$@"; do
+        labels+=("${item%%|*}")
+        if [[ "$item" == *"|"* ]]; then descs+=("${item#*|}"); else descs+=(""); fi
+    done
+    n=${#labels[@]}
+    [ "$n" -eq 0 ] && return 1
+    sel=$((def - 1))
+    [ "$sel" -lt 0 ] && sel=0
+    [ "$sel" -ge "$n" ] && sel=$((n - 1))
+    w="$(ui_width)"
+
+    if [ "$IS_TTY" != "1" ]; then
+        printf '? %s\n' "$prompt"
+        for ((i = 0; i < n; i++)); do
+            printf '  %d) %s' $((i + 1)) "${labels[$i]}"
+            [ -n "${descs[$i]}" ] && printf ' - %s' "${descs[$i]}"
+            printf '\n'
+        done
+        read -r -p "Select [default: $((sel + 1))]: " ans || ans=""
+        case "$ans" in
+            ''|*[!0-9]*) : ;;
+            *) [ "$ans" -ge 1 ] && [ "$ans" -le "$n" ] && sel=$((ans - 1)) ;;
+        esac
+        MENU_RESULT=$((sel + 1))
+        return 0
     fi
+
+    printf '%b?%b %b%s%b\n' "$ACCENT" "$NC" "$BOLD" "$prompt" "$NC"
+    printf '  %b↑/↓ move · enter select · q quit%b\n' "$MUTED" "$NC"
+    ui_cursor_hide
+    for ((i = 0; i < n; i++)); do
+        desc="${descs[$i]}"
+        avail=$((w - 10 - ${#labels[$i]}))
+        [ "$avail" -lt 8 ] && avail=8
+        [ ${#desc} -gt "$avail" ] && desc="${desc:0:avail}"
+        if [ "$i" = "$sel" ]; then ui_menu_row 1 "${labels[$i]}" "$desc" "$w"; else ui_menu_row 0 "${labels[$i]}" "$desc" "$w"; fi
+    done
+
+    while :; do
+        key=""
+        IFS= read -rsn1 key || key=""
+        case "$key" in
+            $'\e') IFS= read -rsn2 -t 0.02 rest || rest=""; key="${key}${rest}" ;;
+        esac
+        case "$key" in
+            $'\e[A'|k|K) sel=$(( (sel - 1 + n) % n )) ;;
+            $'\e[B'|j|J) sel=$(( (sel + 1) % n )) ;;
+            ''|$'\r'|$'\n') break ;;
+            q|Q) ui_cursor_show; echo ""; printf '  %bCancelled.%b\n' "$MUTED" "$NC"; exit 0 ;;
+            [1-9]) if [ "$key" -le "$n" ]; then sel=$((key - 1)); break; fi ;;
+            *) continue ;;
+        esac
+        printf '\033[%dA' "$n"
+        for ((i = 0; i < n; i++)); do
+            desc="${descs[$i]}"
+            avail=$((w - 10 - ${#labels[$i]}))
+            [ "$avail" -lt 8 ] && avail=8
+            [ ${#desc} -gt "$avail" ] && desc="${desc:0:avail}"
+            if [ "$i" = "$sel" ]; then ui_menu_row 1 "${labels[$i]}" "$desc" "$w"; else ui_menu_row 0 "${labels[$i]}" "$desc" "$w"; fi
+        done
+    done
+    ui_cursor_show
+    MENU_RESULT=$((sel + 1))
+}
+
+ask_input() { # prompt default -> ASK_RESULT
+    local prompt="$1" def="$2" ans=""
+    printf '%b?%b %s\n' "$ACCENT" "$NC" "$prompt"
+    [ -n "$def" ] && printf '  %bdefault: %s%b\n' "$MUTED" "$def" "$NC"
+    printf '  %b❯%b ' "$ACCENT" "$NC"
+    IFS= read -r ans || ans=""
+    if [ "$IS_TTY" != "1" ]; then echo ""; fi
+    if [ -z "$ans" ]; then ans="$def"; fi
+    ASK_RESULT="$ans"
+}
+
+ask_secret() { # prompt -> SECRET_RESULT
+    printf '%b?%b %s\n  %b❯%b ' "$ACCENT" "$NC" "$1" "$ACCENT" "$NC"
+    IFS= read -rs SECRET_RESULT || SECRET_RESULT=""
+    printf '\n'
+}
+
+ui_confirm() { # prompt default(y|n) -> exit status
+    local def_idx=2
+    [ "$2" = "y" ] && def_idx=1
+    menu_select "$1" "$def_idx" "Yes" "No"
+    [ "$MENU_RESULT" = "1" ]
+}
+
+ui_step() { # current total title
+    local n="$1" total="$2" title="$3" dots="" i
+    ui_clear
+    for ((i = 1; i <= total; i++)); do
+        if [ "$i" -le "$n" ]; then dots+="● "; else dots+="○ "; fi
+    done
+    printf '%b%s%b %b%d/%d%b  %b%s%b\n' "$ACCENT" "$dots" "$NC" "$MUTED" "$n" "$total" "$NC" "$BOLD" "$title" "$NC"
+    ui_rule
+    echo ""
 }
 
 ensure_display_tools() {
@@ -300,14 +476,30 @@ ensure_display_tools() {
 
 ensure_display_tools
 
-banner "LARAVEL SETUP"
-echo -e "${CYAN}${BOLD}Ultimate Interactive Laravel Project Generator${NC}"
-echo -e "Working Directory: ${YELLOW}${CURRENT_DIR}${NC}\n"
+# ------------------------------------------------------------------------------
+# Cover screen
+# ------------------------------------------------------------------------------
+ui_clear
+echo ""
+ui_logo "LARAVEL"
+printf '%b        project setup wizard%b\n' "$MUTED" "$NC"
+echo ""
+ui_panel "UNIVERSAL SETUP" \
+    "Laravel 12 / 13 - PHP 8.2+" \
+    "MySQL, MariaDB, PostgreSQL, SQLite or SQL Server" \
+    "Installs the driver, provisions the database, verifies the login."
+echo ""
+printf '  %b↑/↓%b move   %benter%b select   %bq%b quit\n' "$ACCENT" "$NC" "$ACCENT" "$NC" "$ACCENT" "$NC"
+printf '  %bWorking directory: %s%b\n' "$MUTED" "$CURRENT_DIR" "$NC"
+echo ""
+printf '  %bPress enter to begin%b ' "$MUTED" "$NC"
+if [ "$IS_TTY" = "1" ]; then IFS= read -rsn1 _ || true; fi
+echo ""
 
 # ------------------------------------------------------------------------------
 # STEP 1: Environment & Dependency Checks
 # ------------------------------------------------------------------------------
-step_header "Step 1/6 - Requirements"
+ui_step 1 6 "Requirements"
 
 if ! command -v php &>/dev/null; then
     echo -e "${RED}[ERROR] PHP is not installed or not in PATH.${NC}"
@@ -344,13 +536,12 @@ echo -e "${GREEN}[OK]${NC} Composer: ${BOLD}${COMPOSER_BIN}${NC}"
 # ------------------------------------------------------------------------------
 # STEP 2: Environment & PHP Runtime Selection
 # ------------------------------------------------------------------------------
-step_header "Step 2/6 - Environment"
+ui_step 2 6 "Environment"
 
-echo -e "Select how you want to run and host your local development project:"
-echo -e "  1) ${BOLD}XAMPP Stack${NC}      -> XAMPP MySQL (and Apache if its PHP is new enough)"
-echo -e "  2) ${BOLD}Native CLI${NC}       -> System PHP, native database engines, 'php artisan serve'"
-read -r -p "Choose environment [1 or 2] [default: 2]: " ENV_CHOICE
-ENV_CHOICE=${ENV_CHOICE:-2}
+menu_select "How do you want to run and host the project?" 2 \
+    "XAMPP Stack|XAMPP MySQL; Apache when its PHP can run Laravel" \
+    "Native CLI|System PHP and native database engines via artisan serve"
+ENV_CHOICE="$MENU_RESULT"
 
 if [ "$ENV_CHOICE" = "1" ]; then
     ENV_MODE="xampp"
@@ -431,13 +622,14 @@ echo -e "${GREEN}[OK]${NC} PHP runtime   : ${BOLD}${TARGET_PHP}${NC} (${PHP_BIN}
 # ------------------------------------------------------------------------------
 # STEP 3: Project & Database Settings
 # ------------------------------------------------------------------------------
-step_header "Step 3/6 - Project and DB"
+ui_step 3 6 "Project & database"
 
 while :; do
-    read -r -p "Enter your Project / Webapp Name (e.g., test-app): " RAW_PROJECT_NAME
+    ask_input "Project / webapp name (e.g. test-app)" ""
+    RAW_PROJECT_NAME="$ASK_RESULT"
     PROJECT_FOLDER=$(printf '%s' "$RAW_PROJECT_NAME" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')
     if [ -z "$PROJECT_FOLDER" ]; then
-        echo -e "${RED}Project name must contain at least one letter or number.${NC}"
+        echo -e "${RED}  Project name must contain at least one letter or number.${NC}"
         continue
     fi
     break
@@ -450,22 +642,12 @@ if [ -d "${CURRENT_DIR}/${PROJECT_FOLDER}" ]; then
     exit 1
 fi
 
-echo -e "\nDatabase engines supported by Laravel on this machine:"
-printf '  %-3s%-18s%-26s%s\n' "#" "ENGINE" "PHP DRIVER" "SERVER / NOTES"
-printf '  %-3s%-18s%-26s%s\n' "1" "MySQL / MariaDB" "pdo_mysql: $(db_driver_label pdo_mysql)" "$(mysql_server_label)"
-printf '  %-3s%-18s%-26s%s\n' "2" "PostgreSQL" "pdo_pgsql: $(db_driver_label pdo_pgsql)" "$(pgsql_server_label)"
-printf '  %-3s%-18s%-26s%s\n' "3" "SQLite" "pdo_sqlite: $(db_driver_label pdo_sqlite)" "file based, no server needed"
-printf '  %-3s%-18s%-26s%s\n' "4" "SQL Server" "pdo_sqlsrv: $(db_driver_label pdo_sqlsrv)" "external server on port 1433"
-
-while :; do
-    read -r -p "Choose database engine [1-4] [default: 1]: " DB_CHOICE
-    DB_CHOICE=${DB_CHOICE:-1}
-    case "$DB_CHOICE" in
-        1|2|3|4) break ;;
-        *) echo -e "${RED}Please choose 1, 2, 3 or 4.${NC}" ;;
-    esac
-done
-
+menu_select "Which database engine should Laravel use?" 1 \
+    "MySQL / MariaDB|$(driver_state pdo_mysql) - $(mysql_server_label)" \
+    "PostgreSQL|$(driver_state pdo_pgsql) - $(pgsql_server_label)" \
+    "SQLite|$(driver_state pdo_sqlite) - file based, no server needed" \
+    "SQL Server|$(driver_state pdo_sqlsrv) - external server on port 1433"
+DB_CHOICE="$MENU_RESULT"
 case "$DB_CHOICE" in
     1) DB_CONN="mysql" ;;
     2) DB_CONN="pgsql" ;;
@@ -483,11 +665,10 @@ elif [ "$DB_CONN" = "mysql" ]; then
         DEFAULT_MYSQL_ENGINE="1"
     fi
 
-    echo -e "\nSelect MySQL Engine:"
-    echo -e "  1) ${BOLD}Native MySQL/MariaDB${NC} -> Uses the system MySQL/MariaDB service"
-    echo -e "  2) ${BOLD}XAMPP's MySQL Engine${NC} -> Uses /opt/lampp MySQL"
-    read -r -p "Choose MySQL engine [1 or 2] [default: ${DEFAULT_MYSQL_ENGINE}]: " MYSQL_ENGINE_CHOICE
-    MYSQL_ENGINE_CHOICE=${MYSQL_ENGINE_CHOICE:-$DEFAULT_MYSQL_ENGINE}
+    menu_select "Which MySQL engine should be used?" "$DEFAULT_MYSQL_ENGINE" \
+        "Native MySQL/MariaDB|Uses the system MySQL/MariaDB service" \
+        "XAMPP MySQL|Uses the MySQL engine bundled with XAMPP"
+    MYSQL_ENGINE_CHOICE="$MENU_RESULT"
 
     if [ "$MYSQL_ENGINE_CHOICE" = "2" ]; then
         MYSQL_ENGINE="xampp_mysql"
@@ -500,21 +681,14 @@ elif [ "$DB_CONN" = "mysql" ]; then
         MYSQL_ENGINE="native_mysql"
     fi
 
-    read -r -p "Enter MySQL Database Name [default: ${DEFAULT_DB_NAME}]: " DB_NAME
-    DB_NAME=${DB_NAME:-$DEFAULT_DB_NAME}
-
-    read -r -p "Enter MySQL Host [default: 127.0.0.1]: " DB_HOST
-    DB_HOST=${DB_HOST:-127.0.0.1}
-
-    read -r -p "Enter MySQL Port [default: 3306]: " DB_PORT
-    DB_PORT=${DB_PORT:-3306}
-
-    read -r -p "Enter MySQL Username [default: root]: " DB_USER
-    DB_USER=${DB_USER:-root}
+    ask_input "MySQL database name" "$DEFAULT_DB_NAME"; DB_NAME="$ASK_RESULT"
+    ask_input "MySQL host" "127.0.0.1";                  DB_HOST="$ASK_RESULT"
+    ask_input "MySQL port" "3306";                       DB_PORT="$ASK_RESULT"
+    ask_input "MySQL username" "root";                   DB_USER="$ASK_RESULT"
 
     while :; do
-        read -r -s -p "Enter MySQL Password (leave blank for empty/XAMPP default): " DB_PASS
-        echo ""
+        ask_secret "MySQL password (blank for XAMPP's empty default)"
+        DB_PASS="$SECRET_RESULT"
         case "$DB_PASS" in
             *"'"*|*\\*)
                 echo -e "${RED}A password containing a single quote or backslash is not supported here.${NC}"
@@ -523,21 +697,14 @@ elif [ "$DB_CONN" = "mysql" ]; then
         esac
     done
 elif [ "$DB_CONN" = "pgsql" ]; then
-    read -r -p "Enter PostgreSQL Database Name [default: ${DEFAULT_DB_NAME}]: " DB_NAME
-    DB_NAME=${DB_NAME:-$DEFAULT_DB_NAME}
-
-    read -r -p "Enter PostgreSQL Host [default: 127.0.0.1]: " DB_HOST
-    DB_HOST=${DB_HOST:-127.0.0.1}
-
-    read -r -p "Enter PostgreSQL Port [default: 5432]: " DB_PORT
-    DB_PORT=${DB_PORT:-5432}
-
-    read -r -p "Enter PostgreSQL Username [default: ${DEFAULT_DB_NAME}]: " DB_USER
-    DB_USER=${DB_USER:-$DEFAULT_DB_NAME}
+    ask_input "PostgreSQL database name" "$DEFAULT_DB_NAME"; DB_NAME="$ASK_RESULT"
+    ask_input "PostgreSQL host" "127.0.0.1";                  DB_HOST="$ASK_RESULT"
+    ask_input "PostgreSQL port" "5432";                       DB_PORT="$ASK_RESULT"
+    ask_input "PostgreSQL username" "$DEFAULT_DB_NAME";       DB_USER="$ASK_RESULT"
 
     while :; do
-        read -r -s -p "Enter PostgreSQL Password (required for TCP logins): " DB_PASS
-        echo ""
+        ask_secret "PostgreSQL password (required for TCP logins)"
+        DB_PASS="$SECRET_RESULT"
         if [ -z "$DB_PASS" ]; then
             echo -e "${RED}PostgreSQL needs a password for 127.0.0.1 connections.${NC}"
             continue
@@ -550,21 +717,14 @@ elif [ "$DB_CONN" = "pgsql" ]; then
         esac
     done
 elif [ "$DB_CONN" = "sqlsrv" ]; then
-    read -r -p "Enter SQL Server Database Name [default: ${DEFAULT_DB_NAME}]: " DB_NAME
-    DB_NAME=${DB_NAME:-$DEFAULT_DB_NAME}
-
-    read -r -p "Enter SQL Server Host [default: 127.0.0.1]: " DB_HOST
-    DB_HOST=${DB_HOST:-127.0.0.1}
-
-    read -r -p "Enter SQL Server Port [default: 1433]: " DB_PORT
-    DB_PORT=${DB_PORT:-1433}
-
-    read -r -p "Enter SQL Server Username [default: sa]: " DB_USER
-    DB_USER=${DB_USER:-sa}
+    ask_input "SQL Server database name" "$DEFAULT_DB_NAME"; DB_NAME="$ASK_RESULT"
+    ask_input "SQL Server host" "127.0.0.1";                 DB_HOST="$ASK_RESULT"
+    ask_input "SQL Server port" "1433";                      DB_PORT="$ASK_RESULT"
+    ask_input "SQL Server username" "sa";                    DB_USER="$ASK_RESULT"
 
     while :; do
-        read -r -s -p "Enter SQL Server Password: " DB_PASS
-        echo ""
+        ask_secret "SQL Server password"
+        DB_PASS="$SECRET_RESULT"
         if [ -z "$DB_PASS" ]; then
             echo -e "${RED}SQL Server needs a password for this login.${NC}"
             continue
@@ -573,37 +733,30 @@ elif [ "$DB_CONN" = "sqlsrv" ]; then
     done
 fi
 
-# Summary Display
-echo -e "\n${YELLOW}${BOLD}==============================================================${NC}"
-echo -e "${YELLOW}${BOLD}                     CONFIGURATION SUMMARY                    ${NC}"
-echo -e "${YELLOW}${BOLD}==============================================================${NC}"
-echo -e " Project Name   : ${RAW_PROJECT_NAME}"
-echo -e " Folder Path    : ${CURRENT_DIR}/${PROJECT_FOLDER}"
-echo -e " Architecture   : ${BOLD}${ENV_MODE^^}${NC}"
-echo -e " PHP Runtime    : ${PHP_BIN} (PHP ${TARGET_PHP})"
-echo -e " Laravel Pkg    : ${LARAVEL_PKG}"
-echo -e " DB Connection  : ${DB_CONN}"
+ui_section "Configuration"
+ui_kv "Project" "$RAW_PROJECT_NAME"
+ui_kv "Folder" "${CURRENT_DIR}/${PROJECT_FOLDER}"
+ui_kv "Architecture" "${ENV_MODE^^}"
+ui_kv "PHP runtime" "${PHP_BIN} (PHP ${TARGET_PHP})"
+ui_kv "Laravel" "$LARAVEL_PKG"
+ui_kv "Database" "$DB_CONN"
 if [ "$DB_CONN" = "mysql" ]; then
-    echo -e " MySQL Engine   : $( [ "$MYSQL_ENGINE" = "xampp_mysql" ] && echo "XAMPP MySQL (/opt/lampp)" || echo "Native MySQL/MariaDB" )"
-    echo -e " DB Host:Port   : ${DB_HOST}:${DB_PORT}"
-    echo -e " DB Name        : ${DB_NAME}"
-    echo -e " DB User        : ${DB_USER}"
-elif [ "$DB_CONN" = "pgsql" ]; then
-    echo -e " DB Host:Port   : ${DB_HOST}:${DB_PORT}"
-    echo -e " DB Name        : ${DB_NAME}"
-    echo -e " DB User        : ${DB_USER}"
-elif [ "$DB_CONN" = "sqlsrv" ]; then
-    echo -e " DB Host:Port   : ${DB_HOST}:${DB_PORT}"
-    echo -e " DB Name        : ${DB_NAME}"
-    echo -e " DB User        : ${DB_USER}"
-else
-    echo -e " DB File        : ${CURRENT_DIR}/${PROJECT_FOLDER}/database/database.sqlite"
-fi
-echo -e "${YELLOW}${BOLD}==============================================================${NC}\n"
+        if [ "$MYSQL_ENGINE" = "xampp_mysql" ]; then ui_kv "MySQL engine" "XAMPP MySQL (/opt/lampp)"; else ui_kv "MySQL engine" "Native MySQL/MariaDB"; fi
+        ui_kv "Host:port" "${DB_HOST}:${DB_PORT}"
+        ui_kv "Database name" "$DB_NAME"
+        ui_kv "Database user" "$DB_USER"
+    elif [ "$DB_CONN" = "pgsql" ] || [ "$DB_CONN" = "sqlsrv" ]; then
+        ui_kv "Host:port" "${DB_HOST}:${DB_PORT}"
+        ui_kv "Database name" "$DB_NAME"
+        ui_kv "Database user" "$DB_USER"
+    else
+        ui_kv "Database file" "${CURRENT_DIR}/${PROJECT_FOLDER}/database/database.sqlite"
+    fi
+echo ""
+ui_rule
+echo ""
 
-read -r -p "Proceed with project generation? (y/n) [y]: " CONFIRM
-CONFIRM=${CONFIRM:-y}
-if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
+if ! ui_confirm "Generate the project with these settings?" "y"; then
     echo -e "${RED}Aborted by user.${NC}"
     exit 0
 fi
@@ -611,7 +764,7 @@ fi
 # ------------------------------------------------------------------------------
 # STEP 4: Install, Provision & Verify the Database
 # ------------------------------------------------------------------------------
-step_header "Step 4/6 - Database Setup"
+ui_step 4 6 "Database setup"
 
 echo -e "${CYAN}Preparing the ${DB_CONN} database...${NC}"
 
@@ -852,16 +1005,14 @@ if [ "$DB_CONN" != "sqlite" ]; then
         echo -e "${GREEN}[OK]${NC} Database connection verified."
     else
         echo -e "${RED}[ERROR] Could not connect: ${DB_TEST_RESULT}${NC}"
-        read -r -p "Continue anyway? (y/n) [n]: " KEEP_GOING
-        KEEP_GOING=${KEEP_GOING:-n}
-        [[ "$KEEP_GOING" =~ ^[Yy]$ ]] || exit 1
+        ui_confirm "Continue anyway?" "n" || exit 1
     fi
 fi
 
 # ------------------------------------------------------------------------------
 # STEP 5: Generate Laravel Project
 # ------------------------------------------------------------------------------
-step_header "Step 5/6 - Project Generation"
+ui_step 5 6 "Project generation"
 
 echo -e "${YELLOW}[INFO] Installing Laravel ${LARAVEL_VERSION} with ${PHP_BIN}...${NC}"
 run_composer create-project "$LARAVEL_PKG" "$PROJECT_FOLDER" --no-scripts --no-interaction --prefer-dist
@@ -874,7 +1025,7 @@ run_composer dump-autoload --no-interaction >/dev/null
 # ------------------------------------------------------------------------------
 # STEP 6: Configure .env, Permissions, & Migrations
 # ------------------------------------------------------------------------------
-step_header "Step 6/6 - Env and Migrate"
+ui_step 6 6 "Environment & migrations"
 
 cp -f .env.example .env
 
@@ -941,30 +1092,43 @@ if [ -f "package.json" ] && command -v npm &>/dev/null; then
 fi
 
 # ------------------------------------------------------------------------------
-# Success Banner
+# Success screen
 # ------------------------------------------------------------------------------
+ui_clear
 echo ""
-banner "READY TO GO"
-echo -e "${GREEN}${BOLD}Your Laravel ${LARAVEL_VERSION} application is ready!${NC}"
-echo -e " Project Location : ${YELLOW}${CURRENT_DIR}/${PROJECT_FOLDER}${NC}"
-echo -e " PHP Runtime      : ${PHP_BIN} (PHP ${TARGET_PHP})"
-echo -e " Database         : ${BOLD}${DB_CONN}${NC}"
+ui_logo "READY"
+printf '%b  Your Laravel %s application is ready.%b\n' "$GREEN" "$LARAVEL_VERSION" "$NC"
+
+ui_section "Project"
+ui_kv "Location" "${CURRENT_DIR}/${PROJECT_FOLDER}"
+ui_kv "PHP runtime" "${PHP_BIN} (PHP ${TARGET_PHP})"
+ui_kv "Database" "$DB_CONN"
 
 if [ "$DB_CONN" = "mysql" ]; then
-    echo -e " Database Engine  : $( [ "$MYSQL_ENGINE" = "xampp_mysql" ] && echo "XAMPP MySQL (/opt/lampp/lampp startmysql)" || echo "Native MySQL/MariaDB ($SUDO systemctl start mysql)" )"
+    if [ "$MYSQL_ENGINE" = "xampp_mysql" ]; then
+        ui_kv "DB engine" "XAMPP MySQL (/opt/lampp/lampp startmysql)"
+    else
+        ui_kv "DB engine" "Native MySQL/MariaDB ($SUDO systemctl start mysql)"
+    fi
 elif [ "$DB_CONN" = "pgsql" ]; then
-    echo -e " Database Engine  : PostgreSQL ($SUDO systemctl start postgresql)"
+    ui_kv "DB engine" "PostgreSQL ($SUDO systemctl start postgresql)"
 elif [ "$DB_CONN" = "sqlsrv" ]; then
-    echo -e " Database Engine  : SQL Server at ${DB_HOST}:${DB_PORT}"
+    ui_kv "DB engine" "SQL Server at ${DB_HOST}:${DB_PORT}"
 else
-    echo -e " Database Engine  : SQLite (${SQLITE_PATH})"
+    ui_kv "DB engine" "SQLite (${SQLITE_PATH})"
 fi
 
 if [ "$SERVE_MODE" = "apache" ]; then
-    echo -e " Browser URL      : ${CYAN}${APP_URL_VAL}${NC}"
-    echo -e " phpMyAdmin       : ${CYAN}http://localhost/phpmyadmin${NC}"
+    ui_kv "Browser URL" "$APP_URL_VAL"
+    ui_kv "phpMyAdmin" "http://localhost/phpmyadmin"
 else
-    echo -e " Development Run  : ${CYAN}cd ${PROJECT_FOLDER} && ${PHP_BIN} artisan serve${NC}"
-    echo -e " Browser URL      : ${CYAN}http://127.0.0.1:8000${NC}"
+    ui_kv "Run" "cd ${PROJECT_FOLDER} && ${PHP_BIN} artisan serve"
+    ui_kv "Browser URL" "http://127.0.0.1:8000"
 fi
-echo -e "${GREEN}${BOLD}==============================================================${NC}"
+
+echo ""
+ui_panel "NEXT STEPS" \
+    "cd ${PROJECT_FOLDER}" \
+    "${PHP_BIN} artisan serve" \
+    "Add features, then run 'php artisan migrate' for new migrations."
+echo ""
