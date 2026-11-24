@@ -373,6 +373,17 @@ ui_width() {
     printf '%s' "$w"
 }
 
+ui_term_width() { # real terminal width (not clamped to the panel width)
+    local s="" w=""
+    s="$(ui_size)"
+    w="${s#* }"
+    case "$w" in ''|*[!0-9]*) w="" ;; esac
+    [ "${w:-0}" -gt 0 ] || w="${COLUMNS:-80}"
+    case "$w" in ''|*[!0-9]*) w=80 ;; esac
+    [ "$w" -lt 20 ] && w=20
+    printf '%s' "$w"
+}
+
 # Display columns of a string: ANSI escapes stripped, multibyte glyphs counted
 # as one cell (${#str} counts bytes and mis-centers block art).
 ui_swidth() {
@@ -400,9 +411,8 @@ trap ui_cursor_show EXIT
 
 ui_dashes() { printf '─%.0s' $(seq 1 "$1" 2>/dev/null); }
 
-ui_rule() {
-    printf '%b%s%b\n' "$BORDER" "$(ui_dashes "$(ui_width)")" "$NC"
-}
+ui_rule_n() { printf '%b%s%b\n' "$BORDER" "$(ui_dashes "$1")" "$NC"; }
+ui_rule() { ui_rule_n "$(ui_width)"; }
 
 # Centered line: text [color]
 ui_center() {
@@ -689,7 +699,7 @@ ui_pause() { # [message]
 # ANSI-Shadow for the LARAVEL wordmark. Narrower faces only kick in when a long
 # heading would otherwise overflow the terminal.
 ui_banner() { # text
-    local text="$1" w line pad i=0 n need font
+    local text="$1" w termw line pad i=0 n need font
     local -a rows=() fonts=( standard small mini )
 
     if ! command -v figlet >/dev/null 2>&1; then
@@ -697,6 +707,8 @@ ui_banner() { # text
         return 0
     fi
     w="$(ui_width)"
+    termw="$(ui_term_width)"
+    UI_FRAME_W="$w"
 
     for font in "${fonts[@]}"; do
         rows=()
@@ -712,7 +724,14 @@ ui_banner() { # text
             n="$(ui_swidth "$line")"
             [ "$n" -gt "$need" ] && need=$n
         done
-        [ "$need" -le "$w" ] && break
+        # Keep standard even when it is wider than the panel frame, as long as
+        # the real terminal can show it.
+        if [ "$need" -le "$w" ]; then
+            break
+        elif [ "$need" -le "$termw" ]; then
+            w="$need"
+            break
+        fi
         rows=()
     done
 
@@ -721,6 +740,9 @@ ui_banner() { # text
         return 0
     fi
 
+    # A banner wider than the panel frame stays left-aligned so the rule and
+    # progress line can follow its width instead of overflowing off-screen.
+    UI_FRAME_W="$w"
     for line in "${rows[@]}"; do
         pad=$(( (w - $(ui_swidth "$line")) / 2 )); [ "$pad" -lt 0 ] && pad=0
         if [ $((i % 2)) -eq 0 ]; then
@@ -742,7 +764,8 @@ ui_step() { # current total title
 
     echo ""
     ui_banner "${title^^}"
-    ui_rule
+    w="${UI_FRAME_W:-$w}"
+    ui_rule_n "$w"
 
     len=$(( (2 * total - 1) + 2 + ${#label} ))
     pad=$(( (w - len) / 2 )); [ "$pad" -lt 0 ] && pad=0
@@ -1606,8 +1629,13 @@ if [ "$DB_CONN" = "mysql" ]; then
         MYSQL_CLIENT="mysql"
     fi
 
+    MYSQL_FLAVOR="MySQL"
+    if command -v "$MYSQL_CLIENT" >/dev/null 2>&1 && "$MYSQL_CLIENT" --version 2>/dev/null | grep -qi 'mariadb'; then
+        MYSQL_FLAVOR="MariaDB"
+    fi
+
     if command -v "$MYSQL_CLIENT" >/dev/null 2>&1; then
-        GUIDE+=("Terminal client: ${MYSQL_CLIENT}" "")
+        GUIDE+=("Terminal client: ${MYSQL_CLIENT} (${MYSQL_FLAVOR})" "")
     else
         GUIDE+=("The mysql client is not on your PATH - install mysql-client or" \
             "use /opt/lampp/bin/mysql instead of 'mysql' below." "")
@@ -1626,11 +1654,22 @@ if [ "$DB_CONN" = "mysql" ]; then
         "One-shot query from the shell:"
         "  ${MYSQL_CLIENT} -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USER} -p -e 'SHOW TABLES' ${DB_NAME}"
         ""
-        "Web admin (phpMyAdmin in XAMPP): http://localhost/phpmyadmin"
-        "  Log in as '${DB_USER}' (XAMPP default: root with empty password),"
-        "  pick ${DB_NAME} on the left, then Browse or run SQL."
     )
-    ui_panel "DATABASE ACCESS - MYSQL / MARIADB" "${GUIDE[@]}"
+
+    if [ "$MYSQL_ENGINE" = "xampp_mysql" ]; then
+        GUIDE+=(
+            "Web admin (XAMPP phpMyAdmin): http://localhost/phpmyadmin"
+            "  Log in as '${DB_USER}' (XAMPP default: root, empty password),"
+            "  pick ${DB_NAME} on the left, then Browse or run SQL."
+        )
+    else
+        GUIDE+=(
+            "Web admin: MySQL Workbench, DBeaver or Adminer."
+            "  phpMyAdmin works too when it is installed - open"
+            "  http://localhost/phpmyadmin and log in as '${DB_USER}'."
+        )
+    fi
+    ui_panel "DATABASE ACCESS - ${MYSQL_FLAVOR}" "${GUIDE[@]}"
 elif [ "$DB_CONN" = "pgsql" ]; then
     if command -v psql >/dev/null 2>&1; then
         GUIDE+=("Terminal client: psql" "")
@@ -1723,3 +1762,45 @@ ui_panel "INSPECT DATA - WORKS FOR EVERY DRIVER" \
     "      DB::table('users')->limit(10)->get();"
 
 echo ""
+
+# ------------------------------------------------------------------------------
+# Optional GUI: MySQL Workbench, pre-connected to the database just created
+# ------------------------------------------------------------------------------
+if [ "$DB_CONN" = "mysql" ]; then
+    WORKBENCH_BIN="$(command -v mysql-workbench || true)"
+
+    if [ -z "$WORKBENCH_BIN" ]; then
+        echo -e "  ${MUTED}MySQL Workbench (the desktop GUI for MySQL/MariaDB) is not installed.${NC}"
+        if ui_confirm "Download and install MySQL Workbench?" "n"; then
+            WANTED=0
+            case "$PM" in
+                apt-get) apt-cache show mysql-workbench >/dev/null 2>&1 && WANTED=1 ;;
+                dnf|pacman|zypper) WANTED=1 ;;
+            esac
+
+            if [ "$WANTED" = "1" ]; then
+                ui_spin "Installing MySQL Workbench" install_packages mysql-workbench || true
+                WORKBENCH_BIN="$(command -v mysql-workbench || true)"
+            else
+                echo -e "  ${YELLOW}[WARN]${NC} mysql-workbench is not in your package repos."
+                echo -e "  ${MUTED}Get it from https://dev.mysql.com/downloads/workbench/ then re-run.${NC}"
+            fi
+        fi
+    fi
+
+    if [ -n "$WORKBENCH_BIN" ]; then
+        echo -e "  ${GREEN}[OK]${NC} MySQL Workbench: ${BOLD}${WORKBENCH_BIN}${NC}"
+
+        if [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]; then
+            if ui_confirm "Open MySQL Workbench connected to '${DB_NAME}'?" "n"; then
+                ( nohup "$WORKBENCH_BIN" --query "${DB_USER}@${DB_HOST}:${DB_PORT}" >/dev/null 2>&1 & )
+                echo -e "  ${GREEN}[OK]${NC} MySQL Workbench is starting - pick the password for '${DB_USER}' if it asks."
+            fi
+        else
+            echo -e "  ${MUTED}No desktop session detected, so Workbench was not launched.${NC}"
+            echo -e "  ${MUTED}Run: mysql-workbench --query \"${DB_USER}@${DB_HOST}:${DB_PORT}\"${NC}"
+        fi
+    fi
+
+    echo ""
+fi
