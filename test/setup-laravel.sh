@@ -607,50 +607,67 @@ ui_pause() { # [message]
     printf '\n'
 }
 
-# Centered figlet banner in the smallest usable font; falls back to plain text.
-ui_banner() { # text [font] [tint-a] [tint-b]
-    local text="$1" font="${2:-mini}" c1="${3:-209}" c2="${4:-202}"
-    local w line pad i=0 last
-    local -a rows=()
+# Step-title banner: figlet standard for every step heading. The cover keeps
+# ANSI-Shadow for the LARAVEL wordmark. Narrower faces only kick in when a long
+# heading would otherwise overflow the terminal.
+ui_banner() { # text
+    local text="$1" w line pad i=0 n need font
+    local -a rows=() fonts=( standard small mini )
 
     if ! command -v figlet >/dev/null 2>&1; then
         ui_center "$text" "$ACCENT"
         return 0
     fi
-
-    while IFS= read -r line; do rows+=("$line"); done < <(figlet -w 200 -f "$font" "$text" 2>/dev/null)
-    while [ ${#rows[@]} -gt 0 ]; do
-        last="${rows[${#rows[@]}-1]}"
-        [ -z "${last// /}" ] || break
-        unset 'rows[${#rows[@]}-1]'
-    done
-    [ ${#rows[@]} -eq 0 ] && rows=("$text")
-
     w="$(ui_width)"
+
+    for font in "${fonts[@]}"; do
+        rows=()
+        while IFS= read -r line; do rows+=("$line"); done < <(figlet -w 400 -f "$font" "$text" 2>/dev/null)
+        while [ ${#rows[@]} -gt 0 ]; do
+            line="${rows[${#rows[@]}-1]}"
+            [ -z "${line// /}" ] || break
+            unset 'rows[${#rows[@]}-1]'
+        done
+        [ ${#rows[@]} -eq 0 ] && continue
+        need=0
+        for line in "${rows[@]}"; do
+            n="$(ui_swidth "$line")"
+            [ "$n" -gt "$need" ] && need=$n
+        done
+        [ "$need" -le "$w" ] && break
+        rows=()
+    done
+
+    if [ ${#rows[@]} -eq 0 ]; then
+        ui_center "$text" "$ACCENT"
+        return 0
+    fi
+
     for line in "${rows[@]}"; do
-        pad=$(( (w - ${#line}) / 2 )); [ "$pad" -lt 0 ] && pad=0
+        pad=$(( (w - $(ui_swidth "$line")) / 2 )); [ "$pad" -lt 0 ] && pad=0
         if [ $((i % 2)) -eq 0 ]; then
-            printf '%*s\033[38;5;%sm%s\033[0m\n' "$pad" "" "$c1" "$line"
+            printf '%*s\033[38;5;209m%s\033[0m\n' "$pad" "" "$line"
         else
-            printf '%*s\033[38;5;%sm%s\033[0m\n' "$pad" "" "$c2" "$line"
+            printf '%*s\033[38;5;202m%s\033[0m\n' "$pad" "" "$line"
         fi
         i=$((i + 1))
     done
 }
 
-# Step header: cleared screen with the step banner and title centered at the top.
+# Step header: cleared screen with the step title as a centered banner and a
+# compact progress line. The title only appears here, not in the step body.
 ui_step() { # current total title
-    local n="$1" total="$2" title="$3" i w pad
+    local n="$1" total="$2" title="$3" i w pad label len
     ui_clear
     w="$(ui_width)"
+    label="STEP ${n} OF ${total}"
 
     echo ""
-    ui_banner "LARAVEL SETUP"
-    ui_center "STEP ${n} OF ${total}" "$MUTED"
-    ui_center "${title^^}" "$BOLD"
+    ui_banner "${title^^}"
     ui_rule
 
-    pad=$(( (w - (2 * total - 1)) / 2 )); [ "$pad" -lt 0 ] && pad=0
+    len=$(( (2 * total - 1) + 2 + ${#label} ))
+    pad=$(( (w - len) / 2 )); [ "$pad" -lt 0 ] && pad=0
     printf '%*s' "$pad" ""
     for ((i = 1; i <= total; i++)); do
         if [ "$i" -le "$n" ]; then
@@ -661,7 +678,7 @@ ui_step() { # current total title
         [ "$i" -lt "$total" ] && printf ' '
         if [ "$IS_TTY" = "1" ]; then sleep 0.03; fi
     done
-    printf '\n'
+    printf '  %b%s%b\n' "$MUTED" "$label" "$NC"
     echo ""
 }
 
@@ -748,7 +765,7 @@ echo -e "${GREEN}[OK]${NC} Composer: ${BOLD}${COMPOSER_BIN}${NC}"
 # STEP 2: Environment & PHP Runtime Selection
 # ------------------------------------------------------------------------------
 ui_pause "Requirements checked. Press enter to configure the environment"
-ui_step 2 6 "Environment"
+ui_step 2 6 "Environments"
 
 menu_select "How do you want to run and host the project?" 2 \
     "XAMPP Stack|XAMPP MySQL; Apache when its PHP can run Laravel" \
@@ -834,7 +851,7 @@ echo -e "${GREEN}[OK]${NC} PHP runtime   : ${BOLD}${TARGET_PHP}${NC} (${PHP_BIN}
 # ------------------------------------------------------------------------------
 # STEP 3: Project & Database Settings
 # ------------------------------------------------------------------------------
-ui_step 3 6 "Project & database"
+ui_step 3 6 "Project and database"
 
 while :; do
     ask_input "Project / webapp name (e.g. test-app)" ""
