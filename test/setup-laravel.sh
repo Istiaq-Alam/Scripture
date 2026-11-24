@@ -295,6 +295,16 @@ ui_width() {
     printf '%s' "$w"
 }
 
+# Display columns of a string: ANSI escapes stripped, multibyte glyphs counted
+# as one cell (${#str} counts bytes and mis-centers block art).
+ui_swidth() {
+    local s n=""
+    s="$(printf '%s' "$1" | sed -e 's/\x1b\[[0-9;]*[a-zA-Z]//g')"
+    n="$(printf '%s' "$s" | wc -L 2>/dev/null | tr -d ' ')"
+    case "$n" in ''|*[!0-9]*) n="$(printf '%s' "$s" | wc -m 2>/dev/null | tr -d ' ')" ;; esac
+    printf '%s' "${n:-0}"
+}
+
 ui_clear() { if [ "$IS_TTY" = "1" ]; then printf '\033[H\033[2J\033[3J\033[H'; fi; }
 ui_rows() { # usable terminal height, defaults to 24
     local s="" r=""
@@ -381,17 +391,17 @@ ui_logo() {
 
 # Laravel logo mark + wordmark, side by side and centered.
 ui_laravel_header() {
-    local w pad mw ww mrows wrows rows r wi idx tmp line
+    local w pad mw ww mrows wrows rows r wi idx tmp line n
     local -a mark=(
-        "  ▄▄▄▄▄▄▄▄▄▄▄"
-        " ████████████"
-        "████████"
-        "████████"
-        "████████"
-        "████████"
-        "████████"
-        "█████████████"
-        "▀▀▀▀▀▀▀▀▀▀▀▀▀"
+        "  ▄███▄           "
+        " ███████    ▄███▄ "
+        " ███████   ███████"
+        " ███████   ███████"
+        " ███████▄▄  ▀███▀ "
+        " ██████████▄ ███  "
+        "  ▀████████████   "
+        "     ▀████████    "
+        "       ▀████▀     "
     )
     local -a mark_tint=( 209 203 203 202 202 202 208 208 209 )
     local -a word_tint=( 209 208 203 202 196 )
@@ -399,7 +409,7 @@ ui_laravel_header() {
     w="$(ui_width)"
 
     if command -v figlet >/dev/null 2>&1; then
-        while IFS= read -r line; do word+=("$line"); done < <(figlet -w 200 -f small "LARAVEL" 2>/dev/null)
+        while IFS= read -r line; do word+=("$line"); done < <(figlet -w 200 -f ANSI-Shadow "LARAVEL" 2>/dev/null)
     fi
     while [ ${#word[@]} -gt 0 ]; do
         idx=$(( ${#word[@]} - 1 ))
@@ -408,19 +418,34 @@ ui_laravel_header() {
     done
     [ ${#word[@]} -eq 0 ] && word=("LARAVEL")
 
-    mw=0; for line in "${mark[@]}"; do [ ${#line} -gt "$mw" ] && mw=${#line}; done
-    ww=0; for line in "${word[@]}"; do [ ${#line} -gt "$ww" ] && ww=${#line}; done
+    mw=0; for line in "${mark[@]}"; do n="$(ui_swidth "$line")"; [ "$n" -gt "$mw" ] && mw=$n; done
+    ww=0; for line in "${word[@]}"; do n="$(ui_swidth "$line")"; [ "$n" -gt "$ww" ] && ww=$n; done
+
+    # The shadow wordmark is ~57 columns wide; drop the block mark when the
+    # two no longer fit side by side (narrow terminals).
+    if [ $(( mw + 4 + ww )) -gt "$w" ]; then
+        mark=()
+        mw=0
+    fi
+
     mrows=${#mark[@]}; wrows=${#word[@]}
     rows=$mrows; [ "$wrows" -gt "$rows" ] && rows=$wrows
-    pad=$(( (w - (mw + 4 + ww)) / 2 )); [ "$pad" -lt 0 ] && pad=0
+    if [ "$mrows" -gt 0 ]; then
+        pad=$(( (w - (mw + 4 + ww)) / 2 ))
+    else
+        pad=$(( (w - ww) / 2 ))
+    fi
+    [ "$pad" -lt 0 ] && pad=0
 
     for ((r = 0; r < rows; r++)); do
         printf '%*s' "$pad" ""
-        if [ "$r" -lt "$mrows" ]; then
-            printf '%b%s%b' "$(printf '\033[38;5;%sm' "${mark_tint[$r]}")" "${mark[$r]}" "$NC"
-            printf '%*s' $(( mw - ${#mark[$r]} + 4 )) ""
-        else
-            printf '%*s' $(( mw + 4 )) ""
+        if [ "$mrows" -gt 0 ]; then
+            if [ "$r" -lt "$mrows" ]; then
+                printf '%b%s%b' "$(printf '\033[38;5;%sm' "${mark_tint[$r]}")" "${mark[$r]}" "$NC"
+                printf '%*s' $(( mw - $(ui_swidth "${mark[$r]}") + 4 )) ""
+            else
+                printf '%*s' $(( mw + 4 )) ""
+            fi
         fi
         wi=$(( r - (rows - wrows) / 2 ))
         if [ "$wi" -ge 0 ] && [ "$wi" -lt "$wrows" ]; then
@@ -582,12 +607,50 @@ ui_pause() { # [message]
     printf '\n'
 }
 
+# Centered figlet banner in the smallest usable font; falls back to plain text.
+ui_banner() { # text [font] [tint-a] [tint-b]
+    local text="$1" font="${2:-mini}" c1="${3:-209}" c2="${4:-202}"
+    local w line pad i=0 last
+    local -a rows=()
+
+    if ! command -v figlet >/dev/null 2>&1; then
+        ui_center "$text" "$ACCENT"
+        return 0
+    fi
+
+    while IFS= read -r line; do rows+=("$line"); done < <(figlet -w 200 -f "$font" "$text" 2>/dev/null)
+    while [ ${#rows[@]} -gt 0 ]; do
+        last="${rows[${#rows[@]}-1]}"
+        [ -z "${last// /}" ] || break
+        unset 'rows[${#rows[@]}-1]'
+    done
+    [ ${#rows[@]} -eq 0 ] && rows=("$text")
+
+    w="$(ui_width)"
+    for line in "${rows[@]}"; do
+        pad=$(( (w - ${#line}) / 2 )); [ "$pad" -lt 0 ] && pad=0
+        if [ $((i % 2)) -eq 0 ]; then
+            printf '%*s\033[38;5;%sm%s\033[0m\n' "$pad" "" "$c1" "$line"
+        else
+            printf '%*s\033[38;5;%sm%s\033[0m\n' "$pad" "" "$c2" "$line"
+        fi
+        i=$((i + 1))
+    done
+}
+
+# Step header: cleared screen with the step banner and title centered at the top.
 ui_step() { # current total title
-    local n="$1" total="$2" title="$3" i w pad len
+    local n="$1" total="$2" title="$3" i w pad
     ui_clear
     w="$(ui_width)"
-    len=$(( 2 * total - 1 + 2 + ${#n} + 1 + ${#total} + 2 + ${#title} ))
-    pad=$(( (w - len) / 2 )); [ "$pad" -lt 0 ] && pad=0
+
+    echo ""
+    ui_banner "LARAVEL SETUP"
+    ui_center "STEP ${n} OF ${total}" "$MUTED"
+    ui_center "${title^^}" "$BOLD"
+    ui_rule
+
+    pad=$(( (w - (2 * total - 1)) / 2 )); [ "$pad" -lt 0 ] && pad=0
     printf '%*s' "$pad" ""
     for ((i = 1; i <= total; i++)); do
         if [ "$i" -le "$n" ]; then
@@ -598,8 +661,7 @@ ui_step() { # current total title
         [ "$i" -lt "$total" ] && printf ' '
         if [ "$IS_TTY" = "1" ]; then sleep 0.03; fi
     done
-    printf '  %b%d/%d%b  %b%s%b\n' "$MUTED" "$n" "$total" "$NC" "$BOLD" "$title" "$NC"
-    ui_rule
+    printf '\n'
     echo ""
 }
 
@@ -1247,41 +1309,216 @@ fi
 # ------------------------------------------------------------------------------
 # Success screen
 # ------------------------------------------------------------------------------
+svc_start_hint() { # service -> "sudo systemctl start x" (or without sudo)
+    if [ -n "$SUDO" ]; then printf '%s systemctl start %s' "$SUDO" "$1"
+    else printf 'systemctl start %s' "$1"; fi
+}
+
 ui_clear
 echo ""
 ui_logo "READY"
 ui_center "Your Laravel ${LARAVEL_VERSION} application is ready." "$GREEN"
 
+PROJECT_PATH="${CURRENT_DIR}/${PROJECT_FOLDER}"
+SUDO_PREFIX=""
+[ -n "$SUDO" ] && SUDO_PREFIX="${SUDO} "
+
 ui_section "Project"
-ui_kv "Location" "${CURRENT_DIR}/${PROJECT_FOLDER}"
+ui_kv "Location" "$PROJECT_PATH"
 ui_kv "PHP runtime" "${PHP_BIN} (PHP ${TARGET_PHP})"
-ui_kv "Database" "$DB_CONN"
+if [ "$DB_CONN" = "sqlite" ]; then
+    ui_kv "Database" "SQLite (${SQLITE_PATH})"
+else
+    ui_kv "Database" "${DB_CONN} - ${DB_NAME} at ${DB_HOST}:${DB_PORT}"
+fi
 
 if [ "$DB_CONN" = "mysql" ]; then
     if [ "$MYSQL_ENGINE" = "xampp_mysql" ]; then
         ui_kv "DB engine" "XAMPP MySQL (/opt/lampp/lampp startmysql)"
     else
-        ui_kv "DB engine" "Native MySQL/MariaDB ($SUDO systemctl start mysql)"
+        ui_kv "DB engine" "MySQL/MariaDB ($(svc_start_hint mysql))"
     fi
 elif [ "$DB_CONN" = "pgsql" ]; then
-    ui_kv "DB engine" "PostgreSQL ($SUDO systemctl start postgresql)"
+    ui_kv "DB engine" "PostgreSQL ($(svc_start_hint postgresql))"
 elif [ "$DB_CONN" = "sqlsrv" ]; then
     ui_kv "DB engine" "SQL Server at ${DB_HOST}:${DB_PORT}"
-else
-    ui_kv "DB engine" "SQLite (${SQLITE_PATH})"
 fi
 
+# ------------------------------------------------------------------------------
+# How to start the app
+# ------------------------------------------------------------------------------
 if [ "$SERVE_MODE" = "apache" ]; then
-    ui_kv "Browser URL" "$APP_URL_VAL"
-    ui_kv "phpMyAdmin" "http://localhost/phpmyadmin"
+    LAMPP_START="/opt/lampp/lampp start"
+    LAMPP_RESTART="/opt/lampp/lampp restartapache"
+    [ -n "$SUDO" ] && LAMPP_START="${SUDO} ${LAMPP_START}" && LAMPP_RESTART="${SUDO} ${LAMPP_RESTART}"
+
+    case "$PROJECT_PATH" in
+        /opt/lampp/htdocs/*) PROJECT_WEB_PATH="${PROJECT_PATH#/opt/lampp/htdocs/}" ;;
+        *)                   PROJECT_WEB_PATH="" ;;
+    esac
+
+    if [ -n "$PROJECT_WEB_PATH" ]; then
+        ui_panel "START THE APP (XAMPP APACHE)" \
+            "1. ${LAMPP_START}     start Apache and MySQL" \
+            "2. Open ${APP_URL_VAL}" \
+            "3. After editing .env: ${LAMPP_RESTART}" \
+            "" \
+            "Project folder: /opt/lampp/htdocs/${PROJECT_WEB_PATH}" \
+            "phpMyAdmin:     http://localhost/phpmyadmin"
+    else
+        ui_panel "START THE APP (XAMPP APACHE)" \
+            "The project is outside /opt/lampp/htdocs, so Apache cannot" \
+            "see it yet. Link it in, then open the site:" \
+            "" \
+            "  cd /opt/lampp/htdocs" \
+            "  ${SUDO_PREFIX}ln -s ${PROJECT_PATH} ${PROJECT_FOLDER}" \
+            "  ${LAMPP_RESTART}" \
+            "  Open http://localhost/${PROJECT_FOLDER}/public" \
+            "" \
+            "Or run it without Apache:" \
+            "  cd ${PROJECT_PATH}" \
+            "  ${PHP_BIN} artisan serve"
+    fi
 else
-    ui_kv "Run" "cd ${PROJECT_FOLDER} && ${PHP_BIN} artisan serve"
-    ui_kv "Browser URL" "http://127.0.0.1:8000"
+    ui_panel "START THE APP (PHP DEV SERVER)" \
+        "1. cd ${PROJECT_PATH}" \
+        "2. ${PHP_BIN} artisan serve" \
+        "3. Open http://127.0.0.1:8000" \
+        "" \
+        "Ctrl+C stops the server. Other options:" \
+        "  ${PHP_BIN} artisan serve --port=8080       use another port" \
+        "  ${PHP_BIN} artisan serve --host=0.0.0.0    allow other devices" \
+        "" \
+        "Add features, then run '${PHP_BIN} artisan migrate' for new migrations."
+fi
+echo ""
+
+# ------------------------------------------------------------------------------
+# How to reach the database: terminal client and web admin for this driver
+# ------------------------------------------------------------------------------
+GUIDE=()
+
+if [ "$DB_CONN" = "mysql" ]; then
+    if [ "$MYSQL_ENGINE" = "xampp_mysql" ] && [ -x /opt/lampp/bin/mysql ]; then
+        MYSQL_CLIENT="/opt/lampp/bin/mysql"
+    else
+        MYSQL_CLIENT="mysql"
+    fi
+
+    if command -v "$MYSQL_CLIENT" >/dev/null 2>&1; then
+        GUIDE+=("Terminal client: ${MYSQL_CLIENT}" "")
+    else
+        GUIDE+=("The mysql client is not on your PATH - install mysql-client or" \
+            "use /opt/lampp/bin/mysql instead of 'mysql' below." "")
+    fi
+
+    GUIDE+=(
+        "  ${MYSQL_CLIENT} -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USER} -p ${DB_NAME}"
+        "  (type the password when asked; '-p' always prompts)"
+        ""
+        "  SHOW DATABASES;               list every database"
+        "  SHOW TABLES;                  list tables in ${DB_NAME}"
+        "  DESCRIBE users;               columns and types of a table"
+        "  SELECT * FROM users LIMIT 10; read rows"
+        "  EXIT;   (or Ctrl+D)           leave the client"
+        ""
+        "One-shot query from the shell:"
+        "  ${MYSQL_CLIENT} -h ${DB_HOST} -P ${DB_PORT} -u ${DB_USER} -p -e 'SHOW TABLES' ${DB_NAME}"
+        ""
+        "Web admin (phpMyAdmin in XAMPP): http://localhost/phpmyadmin"
+        "  Log in as '${DB_USER}' (XAMPP default: root with empty password),"
+        "  pick ${DB_NAME} on the left, then Browse or run SQL."
+    )
+    ui_panel "DATABASE ACCESS - MYSQL / MARIADB" "${GUIDE[@]}"
+elif [ "$DB_CONN" = "pgsql" ]; then
+    if command -v psql >/dev/null 2>&1; then
+        GUIDE+=("Terminal client: psql" "")
+    else
+        GUIDE+=("psql is not installed - install it with your package manager" \
+            "(postgresql-client) to use these commands." "")
+    fi
+
+    GUIDE+=(
+        "  psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME}"
+        "  (type the password when asked)"
+        ""
+        "  \\l                    list every database"
+        "  \\dt                   list tables in ${DB_NAME}"
+        "  \\d users              columns, types and indexes of a table"
+        "  SELECT * FROM users LIMIT 10;"
+        "  \\q                    leave the client"
+        ""
+        "One-shot query from the shell:"
+        "  psql -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -c '\\dt'"
+        ""
+        "Web admin: pgAdmin (desktop or docker) or Adminer/phpPgAdmin."
+        "  phpMyAdmin only reads MySQL, so it cannot open this database."
+    )
+    ui_panel "DATABASE ACCESS - POSTGRESQL" "${GUIDE[@]}"
+elif [ "$DB_CONN" = "sqlite" ]; then
+    if command -v sqlite3 >/dev/null 2>&1; then
+        GUIDE+=("Terminal client: sqlite3" "")
+    else
+        GUIDE+=("sqlite3 is not installed - install the sqlite3 package to use" \
+            "these commands, or use 'php artisan db:show' instead." "")
+    fi
+
+    GUIDE+=(
+        "  sqlite3 ${SQLITE_PATH}"
+        ""
+        "  .databases             show the database file"
+        "  .tables                list tables"
+        "  .schema users          SQL that created a table"
+        "  SELECT * FROM users LIMIT 10;"
+        "  .quit                  leave the client"
+        ""
+        "One-shot query from the shell:"
+        "  sqlite3 ${SQLITE_PATH} '.tables'"
+        ""
+        "Web admin: DB Browser for SQLite, TablePlus or phpLiteAdmin."
+        "  phpMyAdmin does not support SQLite."
+    )
+    ui_panel "DATABASE ACCESS - SQLITE" "${GUIDE[@]}"
+else
+    if command -v sqlcmd >/dev/null 2>&1; then
+        GUIDE+=("Terminal client: sqlcmd" "")
+    else
+        GUIDE+=("sqlcmd is not installed - install mssql-tools18 to use these" \
+            "commands, or use 'php artisan db:show' instead." "")
+    fi
+
+    GUIDE+=(
+        "  sqlcmd -S ${DB_HOST},${DB_PORT} -U ${DB_USER} -d ${DB_NAME}"
+        "  (type the password when asked; GO runs a statement)"
+        ""
+        "  SELECT name FROM sys.databases;      list every database"
+        "  SELECT name FROM sys.tables;         list tables in ${DB_NAME}"
+        "  SELECT * FROM INFORMATION_SCHEMA.TABLES;"
+        "  EXEC sp_help 'users';                describe a table"
+        "  GO"
+        "  QUIT"
+        ""
+        "One-shot query from the shell:"
+        "  sqlcmd -S ${DB_HOST},${DB_PORT} -U ${DB_USER} -d ${DB_NAME} -Q 'SELECT name FROM sys.tables'"
+        ""
+        "Web admin: Azure Data Studio or SQL Server Management Studio."
+        "  phpMyAdmin cannot open SQL Server databases."
+    )
+    ui_panel "DATABASE ACCESS - SQL SERVER" "${GUIDE[@]}"
 fi
 
 echo ""
-ui_panel "NEXT STEPS" \
-    "cd ${PROJECT_FOLDER}" \
-    "${PHP_BIN} artisan serve" \
-    "Add features, then run 'php artisan migrate' for new migrations."
+ui_panel "INSPECT DATA - WORKS FOR EVERY DRIVER" \
+    "Run these from ${PROJECT_PATH}:" \
+    "" \
+    "  ${PHP_BIN} artisan db:show" \
+    "      Connection, driver, database and table sizes." \
+    "  ${PHP_BIN} artisan db:show --counts" \
+    "      Same, with a row count for every table." \
+    "  ${PHP_BIN} artisan db:table users" \
+    "      Columns, indexes and row count of one table." \
+    "  ${PHP_BIN} artisan tinker" \
+    "      DB::table('users')->count();" \
+    "      DB::table('users')->limit(10)->get();"
+
 echo ""
