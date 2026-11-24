@@ -17,6 +17,7 @@ set -e
 GREEN='\033[38;5;114m'
 YELLOW='\033[38;5;179m'
 RED='\033[38;5;203m'
+LARAVEL_RED='\033[38;5;203m'
 CYAN='\033[38;5;111m'
 ACCENT='\033[38;5;111m'
 MUTED='\033[38;5;244m'
@@ -261,33 +262,72 @@ as_postgres() {
 # ------------------------------------------------------------------------------
 # UI layer (opencode-inspired terminal interface)
 # ------------------------------------------------------------------------------
+# IS_TTY: stdout is a real terminal (screen can be cleared/animated).
+# IS_INTERACTIVE: stdin is also a terminal (arrow keys can be read).
 IS_TTY=0
-if [ -t 0 ] && [ -t 1 ] && [ "${TERM:-dumb}" != "dumb" ]; then
+IS_INTERACTIVE=0
+if [ -t 1 ]; then
     IS_TTY=1
 fi
+if [ "$IS_TTY" = "1" ] && [ -t 0 ]; then
+    IS_INTERACTIVE=1
+fi
 
+# Real terminal size as "rows cols". These helpers run inside $( ), so stdout is a
+# pipe and [ -t 1 ] is useless there - ask the controlling terminal directly.
+ui_size() {
+    local s=""
+    s="$( { stty size </dev/tty; } 2>/dev/null || true )"
+    case "$s" in
+        [0-9]*' '[0-9]*) printf '%s' "$s" ;;
+        *) printf '' ;;
+    esac
+}
 ui_width() {
-    local w=""
-    if [ -t 1 ]; then w="$(tput cols 2>/dev/null || true)"; fi
-    [ -z "$w" ] && w="${COLUMNS:-80}"
+    local s="" w=""
+    s="$(ui_size)"
+    w="${s#* }"
+    case "$w" in ''|*[!0-9]*) w="" ;; esac
+    [ "${w:-0}" -gt 0 ] || w="${COLUMNS:-80}"
     case "$w" in ''|*[!0-9]*) w=80 ;; esac
     [ "$w" -gt 100 ] && w=100
     [ "$w" -lt 60 ] && w=60
     printf '%s' "$w"
 }
 
-ui_clear() { if [ "$IS_TTY" = "1" ]; then printf '\033[H\033[2J'; fi; }
+ui_clear() { if [ "$IS_TTY" = "1" ]; then printf '\033[H\033[2J\033[3J\033[H'; fi; }
+ui_rows() { # usable terminal height, defaults to 24
+    local s="" r=""
+    s="$(ui_size)"
+    r="${s%% *}"
+    case "$r" in ''|*[!0-9]*) r="" ;; esac
+    [ "${r:-0}" -gt 0 ] || r="${LINES:-24}"
+    case "$r" in ''|*[!0-9]*) r=24 ;; esac
+    [ "$r" -lt 10 ] && r=10
+    printf '%s' "$r"
+}
 ui_cursor_hide() { if [ "$IS_TTY" = "1" ]; then printf '\033[?25l'; fi; }
 ui_cursor_show() { if [ "$IS_TTY" = "1" ]; then printf '\033[?25h'; fi; }
 trap ui_cursor_show EXIT
 
+ui_dashes() { printf '─%.0s' $(seq 1 "$1" 2>/dev/null); }
+
 ui_rule() {
-    printf '%b%s%b\n' "$BORDER" "$(printf '─%.0s' $(seq 1 "$(ui_width)"))" "$NC"
+    printf '%b%s%b\n' "$BORDER" "$(ui_dashes "$(ui_width)")" "$NC"
+}
+
+# Centered line: text [color]
+ui_center() {
+    local w pad
+    w="$(ui_width)"
+    pad=$(( (w - ${#1}) / 2 ))
+    [ "$pad" -lt 0 ] && pad=0
+    printf '%*s%b%s%b\n' "$pad" "" "${2:-$NC}" "$1" "$NC"
 }
 
 ui_section() {
     echo ""
-    printf '%b%s%b\n' "$BOLD" "$1" "$NC"
+    ui_center "$1" "$BOLD"
     ui_rule
 }
 
@@ -298,16 +338,16 @@ ui_kv() {
 # Draws a rounded panel; text is wrapped to the terminal width.
 ui_panel() {
     local title="$1"; shift
-    local w inner head dashes line seg pad
+    local w inner span left right line seg pad
     w="$(ui_width)"; inner=$((w - 4)); [ "$inner" -lt 40 ] && inner=40
 
     if [ -n "$title" ]; then
-        head="─ ${title} "
-        dashes=$((w - 2 - ${#head}))
-        [ "$dashes" -lt 1 ] && dashes=1
-        printf '%b╭%s%s╮%b\n' "$BORDER" "$head" "$(printf '─%.0s' $(seq 1 "$dashes"))" "$NC"
+        span=$(( w - 4 - ${#title} ))
+        [ "$span" -lt 2 ] && span=2
+        left=$(( span / 2 )); right=$(( span - left ))
+        printf '%b╭%s %b%s%b %b%s%b╮%b\n' "$BORDER" "$(ui_dashes "$left")" "$BOLD" "$title" "$NC" "$BORDER" "$(ui_dashes "$right")" "$NC"
     else
-        printf '%b╭%s╮%b\n' "$BORDER" "$(printf '─%.0s' $(seq 1 $((w - 2))))" "$NC"
+        printf '%b╭%s╮%b\n' "$BORDER" "$(ui_dashes $((w - 2)))" "$NC"
     fi
 
     for line in "$@"; do
@@ -322,7 +362,7 @@ ui_panel() {
         done < <(printf '%s\n' "$line" | fold -s -w "$inner")
     done
 
-    printf '%b╰%s╯%b\n' "$BORDER" "$(printf '─%.0s' $(seq 1 $((w - 2))))" "$NC"
+    printf '%b╰%s╯%b\n' "$BORDER" "$(ui_dashes $((w - 2)))" "$NC"
 }
 
 ui_logo() {
@@ -337,6 +377,57 @@ ui_logo() {
         [ "$pad" -lt 0 ] && pad=0
         printf '%*s%s\n' "$pad" "" "$line"
     done | { if command -v lolcat >/dev/null 2>&1; then lolcat; else cat; fi; }
+}
+
+# Laravel logo mark + wordmark, side by side and centered.
+ui_laravel_header() {
+    local w pad mw ww mrows wrows rows r wi idx tmp line
+    local -a mark=(
+        "  ▄▄▄▄▄▄▄▄▄▄▄"
+        " ████████████"
+        "████████"
+        "████████"
+        "████████"
+        "████████"
+        "████████"
+        "█████████████"
+        "▀▀▀▀▀▀▀▀▀▀▀▀▀"
+    )
+    local -a mark_tint=( 209 203 203 202 202 202 208 208 209 )
+    local -a word_tint=( 209 208 203 202 196 )
+    local -a word=()
+    w="$(ui_width)"
+
+    if command -v figlet >/dev/null 2>&1; then
+        while IFS= read -r line; do word+=("$line"); done < <(figlet -w 200 -f small "LARAVEL" 2>/dev/null)
+    fi
+    while [ ${#word[@]} -gt 0 ]; do
+        idx=$(( ${#word[@]} - 1 ))
+        tmp="${word[$idx]// /}"
+        if [ -z "$tmp" ]; then unset "word[$idx]"; else break; fi
+    done
+    [ ${#word[@]} -eq 0 ] && word=("LARAVEL")
+
+    mw=0; for line in "${mark[@]}"; do [ ${#line} -gt "$mw" ] && mw=${#line}; done
+    ww=0; for line in "${word[@]}"; do [ ${#line} -gt "$ww" ] && ww=${#line}; done
+    mrows=${#mark[@]}; wrows=${#word[@]}
+    rows=$mrows; [ "$wrows" -gt "$rows" ] && rows=$wrows
+    pad=$(( (w - (mw + 4 + ww)) / 2 )); [ "$pad" -lt 0 ] && pad=0
+
+    for ((r = 0; r < rows; r++)); do
+        printf '%*s' "$pad" ""
+        if [ "$r" -lt "$mrows" ]; then
+            printf '%b%s%b' "$(printf '\033[38;5;%sm' "${mark_tint[$r]}")" "${mark[$r]}" "$NC"
+            printf '%*s' $(( mw - ${#mark[$r]} + 4 )) ""
+        else
+            printf '%*s' $(( mw + 4 )) ""
+        fi
+        wi=$(( r - (rows - wrows) / 2 ))
+        if [ "$wi" -ge 0 ] && [ "$wi" -lt "$wrows" ]; then
+            printf '%b%s%b' "$(printf '\033[38;5;%sm' "${word_tint[$((wi % 5))]}")" "${word[$wi]}" "$NC"
+        fi
+        printf '\n'
+    done
 }
 
 ui_menu_row() { # selected label desc width
@@ -371,7 +462,7 @@ menu_select() {
     [ "$sel" -ge "$n" ] && sel=$((n - 1))
     w="$(ui_width)"
 
-    if [ "$IS_TTY" != "1" ]; then
+    if [ "$IS_INTERACTIVE" != "1" ]; then
         printf '? %s\n' "$prompt"
         for ((i = 0; i < n; i++)); do
             printf '  %d) %s' $((i + 1)) "${labels[$i]}"
@@ -422,6 +513,8 @@ menu_select() {
         done
     done
     ui_cursor_show
+    printf '\033[%dA\033[J' $((n + 2))
+    printf '  %b✔%b %s %b· %s%b\n' "$GREEN" "$NC" "$prompt" "$MUTED" "${labels[$sel]}" "$NC"
     MENU_RESULT=$((sel + 1))
 }
 
@@ -431,7 +524,7 @@ ask_input() { # prompt default -> ASK_RESULT
     [ -n "$def" ] && printf '  %bdefault: %s%b\n' "$MUTED" "$def" "$NC"
     printf '  %b❯%b ' "$ACCENT" "$NC"
     IFS= read -r ans || ans=""
-    if [ "$IS_TTY" != "1" ]; then echo ""; fi
+    if [ "$IS_INTERACTIVE" != "1" ]; then echo ""; fi
     if [ -z "$ans" ]; then ans="$def"; fi
     ASK_RESULT="$ans"
 }
@@ -449,13 +542,63 @@ ui_confirm() { # prompt default(y|n) -> exit status
     [ "$MENU_RESULT" = "1" ]
 }
 
-ui_step() { # current total title
-    local n="$1" total="$2" title="$3" dots="" i
-    ui_clear
-    for ((i = 1; i <= total; i++)); do
-        if [ "$i" -le "$n" ]; then dots+="● "; else dots+="○ "; fi
+# Runs a command behind a live spinner; output is replayed only on failure.
+ui_spin() { # message command...
+    local msg="$1"; shift
+    local log rc i=0 pid
+    local -a frames=( '⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏' )
+    if [ "$IS_TTY" != "1" ]; then
+        printf '  %b›%b %s\n' "$ACCENT" "$NC" "$msg"
+        "$@"
+        return $?
+    fi
+    log="$(mktemp 2>/dev/null || echo "/tmp/laravel-setup.$$.log")"
+    "$@" >"$log" 2>&1 &
+    pid=$!
+    ui_cursor_hide
+    while kill -0 "$pid" 2>/dev/null; do
+        printf '\r  %b%s%b %s ' "$ACCENT" "${frames[$((i % 10))]}" "$NC" "$msg"
+        i=$((i + 1))
+        sleep 0.08
     done
-    printf '%b%s%b %b%d/%d%b  %b%s%b\n' "$ACCENT" "$dots" "$NC" "$MUTED" "$n" "$total" "$NC" "$BOLD" "$title" "$NC"
+    if wait "$pid"; then rc=0; else rc=$?; fi
+    ui_cursor_show
+    printf '\r\033[2K'
+    if [ "$rc" -eq 0 ]; then
+        printf '  %b✔%b %s\n' "$GREEN" "$NC" "$msg"
+        rm -f "$log"
+    else
+        printf '  %b✖%b %s\n' "$RED" "$NC" "$msg"
+        tail -n 25 "$log" 2>/dev/null | sed 's/^/    /'
+        printf '  %bfull log: %s%b\n' "$MUTED" "$log" "$NC"
+    fi
+    return "$rc"
+}
+
+ui_pause() { # [message]
+    [ "$IS_INTERACTIVE" = "1" ] || return 0
+    printf '\n  %b%s%b ' "$MUTED" "${1:-Press enter to continue}" "$NC"
+    IFS= read -rsn1 _ || true
+    printf '\n'
+}
+
+ui_step() { # current total title
+    local n="$1" total="$2" title="$3" i w pad len
+    ui_clear
+    w="$(ui_width)"
+    len=$(( 2 * total - 1 + 2 + ${#n} + 1 + ${#total} + 2 + ${#title} ))
+    pad=$(( (w - len) / 2 )); [ "$pad" -lt 0 ] && pad=0
+    printf '%*s' "$pad" ""
+    for ((i = 1; i <= total; i++)); do
+        if [ "$i" -le "$n" ]; then
+            printf '%b●%b' "$ACCENT" "$NC"
+        else
+            printf '%b○%b' "$MUTED" "$NC"
+        fi
+        [ "$i" -lt "$total" ] && printf ' '
+        if [ "$IS_TTY" = "1" ]; then sleep 0.03; fi
+    done
+    printf '  %b%d/%d%b  %b%s%b\n' "$MUTED" "$n" "$total" "$NC" "$BOLD" "$title" "$NC"
     ui_rule
     echo ""
 }
@@ -479,21 +622,27 @@ ensure_display_tools
 # ------------------------------------------------------------------------------
 # Cover screen
 # ------------------------------------------------------------------------------
+COVER_ROWS="$(ui_rows)"
 ui_clear
+ui_laravel_header
+ui_center "project setup wizard" "$MUTED"
+if [ "$COVER_ROWS" -lt 24 ]; then
+    # Short window: keep the cover above the fold instead of scrolling it.
+    ui_center "MySQL · PostgreSQL · SQLite · SQL Server" "$MUTED"
+    ui_center "↑/↓ move · enter select · q quit" "$MUTED"
+else
+    echo ""
+    ui_panel "UNIVERSAL SETUP" \
+        "Laravel 12 / 13 - PHP 8.2+" \
+        "MySQL, MariaDB, PostgreSQL, SQLite or SQL Server" \
+        "Installs the driver, provisions the database, verifies the login."
+    echo ""
+    ui_center "↑/↓ move   enter select   q quit" "$MUTED"
+    ui_center "Working directory: ${CURRENT_DIR}" "$MUTED"
+fi
 echo ""
-ui_logo "LARAVEL"
-printf '%b        project setup wizard%b\n' "$MUTED" "$NC"
-echo ""
-ui_panel "UNIVERSAL SETUP" \
-    "Laravel 12 / 13 - PHP 8.2+" \
-    "MySQL, MariaDB, PostgreSQL, SQLite or SQL Server" \
-    "Installs the driver, provisions the database, verifies the login."
-echo ""
-printf '  %b↑/↓%b move   %benter%b select   %bq%b quit\n' "$ACCENT" "$NC" "$ACCENT" "$NC" "$ACCENT" "$NC"
-printf '  %bWorking directory: %s%b\n' "$MUTED" "$CURRENT_DIR" "$NC"
-echo ""
-printf '  %bPress enter to begin%b ' "$MUTED" "$NC"
-if [ "$IS_TTY" = "1" ]; then IFS= read -rsn1 _ || true; fi
+printf '%*s%bPress enter to begin%b ' $(( ($(ui_width) - 20) / 2 )) "" "$MUTED" "$NC"
+if [ "$IS_INTERACTIVE" = "1" ]; then IFS= read -rsn1 _ || true; fi
 echo ""
 
 # ------------------------------------------------------------------------------
@@ -536,6 +685,7 @@ echo -e "${GREEN}[OK]${NC} Composer: ${BOLD}${COMPOSER_BIN}${NC}"
 # ------------------------------------------------------------------------------
 # STEP 2: Environment & PHP Runtime Selection
 # ------------------------------------------------------------------------------
+ui_pause "Requirements checked. Press enter to configure the environment"
 ui_step 2 6 "Environment"
 
 menu_select "How do you want to run and host the project?" 2 \
@@ -1009,18 +1159,21 @@ if [ "$DB_CONN" != "sqlite" ]; then
     fi
 fi
 
+ui_pause "Database ready. Press enter to build the project"
+
 # ------------------------------------------------------------------------------
 # STEP 5: Generate Laravel Project
 # ------------------------------------------------------------------------------
 ui_step 5 6 "Project generation"
 
 echo -e "${YELLOW}[INFO] Installing Laravel ${LARAVEL_VERSION} with ${PHP_BIN}...${NC}"
-run_composer create-project "$LARAVEL_PKG" "$PROJECT_FOLDER" --no-scripts --no-interaction --prefer-dist
+ui_spin "Creating Laravel ${LARAVEL_VERSION} project" run_composer create-project "$LARAVEL_PKG" "$PROJECT_FOLDER" --no-scripts --no-interaction --prefer-dist
 
 cd "${CURRENT_DIR}/${PROJECT_FOLDER}"
 
 # Register discovered packages (create-project ran with --no-scripts)
-run_composer dump-autoload --no-interaction >/dev/null
+ui_spin "Optimizing the autoloader" run_composer dump-autoload --no-interaction
+ui_pause "Project generated. Press enter to configure the environment"
 
 # ------------------------------------------------------------------------------
 # STEP 6: Configure .env, Permissions, & Migrations
@@ -1064,7 +1217,7 @@ case "$DB_CONN" in
         ;;
 esac
 
-"$PHP_BIN" artisan key:generate --ansi
+ui_spin "Generating the application key" "$PHP_BIN" artisan key:generate --ansi
 
 CURRENT_USER="$(id -un)"
 if [ "$SERVE_MODE" = "apache" ]; then
@@ -1083,12 +1236,12 @@ if [ "$DB_CONN" = "sqlite" ]; then
     fi
 fi
 
-"$PHP_BIN" artisan migrate --force
+ui_spin "Running database migrations" "$PHP_BIN" artisan migrate --force
 
 if [ -f "package.json" ] && command -v npm &>/dev/null; then
     echo -e "${YELLOW}[INFO] Installing npm packages and building assets...${NC}"
-    npm install
-    npm run build
+    ui_spin "Installing npm packages" npm install
+    ui_spin "Building frontend assets" npm run build
 fi
 
 # ------------------------------------------------------------------------------
@@ -1097,7 +1250,7 @@ fi
 ui_clear
 echo ""
 ui_logo "READY"
-printf '%b  Your Laravel %s application is ready.%b\n' "$GREEN" "$LARAVEL_VERSION" "$NC"
+ui_center "Your Laravel ${LARAVEL_VERSION} application is ready." "$GREEN"
 
 ui_section "Project"
 ui_kv "Location" "${CURRENT_DIR}/${PROJECT_FOLDER}"
