@@ -301,6 +301,242 @@
     if (event.matches && menu?.classList.contains("is-open")) setMenu(false);
   });
 
+  /* ---------- hero terminal: a replay of the setup-skills script ---------- */
+
+  const termDemo = document.querySelector("[data-term-demo]");
+  if (termDemo && !reduceMotion) {
+    const termBody = termDemo.querySelector("[data-term-body]");
+    const termToggle = termDemo.querySelector("[data-term-toggle]");
+
+    const make = (html) => {
+      const template = document.createElement("template");
+      template.innerHTML = html.trim();
+      return template.content.firstElementChild;
+    };
+    const scrollTerm = () => {
+      termBody.scrollTop = termBody.scrollHeight;
+    };
+    const addLine = (node) => {
+      termBody.append(node);
+      scrollTerm();
+      return node;
+    };
+    const stepLine = (key, label) => {
+      const line = make(
+        '<p class="t-step"><span class="t-key">❯</span> <span class="t-step__key"></span><span class="t-step__label"></span></p>'
+      );
+      line.querySelector(".t-step__key").textContent = key ? `${key} ` : "";
+      line.querySelector(".t-step__label").textContent = label;
+      return line;
+    };
+    const okLine = (label) => {
+      const line = make(
+        '<p class="t-line t-ok"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span></span></p>'
+      );
+      line.querySelector("span").textContent = label;
+      return line;
+    };
+
+    let demoRun = 0;
+    let wake = null;
+    let spinning = null;
+    let playing = false;
+    let userPaused = false;
+    let inView = true;
+
+    const wait = (ms) =>
+      new Promise((resolve) => {
+        const id = setTimeout(resolve, ms);
+        wake = () => {
+          clearTimeout(id);
+          resolve();
+        };
+      });
+
+    const runDemo = async () => {
+      const current = ++demoRun;
+      const alive = () => current === demoRun;
+
+      while (alive()) {
+        termBody.textContent = "";
+        termBody.scrollTop = 0;
+
+        const cmd = addLine(
+          make(
+            '<p class="t-line t-cmd"><span class="t-prompt">$</span> <span data-term-typed></span><span class="t-cursor"></span></p>'
+          )
+        );
+        const typed = cmd.querySelector("[data-term-typed]");
+        for (const char of "bash <(curl -fsSL setup-skills.sh)") {
+          if (!alive()) return;
+          typed.textContent += char;
+          scrollTerm();
+          await wait(24);
+        }
+        await wait(550);
+        if (!alive()) return;
+        cmd.querySelector(".t-cursor")?.remove();
+
+        addLine(
+          make(
+            '<div class="t-head"><p class="t-title">Setup skills</p><p class="t-sub">design + engineering skills installer</p></div>'
+          )
+        );
+        addLine(stepLine("1/5", "Design System - choose your design"));
+        await wait(300);
+        if (!alive()) return;
+        addLine(make('<p class="t-line t-meta">Found 214 design systems</p>'));
+
+        const menu = addLine(
+          make(
+            '<ul class="t-menu"><li class="is-active">Vercel</li><li>Linear</li><li>Apple</li><li>Stripe</li></ul>'
+          )
+        );
+        const hint = addLine(make('<p class="t-hint">↑↓ move · Enter select</p>'));
+        await wait(750);
+        if (!alive()) return;
+
+        const items = [...menu.children];
+        for (const index of [1, 2]) {
+          items.forEach((item) => item.classList.remove("is-active"));
+          items[index].classList.add("is-active");
+          await wait(420);
+          if (!alive()) return;
+        }
+        await wait(300);
+        if (!alive()) return;
+
+        menu.remove();
+        hint.remove();
+        addLine(okLine("DESIGN.md for 'Apple' copied to project root"));
+        await wait(550);
+        if (!alive()) return;
+
+        addLine(stepLine("2/5", "Installing: Impeccable"));
+        const task = addLine(
+          make('<p class="t-line t-task"><span class="t-braille">⠋</span> <span></span></p>')
+        );
+        task.querySelector("span:last-child").textContent = "Running npx skills add";
+        let frame = 0;
+        spinning = setInterval(() => {
+          task.querySelector(".t-braille").textContent =
+            "⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"[frame++ % 10];
+        }, 80);
+        await wait(1200);
+        clearInterval(spinning);
+        spinning = null;
+        if (!alive()) return;
+        task.remove();
+        addLine(okLine("Impeccable installed (verified: impeccable)"));
+        await wait(420);
+        if (!alive()) return;
+
+        for (const [key, label, done] of [
+          ["3/5", "Installing: Taste Skill", "Taste Skill installed"],
+          [
+            "4/5",
+            "Installing: Vercel Web Design Guidelines",
+            "Vercel Web Design Guidelines installed",
+          ],
+        ]) {
+          addLine(stepLine(key, label));
+          await wait(420);
+          if (!alive()) return;
+          addLine(okLine(done));
+          await wait(300);
+          if (!alive()) return;
+        }
+
+        addLine(stepLine("5/5", "Playwright MCP"));
+        await wait(380);
+        if (!alive()) return;
+        addLine(okLine("Created .mcp.json with Playwright MCP"));
+        await wait(500);
+        if (!alive()) return;
+
+        addLine(stepLine("", "SUMMARY"));
+        const panel = make(
+          '<div class="t-panel"><p class="t-panel__title">INSTALL REPORT</p></div>'
+        );
+        for (const row of [
+          "Folder: ~/projects/acme",
+          "DESIGN.md (design system)",
+          "CLAUDE.md (agent rules)",
+          "Playwright MCP (.mcp.json)",
+          "skill-instructions.md",
+          "Skill: Impeccable",
+        ]) {
+          const line = document.createElement("p");
+          const flag = document.createElement("span");
+          flag.className = "t-flag";
+          flag.textContent = "[OK]";
+          line.append(flag, row);
+          panel.append(line);
+        }
+        addLine(panel);
+        addLine(make('<p class="t-line t-note">ALL DONE - NEXT STEPS</p>'));
+        addLine(make('<p class="t-line t-hint">1. Start your AI agent in this folder</p>'));
+        addLine(
+          make(
+            '<p class="t-line t-last"><span class="t-prompt">$</span> <span class="t-cursor"></span></p>'
+          )
+        );
+        await wait(2800);
+      }
+    };
+
+    const startDemo = () => {
+      if (playing || userPaused || !inView || document.hidden) return;
+      playing = true;
+      runDemo().finally(() => {
+        playing = false;
+      });
+    };
+
+    const stopDemo = () => {
+      demoRun += 1;
+      if (wake) wake();
+      if (spinning) {
+        clearInterval(spinning);
+        spinning = null;
+      }
+    };
+
+    termToggle?.addEventListener("click", () => {
+      userPaused = !userPaused;
+      termToggle.setAttribute("aria-pressed", String(userPaused));
+      termToggle.setAttribute(
+        "aria-label",
+        userPaused ? "Play the demo" : "Pause the demo"
+      );
+      termDemo.classList.toggle("is-paused", userPaused);
+      if (userPaused) {
+        stopDemo();
+      } else {
+        startDemo();
+      }
+    });
+
+    if ("IntersectionObserver" in window) {
+      const demoObserver = new IntersectionObserver(
+        ([entry]) => {
+          inView = entry.isIntersecting;
+          if (!inView) stopDemo();
+          else if (!userPaused) startDemo();
+        },
+        { threshold: 0.25 }
+      );
+      demoObserver.observe(termDemo);
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopDemo();
+      else if (!userPaused && inView) startDemo();
+    });
+
+    startDemo();
+  }
+
   /* ---------- reveals ---------- */
 
   const revealTargets = document.querySelectorAll(".section, .cta");

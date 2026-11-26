@@ -216,6 +216,52 @@ const basename = (file) => file.split("/").pop();
   await page.close();
 }
 
+/* ---------- hero terminal demo ---------- */
+
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(BASE, { waitUntil: "networkidle" });
+
+  const toggle = page.locator("[data-term-toggle]");
+  const termBody = page.locator("[data-term-body]");
+  const box = await toggle.boundingBox();
+  if (box && box.width >= 24 && box.height >= 24)
+    pass("demo pause control is at least 24x24");
+  else fail("demo pause control", JSON.stringify(box));
+
+  const typing = await termBody.innerText();
+  await page.waitForTimeout(700);
+  if ((await termBody.innerText()) !== typing) pass("hero terminal demo animates");
+  else fail("hero terminal demo", "content did not change");
+
+  await toggle.click();
+  await page.waitForTimeout(500);
+  const paused = await termBody.innerText();
+  await page.waitForTimeout(800);
+  if ((await termBody.innerText()) === paused) pass("demo pauses when asked");
+  else fail("demo pause", "content kept changing");
+  if ((await toggle.getAttribute("aria-pressed")) === "true")
+    pass("pause control reports its state");
+  else fail("pause state", await toggle.getAttribute("aria-pressed"));
+
+  await toggle.click();
+  await page.waitForTimeout(600);
+  if ((await termBody.innerText()) !== paused) pass("demo restarts after pause");
+  else fail("demo resume", "content did not change");
+  await page.close();
+
+  const reduced = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await reduced.emulateMedia({ reducedMotion: "reduce" });
+  await reduced.goto(BASE, { waitUntil: "networkidle" });
+  if ((await reduced.locator("[data-term-body]").innerText()).includes("INSTALL REPORT"))
+    pass("reduced motion shows the final report instead of animating");
+  else fail("reduced motion demo", "report missing");
+  if (!(await reduced.locator("[data-term-toggle]").isVisible()))
+    pass("pause control is hidden with reduced motion");
+  else fail("reduced motion pause control", "still visible");
+  await reduced.close();
+}
+
 /* ---------- every link resolves ---------- */
 
 {

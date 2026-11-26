@@ -21,6 +21,7 @@ async function capture(name, width, height, fullPage, query = "") {
   const page = await browser.newPage({
     viewport: { width, height },
     deviceScaleFactor: 1,
+    reducedMotion: "reduce",
   });
 
   page.on("console", (message) => {
@@ -71,7 +72,11 @@ async function capture(name, width, height, fullPage, query = "") {
 }
 
 async function captureSection(name, width, height, selector, query = "") {
-  const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
+  const page = await browser.newPage({
+    viewport: { width, height },
+    deviceScaleFactor: 1,
+    reducedMotion: "reduce",
+  });
   await page.goto(BASE + query, { waitUntil: "networkidle" });
   const section = page.locator(selector);
   await section.scrollIntoViewIfNeeded();
