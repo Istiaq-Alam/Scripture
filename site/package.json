@@ -1,0 +1,20 @@
+{
+  "name": "setup-scripts-site",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Download page for the terminal setup scripts in this repo",
+  "scripts": {
+    "sync": "node scripts/sync.mjs",
+    "start": "node scripts/sync.mjs && node server.mjs",
+    "build": "node scripts/sync.mjs",
+    "shots": "node scripts/shots.mjs",
+    "og": "node scripts/og.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.65.1"
+  }
+}

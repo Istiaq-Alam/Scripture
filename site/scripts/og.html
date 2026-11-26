@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Setup scripts social card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    width: 1200px;
+    height: 630px;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 56px;
+    align-items: center;
+    padding: 64px;
+    background: #131209;
+    color: #f2efe4;
+    font-family: "Geist", system-ui, sans-serif;
+    overflow: hidden;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 500; }
+  .mark { width: 9px; height: 18px; border-radius: 2px; background: #ffb000; }
+  .dim { color: #918b7d; }
+  h1 { margin-top: 56px; font-size: 56px; line-height: 56px; letter-spacing: -0.03em; font-weight: 600; }
+  p { max-width: 32ch; margin-top: 24px; font-size: 18px; line-height: 28px; color: #b7b1a1; }
+  .cta {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 32px;
+    height: 48px; padding: 0 20px; border-radius: 8px;
+    background: #ffb000; color: #1a1300; font-weight: 600;
+  }
+  .meta { margin-top: 24px; font-family: "Geist Mono", monospace; font-size: 12px; color: #918b7d; }
+  .term {
+    border: 1px solid rgba(242,239,228,.10);
+    border-radius: 16px;
+    background: #181818;
+    box-shadow: 0 24px 64px rgba(0,0,0,.32);
+    overflow: hidden;
+  }
+  .bar {
+    display: flex; justify-content: space-between; align-items: center;
+    height: 40px; padding: 0 16px; border-bottom: 1px solid rgba(242,239,228,.10);
+    font-family: "Geist Mono", monospace; font-size: 12px; color: #918b7d;
+  }
+  .body { padding: 24px; font-family: "Geist Mono", monospace; font-size: 13px; line-height: 20px; color: #b7b1a1; }
+  .cmd { color: #f2efe4; white-space: nowrap; }
+  .prompt { color: #ffb000; }
+  .title { margin-top: 28px; font-size: 15px; color: #f2efe4; }
+  .sub { margin-top: 4px; font-size: 12px; color: #918b7d; }
+  .row { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
+  .dots { display: inline-flex; gap: 6px; }
+  .dots i { width: 6px; height: 6px; border-radius: 50%; background: #313131; }
+  .dots i.done { background: #b7b1a1; }
+  .dots i.now { background: #ffb000; }
+  .progress { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; font-size: 12px; color: #918b7d; }
+  .dot { display: inline-block; width: 6px; height: 6px; border-radius: 2px; background: #8fb89a; }
+  .dot.now { background: #ffb000; }
+  .box { display: inline-block; width: 6px; height: 6px; border: 1px solid #3a3a35; border-radius: 1px; }
+  .list { display: grid; gap: 8px; margin-top: 12px; }
+  .list span { display: flex; gap: 8px; }
+  .pending { color: #3a3a35; }
+  .report { margin-top: 24px; padding-top: 16px; border-top: 1px solid rgba(242,239,228,.10); display: grid; gap: 6px; font-size: 12px; }
+  .cursor { display: inline-block; width: 8px; height: 15px; vertical-align: -2px; background: #ffb000; }
+</style>
+</head>
+<body>
+  <div>
+    <div class="brand"><span class="mark"></span>Scripture</div>
+    <h1>Your dev setup,<br>in one script.</h1>
+    <p>Five bash installers for Laravel, design skills, GitHub, Freebuff and Claude Code.</p>
+    <div class="cta">Browse the scripts</div>
+    <div class="meta">5 scripts · every download hashed</div>
+  </div>
+
+  <div class="term">
+    <div class="bar"><span>~/projects/acme</span><span>bash</span></div>
+    <div class="body">
+      <div class="cmd"><span class="prompt">$</span> bash &lt;(curl -fsSL setup-skills.sh)</div>
+      <div class="title">Setup skills</div>
+      <div class="sub">design system, agent rules, MCP</div>
+      <div class="progress"><span class="dots"><i class="done"></i><i class="done"></i><i class="now"></i><i></i></span><span>install 2 of 4</span></div>
+      <div class="list">
+        <span><i class="dot"></i> design skills</span>
+        <span><i class="dot"></i> DESIGN.md</span>
+        <span><i class="dot now"></i> playwright mcp</span>
+        <span class="pending"><i class="box"></i> agent rules</span>
+      </div>
+      <div class="report">
+        <span style="color:#918b7d">report</span>
+        <span><i class="dot"></i> .claude/skills</span>
+        <span><i class="dot"></i> CLAUDE.md</span>
+      </div>
+      <div style="margin-top:20px"><span class="prompt">$</span> <span class="cursor"></span></div>
+    </div>
+  </div>
+</body>
+</html>

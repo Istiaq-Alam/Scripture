@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — Scripture</title>
+<meta name="description" content="What this site collects, which is nothing beyond the request logs your server keeps.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#131209">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<main class="doc">
+  <div class="wrap">
+    <p class="term__path" style="font-family:var(--mono);font-size:12px;color:var(--muted);margin-bottom:16px">~/legal/privacy</p>
+    <h1>Privacy</h1>
+    <p>This site is a static page and a folder of shell scripts. It sets no cookies, runs no analytics and has no account system.</p>
+
+    <h2>What the server sees</h2>
+    <p>Like any web server, it receives the request your browser makes: the page or file you asked for, your IP address and your user agent. The included Node server prints method, path and status to its own terminal and writes no log file.</p>
+
+    <h2>Third parties</h2>
+    <p>The page loads Geist and Geist Mono from Google Fonts, so your browser makes a request to Google when the page opens. If you host this site and want no third party requests, download the fonts and serve them from your own domain.</p>
+
+    <h2>Downloads</h2>
+    <p>Downloading a script is a plain file request. Nothing about the download is stored by the page, and the scripts themselves make network calls only when you run them.</p>
+
+    <h2>Contact</h2>
+    <p>There is no contact form. Open an issue in the repository that hosts this site.</p>
+
+    <a class="link-quiet doc__back" href="/">Back to the scripts</a>
+  </div>
+</main>
+</body>
+</html>
