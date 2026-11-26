@@ -20,6 +20,7 @@ const TYPES = {
   ".jpg": "image/jpeg",
   ".ico": "image/x-icon",
   ".sh": "text/x-shellscript; charset=utf-8",
+  ".ps1": "text/plain; charset=utf-8",
   ".txt": "text/plain; charset=utf-8",
 };
 
@@ -88,7 +89,7 @@ const server = createServer(async (req, res) => {
     "Cache-Control": ext === ".html" ? "no-cache" : "public, max-age=300",
   };
 
-  if (ext === ".sh") {
+  if (ext === ".sh" || ext === ".ps1") {
     headers["Content-Disposition"] = `attachment; filename="${found.path.split(sep).pop()}"`;
   }
 

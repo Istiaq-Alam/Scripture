@@ -17,7 +17,7 @@ const browser = await chromium.launch({
 
 const problems = [];
 
-async function capture(name, width, height, fullPage) {
+async function capture(name, width, height, fullPage, query = "") {
   const page = await browser.newPage({
     viewport: { width, height },
     deviceScaleFactor: 1,
@@ -31,7 +31,7 @@ async function capture(name, width, height, fullPage) {
     problems.push(`${name} request failed: ${request.url()}`);
   });
 
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(BASE + query, { waitUntil: "networkidle" });
 
   // Walk the page so every IntersectionObserver reveal has fired.
   await page.evaluate(async () => {
@@ -70,9 +70,9 @@ async function capture(name, width, height, fullPage) {
   await page.close();
 }
 
-async function captureSection(name, width, height, selector) {
+async function captureSection(name, width, height, selector, query = "") {
   const page = await browser.newPage({ viewport: { width, height }, deviceScaleFactor: 1 });
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(BASE + query, { waitUntil: "networkidle" });
   const section = page.locator(selector);
   await section.scrollIntoViewIfNeeded();
   await page.waitForTimeout(900);
@@ -85,11 +85,15 @@ await capture("desktop", 1440, 900, false);
 await capture("full", 1440, 900, true);
 await capture("tablet", 820, 1180, true);
 await capture("mobile", 390, 844, true);
+await capture("full-windows", 1440, 900, true, "?os=windows");
+await capture("mobile-windows", 390, 844, true, "?os=windows");
 
 await captureSection("mobile-scripts", 390, 844, "#scripts");
 await captureSection("mobile-safety", 390, 844, "#safety");
 await captureSection("mobile-faq", 390, 844, "#faq");
 await captureSection("desktop-scripts", 1440, 900, "#scripts");
+await captureSection("desktop-scripts-windows", 1440, 900, "#scripts", "?os=windows");
+await captureSection("desktop-scripts-mac", 1440, 900, "#scripts", "?os=mac");
 
 await browser.close();
 

@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scripture — setup scripts for Laravel, design skills and AI coding tools</title>
-<meta name="description" content="Scripture collects five bash installers for Laravel, design skills, GitHub, Freebuff and Claude Code. Read the source, check the hash, run one command.">
+<title>Scripture — setup scripts for Linux, macOS and Windows</title>
+<meta name="description" content="Scripture collects five setup scripts for Laravel, design skills, GitHub, Freebuff and Claude Code, in Linux, macOS and Windows versions. Read the source, check the hash, run one command.">
 <meta name="theme-color" content="#131209">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Scripture — your dev setup, in one script">
-<meta property="og:description" content="Five bash installers for Laravel, design skills, GitHub, Freebuff and Claude Code. Every download hashed.">
+<meta property="og:description" content="Five setup scripts for Laravel, design skills, GitHub, Freebuff and Claude Code, in Linux, macOS and Windows versions. Every download hashed.">
 <meta property="og:image" content="og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Scripture — your dev setup, in one script">
-<meta name="twitter:description" content="Five bash installers for Laravel, design skills, GitHub, Freebuff and Claude Code.">
+<meta name="twitter:description" content="Five setup scripts for Linux, macOS and Windows: Laravel, design skills, GitHub, Freebuff and Claude Code.">
 <meta name="twitter:image" content="og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -67,7 +67,7 @@
     <a href="#themes" style="--i:3">Design library</a>
     <a href="#faq" style="--i:4">FAQ</a>
   </nav>
-  <p class="mobile__foot">Linux first. Read every script before you run it.</p>
+  <p class="mobile__foot">Linux, macOS and Windows. Read every script before you run it.</p>
 </div>
 
 <main id="main">
@@ -75,12 +75,12 @@
     <div class="wrap hero__grid">
       <div class="hero__text">
         <h1 id="hero-title" data-enter>Your dev setup,<br>in one script.</h1>
-        <p class="lead" data-enter style="--d:1">Five bash installers for Laravel, design skills, GitHub, Freebuff and Claude Code. Pick the one you need, run it in the folder you want it to change, then read the report.</p>
+        <p class="lead" data-enter style="--d:1">Five setup scripts for Laravel, design skills, GitHub, Freebuff and Claude Code, each written for Linux, macOS and Windows. Pick your platform, run the script in the folder you want it to change, then read the report.</p>
         <div class="hero__actions" data-enter style="--d:2">
           <a class="btn btn--primary" href="#scripts">Browse the scripts<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           <a class="link-quiet" href="#safety">Read the safety notes</a>
         </div>
-        <p class="hero__proof" data-enter style="--d:3">5 scripts<span aria-hidden="true"> · </span><span data-total-lines>3,709</span> lines of bash<span aria-hidden="true"> · </span>every download hashed</p>
+        <p class="hero__proof" data-enter style="--d:3">5 scripts<span aria-hidden="true"> · </span>3 platforms<span aria-hidden="true"> · </span><span data-total-lines>7,416</span> lines<span aria-hidden="true"> · </span>every download hashed</p>
       </div>
 
       <div class="hero__art" data-enter style="--d:2">
@@ -90,7 +90,7 @@
             <span class="term__shell">bash</span>
           </div>
           <div class="term__body" aria-hidden="true">
-            <p class="t-line t-cmd"><span class="t-prompt">$</span> bash &lt;(curl -fsSL downloads/setup-skills.sh)</p>
+            <p class="t-line t-cmd"><span class="t-prompt">$</span> bash &lt;(curl -fsSL downloads/linux/setup-skills.sh)</p>
             <div class="t-head">
               <p class="t-title">Setup skills</p>
               <p class="t-sub">design system, agent rules, MCP</p>
@@ -132,8 +132,8 @@
           <p class="body body--wide">A new laptop means a dozen setup pages, a few forgotten exports and one command that only works on the author’s machine. These scripts replace that hour with a run you can read first.</p>
         </div>
         <ul class="facts">
-          <li><span class="facts__label">Readable</span><span class="facts__text">Plain bash, no build step, no package to trust. Open the file before you run it.</span></li>
-          <li><span class="facts__label">Auditable</span><span class="facts__text">Each download carries a sha256, a line count and the commit it came from.</span></li>
+          <li><span class="facts__label">Readable</span><span class="facts__text">Plain bash and PowerShell, no build step, no package to trust. Open the file before you run it.</span></li>
+          <li><span class="facts__label">Auditable</span><span class="facts__text">Each of the fifteen downloads carries a sha256, a line count and the commit it came from.</span></li>
           <li><span class="facts__label">Honest</span><span class="facts__text">Failures are collected and shown at the end, not swallowed mid run.</span></li>
         </ul>
       </div>
@@ -143,8 +143,15 @@
   <section class="section" id="scripts" aria-labelledby="scripts-title">
     <div class="wrap">
       <div class="section__head">
-        <h2 id="scripts-title">Five scripts, one job each</h2>
-        <p class="body body--wide">Download the file or copy the command. Both run the same script from this site, verified against the hash in its row.</p>
+        <h2 id="scripts-title">Five scripts, three platforms</h2>
+        <p class="body body--wide">Pick your system once and every row switches: the command, the download and the source page. Each file is verified against the hash in its row.</p>
+      </div>
+
+      <div class="os-switch" role="group" aria-label="Choose your operating system">
+        <span class="os-switch__label">Your system</span>
+        <button class="filter-btn" type="button" data-os-set="linux" aria-pressed="true">Linux</button>
+        <button class="filter-btn" type="button" data-os-set="mac" aria-pressed="false">macOS</button>
+        <button class="filter-btn" type="button" data-os-set="windows" aria-pressed="false">Windows</button>
       </div>
 
       <div class="filters">
@@ -161,115 +168,240 @@
       </div>
       <p class="filter-count" id="filter-count" role="status" aria-live="polite">5 scripts</p>
 
-      <div class="script-list" id="script-list">
-        <article class="script" data-sudo="no" aria-labelledby="s-skills">
-          <div class="script__main">
-            <div class="script__head">
-              <h3 id="s-skills"><a href="scripts/setup-skills.html">Setup skills</a></h3>
-              <a class="chip chip--link" href="scripts/setup-skills.html" aria-label="Read the setup-skills.sh source">setup-skills.sh</a>
-              <span class="tag">no sudo</span>
-            </div>
-            <p class="script__desc">Installs five design skills, a DESIGN.md and the rules file your agent reads at the start of every session. Prints a report at the end, including what it skipped.</p>
-            <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
-            <code class="script__cmd" data-cmd="setup-skills.sh">bash &lt;(curl -fsSL downloads/setup-skills.sh)</code>
-            <p class="script__meta" data-meta="setup-skills.sh">Reading metadata</p>
+      <div class="script-list" id="script-list" data-os="linux">
+        <article class="script" data-sudo="no" data-sudo-linux="no" data-sudo-mac="no" data-sudo-windows="no" data-tag-linux="no sudo" data-tag-mac="no sudo" data-tag-windows="no admin" aria-labelledby="s-setup-skills">
+          <div class="script__head">
+            <h3 id="s-setup-skills"><a data-detail="setup-skills" href="scripts/setup-skills-linux.html">Setup skills</a></h3>
+            <span class="tag" data-tag>no sudo</span>
           </div>
+          <p class="script__desc">Installs five design skills, a DESIGN.md and the rules file your agent reads at the start of every session. Prints a report at the end, including what it skipped.</p>
+        <div class="variant" data-os="linux">
+          <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
+          <code class="script__cmd" data-cmd="linux/setup-skills.sh">bash &lt;(curl -fsSL downloads/linux/setup-skills.sh)</code>
+          <p class="script__meta" data-meta="linux/setup-skills.sh">Reading metadata</p>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/setup-skills.sh" download aria-label="Download setup-skills.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/linux/setup-skills.sh" download aria-label="Download setup-skills.sh for Linux">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="setup-skills.sh" aria-label="Copy the install command for Setup skills">
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-skills.sh" aria-label="Copy the Linux install command for Setup skills">
               <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
             </button>
           </div>
+        </div>
+        <div class="variant" data-os="mac">
+          <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
+          <code class="script__cmd" data-cmd="mac/setup-skills.sh">bash &lt;(curl -fsSL downloads/mac/setup-skills.sh)</code>
+          <p class="script__meta" data-meta="mac/setup-skills.sh">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/mac/setup-skills.sh" download aria-label="Download setup-skills.sh for macOS">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-skills.sh" aria-label="Copy the macOS install command for Setup skills">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
+        <div class="variant" data-os="windows">
+          <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
+          <code class="script__cmd" data-cmd="windows/setup-skills.ps1">irm downloads/windows/setup-skills.ps1 -OutFile setup-skills.ps1; .\setup-skills.ps1</code>
+          <p class="script__meta" data-meta="windows/setup-skills.ps1">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/windows/setup-skills.ps1" download aria-label="Download setup-skills.ps1 for Windows">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-skills.ps1" aria-label="Copy the Windows install command for Setup skills">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
         </article>
 
-        <article class="script" data-sudo="yes" aria-labelledby="s-laravel">
-          <div class="script__main">
-            <div class="script__head">
-              <h3 id="s-laravel"><a href="scripts/laravel.html">Laravel</a></h3>
-              <a class="chip chip--link" href="scripts/laravel.html" aria-label="Read the setup-laravel.sh source">setup-laravel.sh</a>
-              <span class="tag tag--warn">sudo</span>
-            </div>
-            <p class="script__desc">A guided Laravel install: choose PHP, choose a database, run migrations and finish with a working app in a new folder.</p>
-            <p class="script__needs"><span>Needs</span> PHP 8.2+, Composer, a database</p>
-            <code class="script__cmd" data-cmd="setup-laravel.sh">bash &lt;(curl -fsSL downloads/setup-laravel.sh)</code>
-            <p class="script__meta" data-meta="setup-laravel.sh">Reading metadata</p>
+        <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes" data-tag-linux="sudo" data-tag-mac="no sudo" data-tag-windows="admin for winget" aria-labelledby="s-laravel">
+          <div class="script__head">
+            <h3 id="s-laravel"><a data-detail="laravel" href="scripts/laravel-linux.html">Laravel</a></h3>
+            <span class="tag tag--warn" data-tag>sudo</span>
           </div>
+          <p class="script__desc">A guided Laravel install: choose PHP, choose a database, run migrations and finish with a working app in a new folder.</p>
+        <div class="variant" data-os="linux">
+          <p class="script__needs"><span>Needs</span> PHP 8.2+, Composer, a database</p>
+          <code class="script__cmd" data-cmd="linux/setup-laravel.sh">bash &lt;(curl -fsSL downloads/linux/setup-laravel.sh)</code>
+          <p class="script__meta" data-meta="linux/setup-laravel.sh">Reading metadata</p>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/setup-laravel.sh" download aria-label="Download setup-laravel.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/linux/setup-laravel.sh" download aria-label="Download setup-laravel.sh for Linux">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="setup-laravel.sh" aria-label="Copy the install command for Laravel">
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-laravel.sh" aria-label="Copy the Linux install command for Laravel">
               <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
             </button>
           </div>
+        </div>
+        <div class="variant" data-os="mac">
+          <p class="script__needs"><span>Needs</span> Homebrew, PHP 8.2+, Composer</p>
+          <code class="script__cmd" data-cmd="mac/setup-laravel.sh">bash &lt;(curl -fsSL downloads/mac/setup-laravel.sh)</code>
+          <p class="script__meta" data-meta="mac/setup-laravel.sh">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/mac/setup-laravel.sh" download aria-label="Download setup-laravel.sh for macOS">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-laravel.sh" aria-label="Copy the macOS install command for Laravel">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
+        <div class="variant" data-os="windows">
+          <p class="script__needs"><span>Needs</span> PowerShell 5.1+, PHP 8.2+ or winget</p>
+          <code class="script__cmd" data-cmd="windows/setup-laravel.ps1">irm downloads/windows/setup-laravel.ps1 -OutFile setup-laravel.ps1; .\setup-laravel.ps1</code>
+          <p class="script__meta" data-meta="windows/setup-laravel.ps1">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/windows/setup-laravel.ps1" download aria-label="Download setup-laravel.ps1 for Windows">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-laravel.ps1" aria-label="Copy the Windows install command for Laravel">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
         </article>
 
-        <article class="script" data-sudo="no" aria-labelledby="s-freebuff">
-          <div class="script__main">
-            <div class="script__head">
-              <h3 id="s-freebuff"><a href="scripts/freebuff-zsh.html">Freebuff on zsh</a></h3>
-              <a class="chip chip--link" href="scripts/freebuff-zsh.html" aria-label="Read the setup-freebuff-zsh.sh source">setup-freebuff-zsh.sh</a>
-              <span class="tag">no sudo</span>
-            </div>
-            <p class="script__desc">Checks your Gemini key, installs the Freebuff CLI and adds one marked block to .zshrc. Removes the older .bashrc block it used to write.</p>
-            <p class="script__needs"><span>Needs</span> zsh, npm, a Gemini key</p>
-            <code class="script__cmd" data-cmd="setup-freebuff-zsh.sh">bash &lt;(curl -fsSL downloads/setup-freebuff-zsh.sh)</code>
-            <p class="script__meta" data-meta="setup-freebuff-zsh.sh">Reading metadata</p>
+        <article class="script" data-sudo="no" data-sudo-linux="no" data-sudo-mac="no" data-sudo-windows="no" data-tag-linux="no sudo" data-tag-mac="no sudo" data-tag-windows="no admin" aria-labelledby="s-freebuff-zsh">
+          <div class="script__head">
+            <h3 id="s-freebuff-zsh"><a data-detail="freebuff-zsh" href="scripts/freebuff-zsh-linux.html">Freebuff</a></h3>
+            <span class="tag" data-tag>no sudo</span>
           </div>
+          <p class="script__desc">Checks your Gemini key, installs the Freebuff CLI and adds one marked block to your shell profile. Removes the older block it used to write.</p>
+        <div class="variant" data-os="linux">
+          <p class="script__needs"><span>Needs</span> zsh, npm, a Gemini key</p>
+          <code class="script__cmd" data-cmd="linux/setup-freebuff-zsh.sh">bash &lt;(curl -fsSL downloads/linux/setup-freebuff-zsh.sh)</code>
+          <p class="script__meta" data-meta="linux/setup-freebuff-zsh.sh">Reading metadata</p>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/setup-freebuff-zsh.sh" download aria-label="Download setup-freebuff-zsh.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/linux/setup-freebuff-zsh.sh" download aria-label="Download setup-freebuff-zsh.sh for Linux">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="setup-freebuff-zsh.sh" aria-label="Copy the install command for Freebuff on zsh">
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-freebuff-zsh.sh" aria-label="Copy the Linux install command for Freebuff">
               <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
             </button>
           </div>
+        </div>
+        <div class="variant" data-os="mac">
+          <p class="script__needs"><span>Needs</span> zsh, npm, a Gemini key</p>
+          <code class="script__cmd" data-cmd="mac/setup-freebuff-zsh.sh">bash &lt;(curl -fsSL downloads/mac/setup-freebuff-zsh.sh)</code>
+          <p class="script__meta" data-meta="mac/setup-freebuff-zsh.sh">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/mac/setup-freebuff-zsh.sh" download aria-label="Download setup-freebuff-zsh.sh for macOS">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-freebuff-zsh.sh" aria-label="Copy the macOS install command for Freebuff">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
+        <div class="variant" data-os="windows">
+          <p class="script__needs"><span>Needs</span> PowerShell 5.1+, npm, a Gemini key</p>
+          <code class="script__cmd" data-cmd="windows/setup-freebuff.ps1">irm downloads/windows/setup-freebuff.ps1 -OutFile setup-freebuff.ps1; .\setup-freebuff.ps1</code>
+          <p class="script__meta" data-meta="windows/setup-freebuff.ps1">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/windows/setup-freebuff.ps1" download aria-label="Download setup-freebuff.ps1 for Windows">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-freebuff.ps1" aria-label="Copy the Windows install command for Freebuff">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
         </article>
 
-        <article class="script" data-sudo="yes" aria-labelledby="s-git">
-          <div class="script__main">
-            <div class="script__head">
-              <h3 id="s-git"><a href="scripts/gitcli.html">GitHub helper</a></h3>
-              <a class="chip chip--link" href="scripts/gitcli.html" aria-label="Read the gitcli.sh source">gitcli.sh</a>
-              <span class="tag tag--warn">sudo for deps</span>
-            </div>
-            <p class="script__desc">First push for a local project: checks git, writes a .gitignore, stages what is safe, commits and pushes to your repository.</p>
-            <p class="script__needs"><span>Needs</span> git, curl, figlet, lolcat</p>
-            <code class="script__cmd" data-cmd="gitcli.sh">bash &lt;(curl -fsSL downloads/gitcli.sh)</code>
-            <p class="script__meta" data-meta="gitcli.sh">Reading metadata</p>
+        <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes" data-tag-linux="sudo for deps" data-tag-mac="no sudo" data-tag-windows="admin for winget" aria-labelledby="s-gitcli">
+          <div class="script__head">
+            <h3 id="s-gitcli"><a data-detail="gitcli" href="scripts/gitcli-linux.html">GitHub helper</a></h3>
+            <span class="tag tag--warn" data-tag>sudo for deps</span>
           </div>
+          <p class="script__desc">First push for a local project: checks git, writes a .gitignore, stages what is safe, commits and pushes to your repository.</p>
+        <div class="variant" data-os="linux">
+          <p class="script__needs"><span>Needs</span> git, curl, figlet, lolcat</p>
+          <code class="script__cmd" data-cmd="linux/gitcli.sh">bash &lt;(curl -fsSL downloads/linux/gitcli.sh)</code>
+          <p class="script__meta" data-meta="linux/gitcli.sh">Reading metadata</p>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/gitcli.sh" download aria-label="Download gitcli.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/linux/gitcli.sh" download aria-label="Download gitcli.sh for Linux">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="gitcli.sh" aria-label="Copy the install command for the GitHub helper">
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/gitcli.sh" aria-label="Copy the Linux install command for GitHub helper">
               <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
             </button>
           </div>
+        </div>
+        <div class="variant" data-os="mac">
+          <p class="script__needs"><span>Needs</span> git, curl (figlet and lolcat optional)</p>
+          <code class="script__cmd" data-cmd="mac/gitcli.sh">bash &lt;(curl -fsSL downloads/mac/gitcli.sh)</code>
+          <p class="script__meta" data-meta="mac/gitcli.sh">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/mac/gitcli.sh" download aria-label="Download gitcli.sh for macOS">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/gitcli.sh" aria-label="Copy the macOS install command for GitHub helper">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
+        <div class="variant" data-os="windows">
+          <p class="script__needs"><span>Needs</span> git, PowerShell 5.1+</p>
+          <code class="script__cmd" data-cmd="windows/gitcli.ps1">irm downloads/windows/gitcli.ps1 -OutFile gitcli.ps1; .\gitcli.ps1</code>
+          <p class="script__meta" data-meta="windows/gitcli.ps1">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/windows/gitcli.ps1" download aria-label="Download gitcli.ps1 for Windows">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/gitcli.ps1" aria-label="Copy the Windows install command for GitHub helper">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
         </article>
 
-        <article class="script" data-sudo="yes" aria-labelledby="s-claude">
-          <div class="script__main">
-            <div class="script__head">
-              <h3 id="s-claude"><a href="scripts/claude-code.html">Claude Code on Ollama</a></h3>
-              <a class="chip chip--link" href="scripts/claude-code.html" aria-label="Read the ClaudeCode.sh source">ClaudeCode.sh</a>
-              <span class="tag tag--warn">sudo</span>
-            </div>
-            <p class="script__desc">Installs Ollama, picks a Gemma model for your RAM, adds Node.js and Claude Code, then writes the local Anthropic endpoints to your shell config. Ends with a test prompt.</p>
-            <p class="script__needs"><span>Needs</span> curl, sudo, Node.js if missing</p>
-            <code class="script__cmd" data-cmd="ClaudeCode.sh">bash &lt;(curl -fsSL downloads/ClaudeCode.sh)</code>
-            <p class="script__meta" data-meta="ClaudeCode.sh">Reading metadata</p>
+        <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes" data-tag-linux="sudo" data-tag-mac="no sudo" data-tag-windows="admin for winget" aria-labelledby="s-claude-code">
+          <div class="script__head">
+            <h3 id="s-claude-code"><a data-detail="claude-code" href="scripts/claude-code-linux.html">Claude Code on Ollama</a></h3>
+            <span class="tag tag--warn" data-tag>sudo</span>
           </div>
+          <p class="script__desc">Installs Ollama, picks a Gemma model for your RAM, adds Node.js and Claude Code, then writes the local Anthropic endpoints to your shell config. Ends with a test prompt.</p>
+        <div class="variant" data-os="linux">
+          <p class="script__needs"><span>Needs</span> curl, sudo, Node.js if missing</p>
+          <code class="script__cmd" data-cmd="linux/claude-code.sh">bash &lt;(curl -fsSL downloads/linux/claude-code.sh)</code>
+          <p class="script__meta" data-meta="linux/claude-code.sh">Reading metadata</p>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/ClaudeCode.sh" download aria-label="Download ClaudeCode.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/linux/claude-code.sh" download aria-label="Download claude-code.sh for Linux">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="ClaudeCode.sh" aria-label="Copy the install command for Claude Code on Ollama">
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/claude-code.sh" aria-label="Copy the Linux install command for Claude Code on Ollama">
               <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
             </button>
           </div>
+        </div>
+        <div class="variant" data-os="mac">
+          <p class="script__needs"><span>Needs</span> Homebrew, curl, network</p>
+          <code class="script__cmd" data-cmd="mac/claude-code.sh">bash &lt;(curl -fsSL downloads/mac/claude-code.sh)</code>
+          <p class="script__meta" data-meta="mac/claude-code.sh">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/mac/claude-code.sh" download aria-label="Download claude-code.sh for macOS">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/claude-code.sh" aria-label="Copy the macOS install command for Claude Code on Ollama">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
+        <div class="variant" data-os="windows">
+          <p class="script__needs"><span>Needs</span> PowerShell 5.1+, winget</p>
+          <code class="script__cmd" data-cmd="windows/claude-code.ps1">irm downloads/windows/claude-code.ps1 -OutFile claude-code.ps1; .\claude-code.ps1</code>
+          <p class="script__meta" data-meta="windows/claude-code.ps1">Reading metadata</p>
+          <div class="script__actions">
+            <a class="btn btn--primary btn--sm" href="downloads/windows/claude-code.ps1" download aria-label="Download claude-code.ps1 for Windows">
+              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+            </a>
+            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/claude-code.ps1" aria-label="Copy the Windows install command for Claude Code on Ollama">
+              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
+            </button>
+          </div>
+        </div>
         </article>
       </div>
 
@@ -315,12 +447,12 @@
 
         <ul class="safety-list">
           <li>
-            <h3>Root only where a package manager needs it</h3>
-            <p>The Laravel installer calls apt, dnf, pacman or zypper. The GitHub helper installs figlet and lolcat, and the Claude Code installer adds Node.js when it is missing. Setup skills and Freebuff never ask for sudo.</p>
+            <h3>Elevation only where a package manager needs it</h3>
+            <p>On Linux the Laravel installer calls apt, dnf, pacman or zypper. On macOS it uses Homebrew without sudo. On Windows, winget may ask for an administrator prompt. Setup skills never asks for either.</p>
           </li>
           <li>
             <h3>Writes stay where you started</h3>
-            <p>The skills installer and the Laravel wizard write inside the current folder. The Freebuff script adds one marked block to ~/.zshrc and removes the block it wrote there before.</p>
+            <p>The skills installer and the Laravel wizard write inside the current folder. The Freebuff script adds one marked block to <code>~/.zshrc</code> on Linux and macOS, or to <code>$PROFILE</code> on Windows, and replaces that block on later runs.</p>
           </li>
           <li>
             <h3>Read it first, then run it</h3>
@@ -339,12 +471,12 @@
           <tbody>
             <tr><th scope="row">Setup skills</th><td><code>.claude/skills</code>, <code>.agents/skills</code>, <code>DESIGN.md</code>, <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.mcp.json</code>, <code>skill-instructions.md</code></td></tr>
             <tr><th scope="row">Laravel</th><td>A new project folder, its <code>.env</code>, system packages and a database</td></tr>
-            <tr><th scope="row">Freebuff on zsh</th><td><code>~/.zshrc</code>, one marked block, and the global npm package</td></tr>
+            <tr><th scope="row">Freebuff</th><td><code>~/.zshrc</code> on Linux and macOS, <code>$PROFILE</code> on Windows, one marked block, and the global npm package</td></tr>
             <tr><th scope="row">GitHub helper</th><td><code>.gitignore</code>, a commit, and the push to your remote</td></tr>
-            <tr><th scope="row">Claude Code</th><td>Ollama, a Gemma model, Claude Code and six <code>ANTHROPIC_</code> export lines in <code>.zshrc</code> or <code>.bashrc</code></td></tr>
+            <tr><th scope="row">Claude Code</th><td>Ollama, a Gemma model, Claude Code and six <code>ANTHROPIC_</code> export lines in <code>.zshrc</code> or <code>.bashrc</code>, or as user variables on Windows</td></tr>
           </tbody>
         </table>
-        <p class="panel__note">To undo: delete the folders and rule files the report lists, remove the marked block between the freebuff lines in <code>~/.zshrc</code>, delete the <code>ANTHROPIC_</code> exports, and drop the database the Laravel run created.</p>
+        <p class="panel__note">To undo: delete the folders and rule files the report lists, remove the marked block between the freebuff lines in your shell config, delete the <code>ANTHROPIC_</code> exports or user variables, and drop the database the Laravel run created.</p>
       </div>
     </div>
   </section>
@@ -374,12 +506,12 @@
       <h2 id="faq-title">Questions before a run</h2>
       <div class="faq">
         <details>
-          <summary>Do I need sudo?</summary>
-          <p>Three scripts ask for it. The Laravel installer uses your package manager for PHP and database packages. The GitHub helper installs figlet and lolcat, and the Claude Code installer adds Node.js when it is missing. Setup skills and Freebuff never call sudo.</p>
+          <summary>Do I need sudo or admin rights?</summary>
+          <p>It depends on the platform. Linux uses sudo for PHP, database and helper packages. macOS uses Homebrew and never calls sudo. Windows may show an administrator prompt when winget installs PHP, Ollama or the database. Setup skills and Freebuff never ask for either.</p>
         </details>
         <details>
           <summary>Which systems are supported?</summary>
-          <p>The scripts target Linux. Package installs cover apt, dnf, pacman and zypper. On macOS, expect to install PHP and your database yourself. On Windows, run them inside WSL.</p>
+          <p>Every script ships in three versions: bash for Linux, bash for macOS, and PowerShell for Windows 10 and 11. Package installs cover apt, dnf, pacman and zypper on Linux, Homebrew on macOS, and winget on Windows. Pick your system above and the downloads follow.</p>
         </details>
         <details>
           <summary>Can I read a script before running it?</summary>
@@ -391,15 +523,15 @@
         </details>
         <details>
           <summary>Will it overwrite my files?</summary>
-          <p>The Laravel wizard creates a new project folder. The skills installer adds files to the current folder and keeps an existing DESIGN.md as DESIGN.md.bak. The Freebuff and Claude Code scripts append only their own marked export lines to your shell config.</p>
+          <p>The Laravel wizard creates a new project folder. The skills installer adds files to the current folder and keeps an existing DESIGN.md as DESIGN.md.bak. Freebuff and Claude Code only touch their own marked block in your shell config or, on Windows, their own user variables.</p>
         </details>
         <details>
           <summary>How do I remove what it installed?</summary>
-          <p>Delete the folders and rule files named in the final report. For Freebuff, remove the block between the freebuff markers in ~/.zshrc. For Claude Code, delete the ANTHROPIC_ exports. For Laravel, drop the database and delete the project folder.</p>
+          <p>Delete the folders and rule files named in the final report. For Freebuff, remove the block between the freebuff markers in <code>~/.zshrc</code> or <code>$PROFILE</code>. For Claude Code, delete the <code>ANTHROPIC_</code> exports or user variables. For Laravel, drop the database and delete the project folder.</p>
         </details>
         <details>
-          <summary>Why bash and not a package manager?</summary>
-          <p>Every system has bash. A script is one file you can read end to end, with no runtime, no registry and no build step. The trade off is that you should read what you run.</p>
+          <summary>Why shell scripts and not a package manager?</summary>
+          <p>Bash is already on Linux and macOS, and PowerShell is already on Windows. A script is one file you can read end to end, with no runtime, no registry and no build step. The trade off is that you should read what you run.</p>
         </details>
         <details>
           <summary>Where do the downloads come from?</summary>
@@ -443,13 +575,13 @@
   "@context": "https://schema.org",
   "@type": "FAQPage",
   "mainEntity": [
-    {"@type": "Question", "name": "Do I need sudo?", "acceptedAnswer": {"@type": "Answer", "text": "Only two scripts ask for it. The Laravel installer uses your package manager, and the GitHub helper installs figlet and lolcat if missing."}},
-    {"@type": "Question", "name": "Which systems are supported?", "acceptedAnswer": {"@type": "Answer", "text": "The scripts target Linux, with apt, dnf, pacman and zypper covered. macOS needs PHP and the database installed first. Windows runs them inside WSL."}},
+    {"@type": "Question", "name": "Do I need sudo or admin rights?", "acceptedAnswer": {"@type": "Answer", "text": "Linux uses sudo for package installs, macOS uses Homebrew without sudo, and Windows may prompt for administrator rights when winget installs a package. Setup skills never asks for either."}},
+    {"@type": "Question", "name": "Which systems are supported?", "acceptedAnswer": {"@type": "Answer", "text": "Every script ships in three versions: bash for Linux, bash for macOS, and PowerShell for Windows 10 and 11. Package installs use apt, dnf, pacman or zypper, Homebrew, or winget."}},
     {"@type": "Question", "name": "Can I read a script before running it?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Download the file, open it in an editor, and compare its sha256 with the hash on the page."}},
     {"@type": "Question", "name": "What happens when a step fails?", "acceptedAnswer": {"@type": "Answer", "text": "The run records the failure and prints a report at the end. Long commands log to .design-setup-logs in the folder you ran from."}},
     {"@type": "Question", "name": "Will it overwrite my files?", "acceptedAnswer": {"@type": "Answer", "text": "Laravel creates a new project folder. The skills installer keeps an existing DESIGN.md as DESIGN.md.bak. Freebuff replaces only its own marked block."}},
-    {"@type": "Question", "name": "How do I remove what it installed?", "acceptedAnswer": {"@type": "Answer", "text": "Delete the folders and files named in the final report, remove the freebuff block from .zshrc, and drop the database created by Laravel."}},
-    {"@type": "Question", "name": "Why bash and not a package manager?", "acceptedAnswer": {"@type": "Answer", "text": "Bash exists on every system. A script is one readable file with no runtime, registry or build step."}},
+    {"@type": "Question", "name": "How do I remove what it installed?", "acceptedAnswer": {"@type": "Answer", "text": "Delete the folders and files named in the final report, remove the freebuff block from your shell config or PowerShell profile, and drop the database created by Laravel."}},
+    {"@type": "Question", "name": "Why shell scripts and not a package manager?", "acceptedAnswer": {"@type": "Answer", "text": "Bash ships with Linux and macOS, PowerShell with Windows. A script is one readable file with no runtime, registry or build step."}},
     {"@type": "Question", "name": "Where do the downloads come from?", "acceptedAnswer": {"@type": "Answer", "text": "The site copies files from the repository at build time, hashes each one and serves that exact copy. The footer shows the source commit."}}
   ]
 }

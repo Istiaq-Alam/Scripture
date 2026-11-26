@@ -60,6 +60,14 @@ Headings use `text-wrap: balance`, body uses `text-wrap: pretty`.
 Controls 8, cards and panels 16, chips 6, keycaps 4. Nested elements step down with their
 padding.
 
+## Platform switcher
+
+The scripts section shows one platform at a time: Linux, macOS, Windows. It reuses the
+filter button shape, the amber active state and 8px gaps. Only the selected platform's
+command, metadata, download and source link are visible; the choice is kept in `?os=`.
+On a detail page the same control becomes three small page tabs, with the current one
+marked in amber.
+
 ## Motion
 
 One curve: `cubic-bezier(.22,1,.36,1)`. Hover and press 150ms, entrances 700ms, menu and

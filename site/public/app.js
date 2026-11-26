@@ -13,10 +13,84 @@
 
   const downloadsBase = document.body.dataset.downloads || "downloads/";
   const downloadUrl = (file) => new URL(`${downloadsBase}${file}`, location.href).href;
+  const basename = (file) => file.split("/").pop();
 
-  document.querySelectorAll("[data-cmd]").forEach((node) => {
-    node.textContent = `bash <(curl -fsSL ${downloadUrl(node.dataset.cmd)})`;
+  const OSES = ["linux", "mac", "windows"];
+
+  const commandFor = (file) => {
+    const url = downloadUrl(file);
+    if (file.endsWith(".ps1")) {
+      const name = basename(file);
+      return `irm ${url} -OutFile ${name}; .\\${name}`;
+    }
+    return `bash <(curl -fsSL ${url})`;
+  };
+
+  const renderCommands = () => {
+    document.querySelectorAll("[data-cmd]").forEach((node) => {
+      node.textContent = commandFor(node.dataset.cmd);
+    });
+  };
+
+  const detectOs = () => {
+    const hint = (
+      navigator.userAgentData?.platform ||
+      navigator.platform ||
+      navigator.userAgent ||
+      ""
+    ).toLowerCase();
+    if (hint.includes("win")) return "windows";
+    if (hint.includes("mac")) return "mac";
+    return "linux";
+  };
+
+  const requested = new URLSearchParams(location.search).get("os");
+  let currentOs = OSES.includes(requested) ? requested : detectOs();
+
+  const osButtons = [...document.querySelectorAll("[data-os-set]")];
+  const scriptList = document.getElementById("script-list");
+
+  let applyFilters = () => {};
+
+  function setOs(os, updateUrl = true) {
+    if (!OSES.includes(os)) os = "linux";
+    currentOs = os;
+
+    if (scriptList) scriptList.dataset.os = os;
+    osButtons.forEach((button) => {
+      button.setAttribute("aria-pressed", String(button.dataset.osSet === os));
+    });
+
+    document.querySelectorAll("[data-detail]").forEach((link) => {
+      link.href = `scripts/${link.dataset.detail}-${os}.html`;
+    });
+
+    document.querySelectorAll("#script-list .script").forEach((row) => {
+      const sudo = row.dataset[`sudo${os[0].toUpperCase()}${os.slice(1)}`];
+      if (sudo) row.dataset.sudo = sudo;
+      const tag = row.dataset[`tag${os[0].toUpperCase()}${os.slice(1)}`];
+      const tagNode = row.querySelector("[data-tag]");
+      if (tagNode && tag) {
+        tagNode.textContent = tag;
+        tagNode.classList.toggle("tag--warn", row.dataset.sudo === "yes");
+      }
+    });
+
+    renderCommands();
+    applyFilters();
+
+    if (updateUrl) {
+      const next = new URLSearchParams(location.search);
+      next.set("os", os);
+      history.replaceState(null, "", `${location.pathname}?${next.toString()}${location.hash}`);
+    }
+  }
+
+  osButtons.forEach((button) => {
+    button.addEventListener("click", () => setOs(button.dataset.osSet));
   });
+
+  renderCommands();
 
   fetch(new URL(`${downloadsBase}manifest.json`, location.href), { cache: "no-cache" })
     .then((response) => (response.ok ? response.json() : Promise.reject(new Error("no manifest"))))
@@ -40,10 +114,15 @@
       const sync = document.querySelector("[data-sync]");
       if (sync) {
         const date = new Date(manifest.generatedAt);
-        const stamp = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-        sync.textContent = manifest.commit === "local"
-          ? `Local build · ${stamp}`
-          : `Synced ${stamp} · commit ${manifest.commit}`;
+        const stamp = date.toLocaleDateString("en-GB", {
+          day: "numeric",
+          month: "short",
+          year: "numeric",
+        });
+        sync.textContent =
+          manifest.commit === "local"
+            ? `Local build · ${stamp}`
+            : `Synced ${stamp} · commit ${manifest.commit}`;
       }
     })
     .catch(() => {
@@ -82,12 +161,12 @@
       if (label) label.textContent = "Copying…";
 
       try {
-        await copyText(`bash <(curl -fsSL ${downloadUrl(file)})`);
+        await copyText(commandFor(file));
         if (label) label.textContent = "Copied";
-        say(`Install command for ${file} copied to the clipboard.`);
+        say(`Install command for ${basename(file)} copied to the clipboard.`);
       } catch {
         if (label) label.textContent = "Copy failed";
-        say(`Copy failed. Select the command for ${file} and copy it manually.`);
+        say(`Copy failed. Select the command for ${basename(file)} and copy it manually.`);
       } finally {
         button.disabled = false;
         clearTimeout(resetTimer);
@@ -108,16 +187,23 @@
   const clearFilters = document.getElementById("clear-filters");
 
   if (searchInput && filterCount && scriptRows.length) {
-    scriptRows.forEach((row) => {
-      row.dataset.search = row.textContent.replace(/\s+/g, " ").trim().toLowerCase();
-    });
+    const buildSearchIndex = () => {
+      scriptRows.forEach((row) => {
+        const variant = row.querySelector(`.variant[data-os="${currentOs}"]`);
+        const detail = variant ? variant.textContent : "";
+        row.dataset.search = `${row.querySelector("h3")?.textContent || ""} ${detail}`
+          .replace(/\s+/g, " ")
+          .trim()
+          .toLowerCase();
+      });
+    };
 
     let privilege = "all";
     const params = new URLSearchParams(location.search);
     if (params.get("q")) searchInput.value = params.get("q");
     if (["no", "yes"].includes(params.get("sudo"))) privilege = params.get("sudo");
 
-    const applyFilters = (updateUrl = true) => {
+    const apply = (updateUrl = true) => {
       const terms = searchInput.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
       let shown = 0;
 
@@ -134,36 +220,55 @@
       });
 
       filterCount.textContent =
-        shown === scriptRows.length ? `${scriptRows.length} scripts` : `${shown} of ${scriptRows.length} scripts`;
+        shown === scriptRows.length
+          ? `${scriptRows.length} scripts`
+          : `${shown} of ${scriptRows.length} scripts`;
       if (emptyState) emptyState.hidden = shown !== 0;
 
       if (updateUrl) {
         const next = new URLSearchParams();
         if (searchInput.value.trim()) next.set("q", searchInput.value.trim());
         if (privilege !== "all") next.set("sudo", privilege);
-        const query = next.toString();
-        history.replaceState(null, "", `${location.pathname}${query ? `?${query}` : ""}${location.hash}`);
+        next.set("os", currentOs);
+        history.replaceState(
+          null,
+          "",
+          `${location.pathname}?${next.toString()}${location.hash}`
+        );
       }
     };
 
-    searchInput.addEventListener("input", () => applyFilters());
+    const buildAndApply = (updateUrl = true) => {
+      buildSearchIndex();
+      apply(updateUrl);
+    };
+
+    applyFilters = () => {
+      if (!scriptRows.length) return;
+      buildSearchIndex();
+      apply(false);
+    };
+
+    searchInput.addEventListener("input", () => buildAndApply());
 
     filterButtons.forEach((button) => {
       button.addEventListener("click", () => {
         privilege = button.dataset.filter;
-        applyFilters();
+        buildAndApply();
       });
     });
 
     clearFilters?.addEventListener("click", () => {
       searchInput.value = "";
       privilege = "all";
-      applyFilters();
+      buildAndApply();
       searchInput.focus();
     });
 
-    applyFilters(false);
+    buildAndApply(false);
   }
+
+  setOs(currentOs, false);
 
   /* ---------- mobile menu ---------- */
 

@@ -1382,6 +1382,72 @@ summary {
   width: 100%;
 }
 
+/* ---------- per-OS switch and variants ---------- */
+
+.os-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.os-switch__label {
+  margin-right: 4px;
+  font-family: var(--mono);
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--muted);
+}
+
+.os-switch--page {
+  margin: 24px 0 16px;
+}
+
+a.filter-btn {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.filter-btn.is-current,
+.filter-btn[aria-current="page"] {
+  border-color: rgba(255, 176, 0, 0.5);
+  background: rgba(255, 176, 0, 0.06);
+  color: var(--amber-hi);
+}
+
+.variant {
+  display: none;
+}
+
+#script-list[data-os="linux"] .variant[data-os="linux"],
+#script-list[data-os="mac"] .variant[data-os="mac"],
+#script-list[data-os="windows"] .variant[data-os="windows"] {
+  display: block;
+}
+
+.script__actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.script__actions .btn {
+  width: auto;
+}
+
+@media (max-width: 480px) {
+  .script__actions {
+    flex-direction: column;
+  }
+
+  .script__actions .btn {
+    width: 100%;
+  }
+}
+
 /* ---------- how it works ---------- */
 
 .steps {
@@ -1878,8 +1944,8 @@ kbd {
   }
 
   .script {
-    grid-template-columns: minmax(0, 1fr) 220px;
-    gap: 32px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
     padding: 24px;
   }
 
@@ -1903,7 +1969,7 @@ kbd {
   }
 
   .script__actions .btn {
-    width: 100%;
+    width: auto;
   }
 
   .cta {

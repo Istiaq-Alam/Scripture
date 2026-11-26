@@ -3,6 +3,7 @@
 //   node scripts/checks.mjs
 import { chromium } from "playwright-core";
 import { createHash } from "node:crypto";
+import { SCRIPTS, OSES } from "./data.mjs";
 
 const BASE = process.env.SITE_URL || "http://127.0.0.1:3000";
 const browser = await chromium.launch({
@@ -16,15 +17,16 @@ const fail = (label, detail) => {
   failures.push(`${label}${detail ? `: ${detail}` : ""}`);
   console.log(`FAIL ${label}${detail ? `: ${detail}` : ""}`);
 };
+const basename = (file) => file.split("/").pop();
 
 /* ---------- mobile menu ---------- */
 
 {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
 
   await page.getByRole("button", { name: "Open menu" }).click();
-  if (await page.locator("#mobile-menu").getAttribute("aria-hidden") !== "false") {
+  if ((await page.locator("#mobile-menu").getAttribute("aria-hidden")) !== "false") {
     fail("menu opens", "aria-hidden stayed true");
   } else {
     pass("menu opens and marks itself expanded");
@@ -36,7 +38,7 @@ const fail = (label, detail) => {
 
   await page.keyboard.press("Escape");
   await page.waitForTimeout(350);
-  if (await page.locator("#mobile-menu").getAttribute("aria-hidden") !== "true") {
+  if ((await page.locator("#mobile-menu").getAttribute("aria-hidden")) !== "true") {
     fail("Escape closes the menu");
   } else {
     pass("Escape closes the menu");
@@ -45,7 +47,7 @@ const fail = (label, detail) => {
   await page.getByRole("button", { name: "Open menu" }).click();
   await page.locator("#mobile-menu a[href='#safety']").click();
   await page.waitForTimeout(600);
-  if (await page.locator("#mobile-menu").getAttribute("aria-hidden") !== "true") {
+  if ((await page.locator("#mobile-menu").getAttribute("aria-hidden")) !== "true") {
     fail("menu link closes the menu");
   } else {
     pass("menu link closes the menu and jumps to the section");
@@ -59,15 +61,15 @@ const fail = (label, detail) => {
 {
   const context = await browser.newContext({ permissions: ["clipboard-read", "clipboard-write"] });
   const page = await context.newPage();
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
 
-  const button = page.locator("[data-copy='setup-laravel.sh']");
+  const button = page.locator("[data-copy='linux/setup-laravel.sh']");
   await button.click();
   await page.waitForTimeout(250);
 
   const clipboard = await page.evaluate(() => navigator.clipboard.readText());
-  const expected = `bash <(curl -fsSL ${BASE}/downloads/setup-laravel.sh)`;
-  if (clipboard === expected) pass("copy button writes the install command");
+  const expected = `bash <(curl -fsSL ${BASE}/downloads/linux/setup-laravel.sh)`;
+  if (clipboard === expected) pass("copy button writes the Linux install command");
   else fail("clipboard", `got ${JSON.stringify(clipboard)}`);
 
   const label = (await button.textContent()).trim();
@@ -79,7 +81,7 @@ const fail = (label, detail) => {
   else fail("copy status", status);
 
   await page.locator(".faq summary").first().click();
-  if (await page.locator(".faq details").first().getAttribute("open") !== null) {
+  if ((await page.locator(".faq details").first().getAttribute("open")) !== null) {
     pass("FAQ item opens");
   } else {
     fail("FAQ item opens");
@@ -88,11 +90,64 @@ const fail = (label, detail) => {
   await context.close();
 }
 
+/* ---------- operating system switch ---------- */
+
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
+
+  const list = page.locator("#script-list");
+  if ((await list.getAttribute("data-os")) === "linux") pass("list starts on Linux");
+  else fail("initial OS", await list.getAttribute("data-os"));
+
+  await page.getByRole("button", { name: "macOS", exact: true }).click();
+  await page.waitForTimeout(120);
+  if ((await list.getAttribute("data-os")) === "mac") pass("macOS switch updates the list");
+  else fail("macOS switch", await list.getAttribute("data-os"));
+
+  const macCommand = await page
+    .locator(".script .variant[data-os='mac'] [data-cmd='mac/setup-skills.sh']")
+    .textContent();
+  if (macCommand.includes("/downloads/mac/setup-skills.sh"))
+    pass("macOS command points at the mac download");
+  else fail("macOS command", macCommand);
+
+  const macHidden = await page.locator(".script .variant[data-os='linux']").first().isHidden();
+  if (macHidden) pass("Linux variants are hidden while macOS is active");
+  else fail("variant visibility", "linux variant still visible");
+
+  const detail = await page.locator("a[data-detail='setup-skills']").getAttribute("href");
+  if (detail === "scripts/setup-skills-mac.html") pass("detail link follows the OS");
+  else fail("detail link", detail);
+
+  if (new URL(page.url()).searchParams.get("os") === "mac") pass("OS choice is written to the URL");
+  else fail("OS URL", page.url());
+
+  await page.getByRole("button", { name: "Windows", exact: true }).click();
+  await page.waitForTimeout(120);
+  const winCommand = await page
+    .locator(".script .variant[data-os='windows'] [data-cmd='windows/setup-skills.ps1']")
+    .textContent();
+  if (winCommand.startsWith("irm ") && winCommand.includes("setup-skills.ps1"))
+    pass("Windows command uses irm and the .ps1 name");
+  else fail("Windows command", winCommand);
+
+  const tag = await page.locator("#s-setup-skills").locator("xpath=../..").locator("[data-tag]").textContent();
+  if (tag.trim() === "no admin") pass("tags switch with the platform");
+  else fail("OS tag", tag);
+
+  const sudoVisible = await page.locator("#script-list .script[data-sudo='yes']:visible").count();
+  if (sudoVisible === 3) pass("sudo filter data follows the platform (3 admin scripts on Windows)");
+  else fail("sudo data", `${sudoVisible} rows marked yes`);
+
+  await page.close();
+}
+
 /* ---------- every link resolves ---------- */
 
 {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
 
   const links = await page.$$eval("a[href]", (nodes) =>
     [...new Set(nodes.map((node) => node.getAttribute("href")))]
@@ -117,7 +172,7 @@ const fail = (label, detail) => {
 
 {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
 
   const search = page.locator("#script-search");
   const visibleRows = () => page.locator("#script-list .script:visible").count();
@@ -140,7 +195,7 @@ const fail = (label, detail) => {
   if ((await visibleRows()) === 3) pass("sudo filter keeps the three scripts that use it");
   else fail("sudo filter", `${await visibleRows()} rows`);
 
-  if (await page.getByRole("button", { name: "Uses sudo" }).getAttribute("aria-pressed") === "true") {
+  if ((await page.getByRole("button", { name: "Uses sudo" }).getAttribute("aria-pressed")) === "true") {
     pass("active filter reports aria-pressed");
   } else {
     fail("filter state", "aria-pressed not set");
@@ -167,30 +222,27 @@ const fail = (label, detail) => {
 {
   const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
   const manifest = await (await page.request.get(`${BASE}/downloads/manifest.json`)).json();
-  const pages = [
-    ["setup-skills", "setup-skills.sh"],
-    ["laravel", "setup-laravel.sh"],
-    ["freebuff-zsh", "setup-freebuff-zsh.sh"],
-    ["gitcli", "gitcli.sh"],
-    ["claude-code", "ClaudeCode.sh"],
-  ];
 
-  for (const [slug, file] of pages) {
-    const response = await page.request.get(`${BASE}/scripts/${slug}.html`);
-    const html = await response.text();
-    const lines = manifest.files[file].lines;
+  for (const script of SCRIPTS) {
+    for (const os of OSES) {
+      const variant = script.variants[os.id];
+      const slug = `${script.slug}-${os.id}`;
+      const response = await page.request.get(`${BASE}/scripts/${slug}.html`);
+      const html = await response.text();
+      const lines = manifest.files[variant.file].lines;
 
-    if (response.ok()) pass(`page /scripts/${slug}`);
-    else fail(`page /scripts/${slug}`, `status ${response.status()}`);
+      if (response.ok()) pass(`page /scripts/${slug}`);
+      else fail(`page /scripts/${slug}`, `status ${response.status()}`);
 
-    if (html.includes('id="L1"') && html.includes(`id="L${lines}"`)) {
-      pass(`line anchors 1-${lines} on ${slug}`);
-    } else {
-      fail(`line anchors ${slug}`, `missing L1 or L${lines}`);
+      if (html.includes('id="L1"') && html.includes(`id="L${lines}"`)) {
+        pass(`line anchors 1-${lines} on ${slug}`);
+      } else {
+        fail(`line anchors ${slug}`, `missing L1 or L${lines}`);
+      }
     }
   }
 
-  await page.goto(`${BASE}/scripts/laravel.html`, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}/scripts/laravel-mac.html`, { waitUntil: "networkidle" });
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth
   );
@@ -198,8 +250,13 @@ const fail = (label, detail) => {
   else fail("detail overflow", `${overflow}px`);
 
   const label = await page.locator(".viewer").getAttribute("aria-label");
-  if (label.includes("setup-laravel.sh") && label.includes("1765")) pass("viewer names the file and line count");
-  else fail("viewer label", label);
+  if (label.includes("mac/setup-laravel.sh") && label.includes("500")) {
+    pass("viewer names the file and line count");
+  } else fail("viewer label", label);
+
+  const tabs = await page.locator(".os-switch--page a").count();
+  if (tabs === 3) pass("detail page offers three platform tabs");
+  else fail("detail tabs", `${tabs} tabs`);
 
   await page.close();
 }
@@ -208,7 +265,7 @@ const fail = (label, detail) => {
 
 {
   const page = await browser.newPage({ viewport: { width: 320, height: 640 } });
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
   const overflow = await page.evaluate(
     () => document.documentElement.scrollWidth - document.documentElement.clientWidth
   );
@@ -220,11 +277,12 @@ const fail = (label, detail) => {
 {
   const context = await browser.newContext({ reducedMotion: "reduce" });
   const page = await context.newPage();
-  await page.goto(BASE, { waitUntil: "networkidle" });
-  const hidden = await page.evaluate(() =>
-    [...document.querySelectorAll("main section")].filter(
-      (node) => Number(getComputedStyle(node).opacity) < 0.9
-    ).length
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
+  const hidden = await page.evaluate(
+    () =>
+      [...document.querySelectorAll("main section")].filter(
+        (node) => Number(getComputedStyle(node).opacity) < 0.9
+      ).length
   );
   if (hidden === 0) pass("reduced motion shows every section");
   else fail("reduced motion", `${hidden} section(s) hidden`);
@@ -238,6 +296,11 @@ const fail = (label, detail) => {
   const copyVisible = await page.locator("[data-copy]").first().isVisible();
   if (!copyVisible) pass("copy buttons are hidden without JS");
   else fail("no JS", "copy button still visible");
+
+  const linuxVisible = await page.locator(".variant[data-os='linux']").first().isVisible();
+  const winHidden = await page.locator(".variant[data-os='windows']").first().isHidden();
+  if (linuxVisible && winHidden) pass("without JS the Linux download is the visible default");
+  else fail("no JS platform default", `linux=${linuxVisible} windowsHidden=${winHidden}`);
 
   const sectionsVisible = await page.evaluate(() =>
     [...document.querySelectorAll("main section")].every(
@@ -253,7 +316,7 @@ const fail = (label, detail) => {
 
 {
   const page = await browser.newPage();
-  await page.goto(BASE, { waitUntil: "networkidle" });
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
 
   const manifest = await (await page.request.get(`${BASE}/downloads/manifest.json`)).json();
 
@@ -264,7 +327,7 @@ const fail = (label, detail) => {
     else fail(`hash ${file}`, "download does not match manifest");
 
     const disposition = response.headers()["content-disposition"] || "";
-    if (disposition.includes(file)) pass(`attachment header ${file}`);
+    if (disposition.includes(basename(file))) pass(`attachment header ${file}`);
     else fail(`attachment header ${file}`, disposition);
   }
 

@@ -1,8 +1,9 @@
 # Scripture site
 
-Static download page for the five installers in the repository root, plus one detail page
-per script with its full source, line numbers and line anchors. Plain HTML, CSS and
-JavaScript on a small dependency free Node server.
+Static download page for the fifteen installers in this repository: five jobs, each in a
+Linux, macOS and Windows version. One detail page per script and platform with its full
+source, line numbers and line anchors. Plain HTML, CSS and JavaScript on a small
+dependency free Node server.
 
 ## Run locally
 
@@ -12,9 +13,10 @@ npm install
 npm start
 ```
 
-`npm start` copies the five scripts from the repo root into `public/downloads`, hashes each
-one, writes `public/downloads/manifest.json`, generates `public/scripts/<slug>.html` for
-each script, then serves the site at <http://localhost:3000>.
+`npm start` copies every script from `linux/`, `mac/` and `windows/` into
+`public/downloads/<platform>/`, hashes each one, writes
+`public/downloads/manifest.json`, generates `public/scripts/<slug>-<os>.html` for each
+variant, then serves the site at <http://localhost:3000>.
 
 ## Build and deploy
 
@@ -36,40 +38,59 @@ as a Pages artifact on every push to `main`.
 4. The site lands at `https://<user>.github.io/<repo>/`, or at the root of a
    `<user>.github.io` repository.
 
-Pages serves files without the headers `server.mjs` sets. The `download` attribute on each
-link still saves the script, and `curl` in the install command ignores headers anyway.
-If you later add a custom domain, set it in **Settings → Pages**; the relative links keep
-working.
-
 ### Vercel
 
 Set the project root to `site`, the build command to `npm run build` and the output
 directory to `public`.
 
-`server.mjs` serves shell scripts as `text/x-shellscript` with
-`Content-Disposition: attachment`. Static hosts will serve them as plain files; links and
-`curl` still work.
+### Content types
+
+`server.mjs` serves `.sh` and `.ps1` files as attachments with a plain text type. Pages
+serves them as plain files; the `download` attribute and `curl`/`irm` still work.
 
 ## Pages
 
 | Path | Contents |
 |---|---|
-| `/` | Hero, script list, search and privilege filters, safety, FAQ |
-| `/scripts/setup-skills.html` | Detail page, checksum and source viewer |
-| `/scripts/laravel.html` | Detail page, checksum and source viewer |
-| `/scripts/freebuff-zsh.html` | Detail page, checksum and source viewer |
-| `/scripts/gitcli.html` | Detail page, checksum and source viewer |
-| `/scripts/claude-code.html` | Detail page, checksum and source viewer |
+| `/` | Hero, platform switcher, script list, search and privilege filters, safety, FAQ |
+| `/scripts/setup-skills-linux.html` etc. | One page per script and platform: checksum, source viewer, platform tabs |
+| `/scripts/laravel-windows.html` | Same page shape for the PowerShell variant |
 
-Search and filter state is written to the URL (`?q=laravel&sudo=no`) so a filtered view can
-be shared. Source lines are addressable: `/scripts/laravel.html#L120`.
+Platform is detected from the browser and can be forced with `?os=linux`, `?os=mac` or
+`?os=windows`. Search and privilege filters are written to the URL too
+(`?q=laravel&sudo=no&os=mac`), so a filtered view can be shared. Source lines are
+addressable: `/scripts/laravel-mac.html#L120`.
+
+Without JavaScript the Linux variants stay visible and every platform is reachable from
+the detail pages, which link to each other.
+
+## Data and generation
+
+`scripts/data.mjs` is the single source of truth:
+
+```js
+{
+  slug: "laravel",
+  name: "Laravel",
+  summary: "…",
+  variants: {
+    linux:   { source: "linux/setup-laravel.sh",   file: "linux/setup-laravel.sh",   … },
+    mac:     { source: "mac/setup-laravel.sh",     file: "mac/setup-laravel.sh",     … },
+    windows: { source: "windows/setup-laravel.ps1", file: "windows/setup-laravel.ps1", … },
+  },
+}
+```
+
+`OSES` in the same file holds the labels, install templates and checksum commands. The
+home page rows are still written into `public/index.html`, so keep them in step when you
+add a script: five cards, three `.variant` blocks each, with `data-os`.
 
 ## Checks
 
 ```bash
-npm run shots            # screenshots at 1440, 820 and 390, overflow and console checks
+npm run shots            # screenshots at 1440, 820 and 390, plus OS views; overflow and console checks
 npm run og               # regenerates public/og.png
-node scripts/checks.mjs  # menu, clipboard, search, filters, links, anchors, hashes
+node scripts/checks.mjs  # menu, clipboard, OS switch, search, filters, links, anchors, hashes
 ```
 
 The browser checks need a local Chromium. They use `/usr/bin/chromium` unless `CHROME_PATH`
@@ -78,11 +99,11 @@ is set.
 ## Editing
 
 - `scripts/data.mjs` is the single source of truth for names, summaries, requirements,
-  footprints and flags. The home page rows are still hand written in `public/index.html`,
-  so keep the two in step when adding a script.
+  footprints, privileges and flags of every platform variant.
+- `scripts/pages.mjs` generates the fifteen detail pages; do not edit them by hand.
 - Copy, terminal preview and page sections live in `public/index.html`.
-- Design tokens are in `public/styles.css` and documented at `../DESIGN.md`.
-- Detail pages are generated by `scripts/pages.mjs`; do not edit them by hand.
+- Design tokens are in `public/styles.css` and documented at `../DESIGN.md`. The platform
+  switch reuses the filter button and amber active state.
 - The social card is `scripts/og.html`, rendered by `scripts/og.mjs`.
-- Adding a script: add an entry to `scripts/data.mjs`, add a row to the list in
-  `public/index.html`, then run `npm run build`.
+- Adding a platform: add a folder, an `OSES` entry, a variant for every script in
+  `data.mjs`, a button in the OS switch, and a `.variant` block per card.

@@ -1,10 +1,11 @@
 #!/usr/bin/env node
-// Builds public/scripts/<slug>.html for every script in data.mjs.
-// Each page carries the full source with stable line anchors (#L12).
+// Builds public/scripts/<slug>-<os>.html for every script and OS in data.mjs.
+// Each page carries the full source with stable line anchors (#L12) and an
+// operating system switcher that links to the sibling pages.
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SCRIPTS } from "./data.mjs";
+import { SCRIPTS, OSES } from "./data.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(here, "..");
@@ -34,7 +35,7 @@ const sprite = `<svg class="sprite" aria-hidden="true" focusable="false" xmlns="
   <symbol id="i-arrow" viewBox="0 0 20 20"><path d="M4 10h11m0 0-4-4m4 4-4 4"/></symbol>
 </svg>`;
 
-function shell({ title, description, slug, body }) {
+function shell({ title, description, body }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -92,7 +93,7 @@ ${sprite}
     <a href="../#themes" style="--i:3">Design library</a>
     <a href="../#faq" style="--i:4">FAQ</a>
   </nav>
-  <p class="mobile__foot">Linux first. Read every script before you run it.</p>
+  <p class="mobile__foot">Linux, macOS and Windows. Read every script before you run it.</p>
 </div>
 <main id="main">
 ${body}
@@ -117,31 +118,39 @@ ${body}
 await mkdir(outDir, { recursive: true });
 
 for (const script of SCRIPTS) {
-  const { file, slug, name, tag, summary, needs, writes, sudo, note, flags } = script;
-  const meta = manifest.files[file];
+  for (const os of OSES) {
+    const variant = script.variants[os.id];
+    const meta = manifest.files[variant.file];
 
-  if (!meta) {
-    throw new Error(`No manifest entry for ${file}; run scripts/sync.mjs first.`);
-  }
+    if (!meta) {
+      throw new Error(`No manifest entry for ${variant.file}; run scripts/sync.mjs first.`);
+    }
 
-  const source = await readFile(join(repoRoot, script.source), "utf8");
-  const lines = source.split("\n");
-  if (lines.at(-1) === "") lines.pop();
+    const source = await readFile(join(repoRoot, variant.source), "utf8");
+    const lines = source.split("\n");
+    if (lines.at(-1) === "") lines.pop();
 
-  const rows = lines
-    .map((line, index) => {
-      const n = index + 1;
-      const isComment = /^\s*#/.test(line);
-      return `<div class="cl${isComment ? " cl--comment" : ""}" id="L${n}"><a class="cl__n" href="#L${n}" aria-hidden="true" tabindex="-1">${n}</a><span class="cl__c">${esc(line) || " "}</span></div>`;
-    })
-    .join("\n");
+    const rows = lines
+      .map((line, index) => {
+        const n = index + 1;
+        const isComment = /^\s*#/.test(line);
+        return `<div class="cl${isComment ? " cl--comment" : ""}" id="L${n}"><a class="cl__n" href="#L${n}" aria-hidden="true" tabindex="-1">${n}</a><span class="cl__c">${esc(line) || " "}</span></div>`;
+      })
+      .join("\n");
 
-  const flagTable = flags.length
-    ? `<h2>Flags</h2>
+    const tabs = OSES.map(
+      (entry) =>
+        `<a class="filter-btn${entry.id === os.id ? " is-current" : ""}" href="${script.slug}-${entry.id}.html"${
+          entry.id === os.id ? ' aria-current="page"' : ""
+        }>${esc(entry.label)}</a>`
+    ).join("\n          ");
+
+    const flagTable = variant.flags.length
+      ? `<h2>Flags</h2>
       <table class="flags">
-        <caption class="sr-only">Command line flags for ${esc(file)}</caption>
+        <caption class="sr-only">Command line flags for ${esc(variant.file)}</caption>
         <tbody>
-          ${flags
+          ${variant.flags
             .map(
               ([flag, effect]) =>
                 `<tr><th scope="row"><code>${esc(flag)}</code></th><td>${esc(effect)}</td></tr>`
@@ -149,58 +158,67 @@ for (const script of SCRIPTS) {
             .join("\n          ")}
         </tbody>
       </table>`
-    : "";
+      : "";
 
-  const body = `<section class="detail">
+    const downloadName = variant.file.split("/").pop();
+    const checksumCommand = os.checksum.replace("{file}", downloadName);
+
+    const body = `<section class="detail">
   <div class="wrap">
     <a class="back" href="../#scripts"><svg class="i i--flip" aria-hidden="true"><use href="#i-arrow"/></svg>All scripts</a>
 
     <div class="detail__head">
       <div>
-        <h1>${esc(name)}</h1>
-        <p class="detail__file"><code>${esc(file)}</code><span class="tag${sudo.startsWith("sudo") ? " tag--warn" : ""}">${esc(tag)}</span></p>
-        <p class="lead">${esc(summary)}</p>
+        <h1>${esc(script.name)}</h1>
+        <p class="detail__file"><code>${esc(variant.file)}</code><span class="tag${variant.sudoFilter === "yes" ? " tag--warn" : ""}">${esc(variant.tag)}</span></p>
+        <p class="lead">${esc(script.summary)}</p>
       </div>
       <div class="detail__actions">
-        <a class="btn btn--primary" href="../downloads/${esc(file)}" download>
-          <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
+        <a class="btn btn--primary" href="../downloads/${esc(variant.file)}" download>
+          <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download for ${esc(os.label)}
         </a>
-        <button class="btn btn--ghost" type="button" data-copy="${esc(file)}" aria-label="Copy the install command for ${esc(name)}">
+        <button class="btn btn--ghost" type="button" data-copy="${esc(variant.file)}" aria-label="Copy the ${esc(os.label)} install command for ${esc(script.name)}">
           <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
         </button>
       </div>
     </div>
 
+    <div class="os-switch os-switch--page" role="group" aria-label="Choose your operating system">
+      <span class="os-switch__label">Your system</span>
+          ${tabs}
+    </div>
+
     <dl class="meta-grid">
-      <div><dt>Needs</dt><dd>${esc(needs)}</dd></div>
-      <div><dt>Writes</dt><dd>${esc(writes)}</dd></div>
-      <div><dt>Privileges</dt><dd>${esc(sudo)}</dd></div>
+      <div><dt>Platform</dt><dd>${esc(os.label)} · ${esc(os.shell)}</dd></div>
+      <div><dt>Needs</dt><dd>${esc(variant.needs)}</dd></div>
+      <div><dt>Writes</dt><dd>${esc(variant.writes)}</dd></div>
+      <div><dt>Privileges</dt><dd>${esc(variant.sudo)}</dd></div>
       <div><dt>Size</dt><dd>${meta.lines.toLocaleString("en-US")} lines · ${Math.max(1, Math.round(meta.bytes / 1024))} KB</dd></div>
     </dl>
 
     <div class="detail__body">
       <div class="prose">
         <h2>Before you run it</h2>
-        <p>${esc(note)}</p>
+        <p>${esc(variant.note)}</p>
         <p>Read the source below or download the file and open it in your editor. The hash in the viewer header is the sha256 of the exact file this page serves.</p>
         ${flagTable}
       </div>
       <aside class="checksum">
         <h2 class="checksum__title">Checksum</h2>
         <code class="checksum__hash">${esc(meta.sha256)}</code>
-        <p class="checksum__note">sha256 · ${esc(file)} · synced ${esc(stamp)}</p>
+        <p class="checksum__note">sha256 · ${esc(downloadName)} · synced ${esc(stamp)}</p>
         <p class="checksum__note">Compare it after downloading:</p>
-        <pre class="checksum__cmd">shasum -a 256 ${esc(file)}</pre>
+        <pre class="checksum__cmd">${esc(checksumCommand)}</pre>
       </aside>
     </div>
 
     <section class="source" aria-labelledby="source-title">
       <div class="source__bar">
         <h2 id="source-title">Source</h2>
-        <span class="source__meta">${esc(file)} · ${meta.lines.toLocaleString("en-US")} lines</span>
-        <a class="source__download" href="../downloads/${esc(file)}" download>Download the file</a>
+        <span class="source__meta">${esc(variant.file)} · ${meta.lines.toLocaleString("en-US")} lines</span>
+        <a class="source__download" href="../downloads/${esc(variant.file)}" download>Download the file</a>
       </div>
-      <div class="viewer" tabindex="0" role="region" aria-label="Source code of ${esc(file)}, ${meta.lines} lines">
+      <div class="viewer" tabindex="0" role="region" aria-label="Source of ${esc(variant.file)}, ${meta.lines} lines">
         <pre class="code">${rows}</pre>
       </div>
       <p class="source__note">Line links are permanent: append <code>#L120</code> to this page to jump to line 120.</p>
@@ -210,15 +228,15 @@ for (const script of SCRIPTS) {
   </div>
 </section>`;
 
-  const html = shell({
-    title: `${name} — ${file} — Scripture`,
-    description: summary,
-    slug,
-    body,
-  });
+    const html = shell({
+      title: `${script.name} for ${os.label} — ${downloadName} — Scripture`,
+      description: `${script.summary} ${os.label} version.`,
+      body,
+    });
 
-  await writeFile(join(outDir, `${slug}.html`), html);
-  console.log(`${slug.padEnd(18)} ${String(lines.length).padStart(6)} lines`);
+    await writeFile(join(outDir, `${script.slug}-${os.id}.html`), html);
+    console.log(`${`${script.slug}-${os.id}`.padEnd(24)} ${String(lines.length).padStart(6)} lines`);
+  }
 }
 
 console.log(`pages written to public/scripts/`);
