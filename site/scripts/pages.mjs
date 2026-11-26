@@ -52,7 +52,7 @@ function shell({ title, description, canonical, body }) {
 <link rel="icon" href="../favicon-32x32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png" sizes="180x180">
-<link rel="manifest" href="../site.webmanifest">
+<link rel="manifest" href="../manifest.json">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="${esc(SITE.name)}">
 <meta property="og:locale" content="${esc(SITE.locale)}">

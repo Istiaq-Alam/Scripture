@@ -85,6 +85,24 @@ the detail pages, which link to each other.
 home page rows are still written into `public/index.html`, so keep them in step when you
 add a script: five cards, three `.variant` blocks each, with `data-os`.
 
+## SEO, sharing and icons
+
+The site URL is defined once in `scripts/data.mjs` (`SITE.url`) and used for the
+canonical link, `og:url` and absolute `og:image` URLs on every generated page.
+`public/index.html` and the legal pages carry the same absolute URLs by hand, so update
+them if the domain or repository path changes.
+
+- `og.png` is generated from `scripts/og.html` at 1200x630 and referenced with absolute
+  URLs, which is what social platforms need. A relative `og:image` resolves against the
+  sharing site's guess and breaks.
+- Icons live in `public/`: `favicon.ico` (16/32/48), `favicon-32x32.png`,
+  `apple-touch-icon.png` (180) and `icon-192.png` / `icon-512.png`, generated from
+  `favicon.svg`.
+- `manifest.json` declares the app name, colors and the 32 to 512px icon set.
+
+The meta description is kept at or below 160 characters; `scripts/checks.mjs` fails if it
+grows past that or if a canonical, OG or icon tag goes missing.
+
 ## Checks
 
 ```bash

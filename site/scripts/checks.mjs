@@ -193,7 +193,7 @@ const basename = (file) => file.split("/").pop();
   if (appleIcon.ok()) pass("apple-touch-icon is served");
   else fail("apple-touch-icon", `${appleIcon.status()}`);
 
-  const manifestResponse = await page.request.get(`${BASE}/site.webmanifest`);
+  const manifestResponse = await page.request.get(`${BASE}/manifest.json`);
   const manifest = manifestResponse.ok() ? await manifestResponse.json() : null;
   if (manifest && manifest.name && (manifest.icons || []).length >= 3)
     pass("web app manifest lists the icons");
