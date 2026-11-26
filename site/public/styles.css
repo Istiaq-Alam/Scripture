@@ -561,8 +561,11 @@ summary {
 }
 
 [data-term-body] {
-  height: 384px;
   overflow: hidden;
+}
+
+.term.is-live [data-term-body] {
+  height: 384px;
 }
 
 .term__tools {
@@ -2242,7 +2245,7 @@ kbd {
     line-height: 16px;
   }
 
-  [data-term-body] {
+  .term.is-live [data-term-body] {
     height: 356px;
   }
 

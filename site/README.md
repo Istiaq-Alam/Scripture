@@ -103,6 +103,16 @@ them if the domain or repository path changes.
 The meta description is kept at or below 160 characters; `scripts/checks.mjs` fails if it
 grows past that or if a canonical, OG or icon tag goes missing.
 
+## Hero demo
+
+`app.js` replays a setup-skills run in the hero terminal: the command types in, the
+design-system menu moves, the skill steps print with a spinner, and the run ends on the
+install report. It loops for about 13 seconds while the card is on screen, pauses when it
+scrolls away or the tab is hidden, and has a pause control in the title bar.
+
+With `prefers-reduced-motion` or without JavaScript, `index.html` renders the finished
+report as static markup and no animation starts.
+
 ## Checks
 
 ```bash

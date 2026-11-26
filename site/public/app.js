@@ -305,6 +305,7 @@
 
   const termDemo = document.querySelector("[data-term-demo]");
   if (termDemo && !reduceMotion) {
+    termDemo.classList.add("is-live");
     const termBody = termDemo.querySelector("[data-term-body]");
     const termToggle = termDemo.querySelector("[data-term-toggle]");
 

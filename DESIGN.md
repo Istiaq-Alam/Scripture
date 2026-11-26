@@ -74,6 +74,12 @@ One curve: `cubic-bezier(.22,1,.36,1)`. Hover and press 150ms, entrances 700ms, 
 accordion 220ms. Hero elements enter once with a 70ms stagger. Sections rise 32px once on
 scroll. The tagline lights one word at a time. `prefers-reduced-motion` removes all of it.
 
+The hero terminal replays the setup-skills wizard: the command types in, the design menu
+moves, the skill steps print with a braille spinner, and the run ends on INSTALL REPORT.
+It loops while the card is on screen and stops when it scrolls away. A 24px pause control
+sits in the title bar (44px on touch). The text is decorative and `aria-hidden`; a static
+summary replaces it for screen readers, `prefers-reduced-motion` users and no-JS visits.
+
 ## Deviations from the skill defaults, on purpose
 
 - The hero heading is solid `--text`, not a white to gray gradient, because the Unslop pass
