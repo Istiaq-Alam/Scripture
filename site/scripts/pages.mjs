@@ -5,7 +5,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SCRIPTS, OSES } from "./data.mjs";
+import { SCRIPTS, OSES, SITE } from "./data.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(here, "..");
@@ -22,6 +22,9 @@ const esc = (value) =>
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
 
+const clip = (text, max = 158) =>
+  text.length > max ? `${text.slice(0, max - 1).trimEnd()}…` : text;
+
 const stamp = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",
@@ -35,21 +38,35 @@ const sprite = `<svg class="sprite" aria-hidden="true" focusable="false" xmlns="
   <symbol id="i-arrow" viewBox="0 0 20 20"><path d="M4 10h11m0 0-4-4m4 4-4 4"/></symbol>
 </svg>`;
 
-function shell({ title, description, body }) {
+function shell({ title, description, canonical, body }) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${esc(title)}</title>
-<meta name="description" content="${esc(description)}">
+<meta name="description" content="${esc(clip(description))}">
+<link rel="canonical" href="${esc(canonical)}">
 <meta name="theme-color" content="#131209">
+<link rel="icon" href="../favicon.ico" sizes="48x48">
+<link rel="icon" href="../favicon-32x32.png" type="image/png" sizes="32x32">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png" sizes="180x180">
+<link rel="manifest" href="../site.webmanifest">
 <meta property="og:type" content="article">
+<meta property="og:site_name" content="${esc(SITE.name)}">
+<meta property="og:locale" content="${esc(SITE.locale)}">
+<meta property="og:url" content="${esc(canonical)}">
 <meta property="og:title" content="${esc(title)}">
-<meta property="og:description" content="${esc(description)}">
-<meta property="og:image" content="../og.png">
+<meta property="og:description" content="${esc(clip(description, 200))}">
+<meta property="og:image" content="${esc(SITE.image)}">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Scripture: your dev setup in one script, for Linux, macOS and Windows.">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="${esc(SITE.image)}">
+<meta name="twitter:image:alt" content="Scripture: your dev setup in one script, for Linux, macOS and Windows.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -230,6 +247,7 @@ for (const script of SCRIPTS) {
     const html = shell({
       title: `${script.name} for ${os.label} — ${downloadName} — Scripture`,
       description: `${script.summary} ${os.label} version.`,
+      canonical: `${SITE.url}/scripts/${script.slug}-${os.id}.html`,
       body,
     });
 

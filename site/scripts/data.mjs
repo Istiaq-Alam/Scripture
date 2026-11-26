@@ -1,6 +1,13 @@
 // One source of truth for the catalog: downloads, list rows and detail pages.
 // Every script ships one variant per operating system.
 
+export const SITE = {
+  name: "Scripture",
+  url: "https://istiaq-alam.github.io/Scripture",
+  image: "https://istiaq-alam.github.io/Scripture/og.png",
+  locale: "en_US",
+};
+
 export const OSES = [
   {
     id: "linux",

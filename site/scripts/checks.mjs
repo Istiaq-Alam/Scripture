@@ -3,7 +3,7 @@
 //   node scripts/checks.mjs
 import { chromium } from "playwright-core";
 import { createHash } from "node:crypto";
-import { SCRIPTS, OSES } from "./data.mjs";
+import { SCRIPTS, OSES, SITE } from "./data.mjs";
 
 const BASE = process.env.SITE_URL || "http://127.0.0.1:3000";
 const browser = await chromium.launch({
@@ -139,6 +139,79 @@ const basename = (file) => file.split("/").pop();
   const sudoVisible = await page.locator("#script-list .script[data-sudo='yes']:visible").count();
   if (sudoVisible === 3) pass("sudo filter data follows the platform (3 admin scripts on Windows)");
   else fail("sudo data", `${sudoVisible} rows marked yes`);
+
+  await page.close();
+}
+
+/* ---------- SEO and social metadata ---------- */
+
+{
+  const page = await browser.newPage();
+  await page.goto(BASE, { waitUntil: "networkidle" });
+  const html = await page.content();
+  const meta = (attr, key) => {
+    const pattern = new RegExp(`<meta ${attr}="${key}" content="([^"]*)"`);
+    return html.match(pattern)?.[1] || "";
+  };
+
+  const description = meta("name", "description");
+  if (description.length > 0 && description.length <= 160)
+    pass(`meta description is ${description.length} characters`);
+  else fail("meta description", `${description.length} characters`);
+
+  const canonical = html.match(/<link rel="canonical" href="([^"]*)"/)?.[1] || "";
+  if (canonical === `${SITE.url}/`) pass("canonical URL is absolute and points at the site");
+  else fail("canonical", canonical || "missing");
+
+  if (meta("property", "og:url") === `${SITE.url}/`) pass("og:url is set");
+  else fail("og:url", meta("property", "og:url") || "missing");
+
+  const ogImage = meta("property", "og:image");
+  if (ogImage === SITE.image && /^https:\/\//.test(ogImage)) pass("og:image is absolute");
+  else fail("og:image", ogImage || "missing");
+
+  if (meta("property", "og:site_name") === "Scripture") pass("og:site_name is set");
+  else fail("og:site_name", meta("property", "og:site_name") || "missing");
+
+  if (meta("property", "og:locale") === "en_US") pass("og:locale is set");
+  else fail("og:locale", meta("property", "og:locale") || "missing");
+
+  if (meta("name", "twitter:image") === SITE.image) pass("twitter:image is absolute");
+  else fail("twitter:image", meta("name", "twitter:image") || "missing");
+
+  const ico = await page.request.get(`${BASE}/favicon.ico`);
+  if (ico.ok() && (ico.headers()["content-type"] || "").includes("image"))
+    pass("favicon.ico is served as an image");
+  else fail("favicon.ico", `${ico.status()} ${ico.headers()["content-type"] || ""}`);
+
+  const pngIcon = await page.request.get(`${BASE}/favicon-32x32.png`);
+  if (pngIcon.ok() && (pngIcon.headers()["content-type"] || "").includes("image/png"))
+    pass("32px PNG favicon is served");
+  else fail("favicon-32x32.png", `${pngIcon.status()}`);
+
+  const appleIcon = await page.request.get(`${BASE}/apple-touch-icon.png`);
+  if (appleIcon.ok()) pass("apple-touch-icon is served");
+  else fail("apple-touch-icon", `${appleIcon.status()}`);
+
+  const manifestResponse = await page.request.get(`${BASE}/site.webmanifest`);
+  const manifest = manifestResponse.ok() ? await manifestResponse.json() : null;
+  if (manifest && manifest.name && (manifest.icons || []).length >= 3)
+    pass("web app manifest lists the icons");
+  else fail("web app manifest", `${manifestResponse.status()}`);
+
+  const detail = await page.request.get(`${BASE}/scripts/laravel-mac.html`);
+  const detailHtml = await detail.text();
+  const detailCanonical =
+    detailHtml.match(/<link rel="canonical" href="([^"]*)"/)?.[1] || "";
+  if (detailCanonical === `${SITE.url}/scripts/laravel-mac.html`)
+    pass("detail page canonical is absolute");
+  else fail("detail canonical", detailCanonical || "missing");
+
+  const og = await page.request.get(`${BASE}/og.png`);
+  const body = await og.body();
+  if (og.ok() && body.length > 1000 && body[1] === 0x50 && body[2] === 0x4e)
+    pass("og.png is a valid PNG on the site");
+  else fail("og.png", `${og.status()}, ${body.length} bytes`);
 
   await page.close();
 }
