@@ -2394,9 +2394,6 @@ kbd {
     opacity: 1;
   }
 
-  .term__pause {
-    display: none;
-  }
 
   .t-spin {
     border-color: var(--line-strong);

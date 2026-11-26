@@ -17,6 +17,9 @@
 
   const OSES = ["linux", "mac", "windows"];
 
+  // Set by the hero terminal demo so the platform switch can retarget it.
+  let demoSyncOs = null;
+
   const commandFor = (file) => {
     const url = downloadUrl(file);
     if (file.endsWith(".ps1")) {
@@ -78,6 +81,7 @@
 
     renderCommands();
     applyFilters();
+    demoSyncOs?.(os);
 
     if (updateUrl) {
       const next = new URLSearchParams(location.search);
@@ -304,10 +308,40 @@
   /* ---------- hero terminal: a replay of the setup-skills script ---------- */
 
   const termDemo = document.querySelector("[data-term-demo]");
-  if (termDemo && !reduceMotion) {
-    termDemo.classList.add("is-live");
+  if (termDemo) {
     const termBody = termDemo.querySelector("[data-term-body]");
     const termToggle = termDemo.querySelector("[data-term-toggle]");
+    const termShell = termDemo.querySelector("[data-term-shell]");
+
+    const shellFor = (os) => (os === "windows" ? "pwsh" : "bash");
+    const promptFor = (os) => (os === "windows" ? "PS>" : "$");
+    const commandsFor = (os) =>
+      os === "windows"
+        ? ["irm setup-skills.ps1 -OutFile setup-skills.ps1", ".\\setup-skills.ps1"]
+        : ["bash <(curl -fsSL setup-skills.sh)"];
+
+    const paintStaticCommand = (os) => {
+      termShell.textContent = shellFor(os);
+      termDemo.querySelectorAll("[data-term-static-prompt]").forEach((prompt) => {
+        prompt.textContent = promptFor(os);
+      });
+
+      const first = termDemo.querySelector("[data-term-static-cmd]");
+      if (!first) return;
+      const old = [...termDemo.querySelectorAll("[data-term-static-cmd]")];
+      const lines = commandsFor(os).map((command) => {
+        const line = document.createElement("p");
+        line.className = "t-line t-cmd";
+        line.dataset.termStaticCmd = "";
+        const prompt = document.createElement("span");
+        prompt.className = "t-prompt";
+        prompt.textContent = promptFor(os);
+        line.append(prompt, ` ${command}`);
+        return line;
+      });
+      old[0].replaceWith(...lines);
+      old.slice(1).forEach((line) => line.remove());
+    };
 
     const make = (html) => {
       const template = document.createElement("template");
@@ -339,10 +373,13 @@
     };
 
     let demoRun = 0;
+    let demoSession = 0;
     let wake = null;
     let spinning = null;
     let playing = false;
     let userPaused = false;
+    let demoStarted = false;
+    let demoOs = currentOs;
     let inView = true;
 
     const wait = (ms) =>
@@ -362,21 +399,30 @@
         termBody.textContent = "";
         termBody.scrollTop = 0;
 
-        const cmd = addLine(
-          make(
-            '<p class="t-line t-cmd"><span class="t-prompt">$</span> <span data-term-typed></span><span class="t-cursor"></span></p>'
-          )
-        );
-        const typed = cmd.querySelector("[data-term-typed]");
-        for (const char of "bash <(curl -fsSL setup-skills.sh)") {
-          if (!alive()) return;
-          typed.textContent += char;
-          scrollTerm();
-          await wait(24);
+        const commands = commandsFor(demoOs);
+        for (const [index, command] of commands.entries()) {
+          const cmd = addLine(
+            make(
+              `<p class="t-line t-cmd"><span class="t-prompt">${promptFor(demoOs)}</span> <span data-term-typed></span><span class="t-cursor"></span></p>`
+            )
+          );
+          const typed = cmd.querySelector("[data-term-typed]");
+          for (const char of command) {
+            if (!alive()) return;
+            typed.textContent += char;
+            scrollTerm();
+            await wait(22);
+          }
+          if (index < commands.length - 1) {
+            await wait(220);
+            if (!alive()) return;
+            cmd.querySelector(".t-cursor")?.remove();
+          } else {
+            await wait(550);
+            if (!alive()) return;
+            cmd.querySelector(".t-cursor")?.remove();
+          }
         }
-        await wait(550);
-        if (!alive()) return;
-        cmd.querySelector(".t-cursor")?.remove();
 
         addLine(
           make(
@@ -479,7 +525,7 @@
         addLine(make('<p class="t-line t-hint">1. Start your AI agent in this folder</p>'));
         addLine(
           make(
-            '<p class="t-line t-last"><span class="t-prompt">$</span> <span class="t-cursor"></span></p>'
+            `<p class="t-line t-last"><span class="t-prompt">${promptFor(demoOs)}</span> <span class="t-cursor"></span></p>`
           )
         );
         await wait(2800);
@@ -488,14 +534,19 @@
 
     const startDemo = () => {
       if (playing || userPaused || !inView || document.hidden) return;
+      const session = ++demoSession;
+      demoStarted = true;
+      termDemo.classList.add("is-live");
       playing = true;
       runDemo().finally(() => {
-        playing = false;
+        if (session === demoSession) playing = false;
       });
     };
 
     const stopDemo = () => {
+      demoSession += 1;
       demoRun += 1;
+      playing = false;
       if (wake) wake();
       if (spinning) {
         clearInterval(spinning);
@@ -535,7 +586,37 @@
       else if (!userPaused && inView) startDemo();
     });
 
-    startDemo();
+    demoSyncOs = (os) => {
+      if (os === demoOs) return;
+      demoOs = os;
+      termShell.textContent = shellFor(os);
+
+      if (!demoStarted) {
+        paintStaticCommand(os);
+        return;
+      }
+
+      const wasPaused = userPaused;
+      stopDemo();
+      if (wasPaused) {
+        userPaused = false;
+        termToggle?.setAttribute("aria-pressed", "false");
+        termToggle?.setAttribute("aria-label", "Pause the demo");
+        termDemo.classList.remove("is-paused");
+      }
+      startDemo();
+    };
+
+    if (reduceMotion) {
+      paintStaticCommand(currentOs);
+      userPaused = true;
+      termToggle?.setAttribute("aria-pressed", "true");
+      termToggle?.setAttribute("aria-label", "Play the demo");
+      termDemo.classList.add("is-paused");
+    } else {
+      paintStaticCommand(currentOs);
+      startDemo();
+    }
   }
 
   /* ---------- reveals ---------- */

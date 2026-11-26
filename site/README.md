@@ -110,8 +110,12 @@ design-system menu moves, the skill steps print with a spinner, and the run ends
 install report. It loops for about 13 seconds while the card is on screen, pauses when it
 scrolls away or the tab is hidden, and has a pause control in the title bar.
 
+The demo follows the platform switch: Linux and macOS type the bash command under `$`,
+Windows types `irm` / `.\setup-skills.ps1` under `PS>` and labels the title bar `pwsh`.
+
 With `prefers-reduced-motion` or without JavaScript, `index.html` renders the finished
-report as static markup and no animation starts.
+report as static markup and no animation starts. Reduced-motion visitors still get a Play
+control in the title bar, so they can opt into the animation when they want it.
 
 ## Checks
 

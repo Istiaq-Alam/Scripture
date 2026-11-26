@@ -225,7 +225,7 @@ const basename = (file) => file.split("/").pop();
   const toggle = page.locator("[data-term-toggle]");
   const termBody = page.locator("[data-term-body]");
   const box = await toggle.boundingBox();
-  if (box && box.width >= 24 && box.height >= 24)
+  if (box && Math.round(box.width) >= 24 && Math.round(box.height) >= 24)
     pass("demo pause control is at least 24x24");
   else fail("demo pause control", JSON.stringify(box));
 
@@ -256,10 +256,57 @@ const basename = (file) => file.split("/").pop();
   if ((await reduced.locator("[data-term-body]").innerText()).includes("INSTALL REPORT"))
     pass("reduced motion shows the final report instead of animating");
   else fail("reduced motion demo", "report missing");
-  if (!(await reduced.locator("[data-term-toggle]").isVisible()))
-    pass("pause control is hidden with reduced motion");
-  else fail("reduced motion pause control", "still visible");
+
+  const play = reduced.locator("[data-term-toggle]");
+  if ((await play.isVisible()) && (await play.getAttribute("aria-label")) === "Play the demo")
+    pass("reduced motion offers a Play control");
+  else fail("reduced motion play control", "missing or mislabeled");
+
+  const beforePlay = await reduced.locator("[data-term-body]").innerText();
+  await play.click();
+  await reduced.waitForTimeout(900);
+  if ((await reduced.locator("[data-term-body]").innerText()) !== beforePlay)
+    pass("Play starts the animation for reduced motion");
+  else fail("reduced motion play", "content did not change");
   await reduced.close();
+}
+
+/* ---------- demo follows the platform ---------- */
+
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(`${BASE}?os=linux`, { waitUntil: "networkidle" });
+  if ((await page.locator(".term__shell").innerText()) === "bash")
+    pass("demo uses bash on Linux");
+  else fail("demo shell label", await page.locator(".term__shell").innerText());
+
+  await page.locator('[data-os-set="windows"]').click();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(1800);
+  const windowsText = await page.locator("[data-term-body]").innerText();
+  if (windowsText.includes("irm setup-skills.ps1"))
+    pass("demo switches to PowerShell on Windows");
+  else fail("demo Windows command", windowsText.slice(0, 100));
+  if ((await page.locator(".term__shell").innerText()) === "pwsh")
+    pass("demo title bar switches to pwsh");
+  else fail("demo shell label after switch", await page.locator(".term__shell").innerText());
+
+  await page.locator('[data-os-set="linux"]').click();
+  await page.evaluate(() => window.scrollTo(0, 0));
+  await page.waitForTimeout(1200);
+  if ((await page.locator("[data-term-body]").innerText()).includes("bash <(curl"))
+    pass("demo switches back to bash on Linux");
+  else fail("demo Linux command", "bash missing");
+  await page.close();
+
+  const reducedWindows = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await reducedWindows.emulateMedia({ reducedMotion: "reduce" });
+  await reducedWindows.goto(`${BASE}?os=windows`, { waitUntil: "networkidle" });
+  const staticWindows = await reducedWindows.locator("[data-term-body]").innerText();
+  if (staticWindows.includes("PS>") && staticWindows.includes("setup-skills.ps1"))
+    pass("static demo matches Windows");
+  else fail("static Windows demo", staticWindows.slice(0, 100));
+  await reducedWindows.close();
 }
 
 /* ---------- every link resolves ---------- */

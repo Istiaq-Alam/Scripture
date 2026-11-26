@@ -135,7 +135,7 @@
           <div class="term__bar">
             <span class="term__path">~/projects/acme</span>
             <span class="term__tools">
-              <span class="term__shell">bash</span>
+              <span class="term__shell" data-term-shell>bash</span>
               <button class="term__pause" type="button" data-term-toggle aria-pressed="false" aria-label="Pause the demo">
                 <svg class="i term__icon-pause" aria-hidden="true"><use href="#i-pause"/></svg>
                 <svg class="i term__icon-play" aria-hidden="true"><use href="#i-play"/></svg>
@@ -143,7 +143,7 @@
             </span>
           </div>
           <div class="term__body" aria-hidden="true" data-term-body>
-            <p class="t-line t-cmd"><span class="t-prompt">$</span> bash &lt;(curl -fsSL setup-skills.sh)</p>
+            <p class="t-line t-cmd" data-term-static-cmd><span class="t-prompt">$</span> bash &lt;(curl -fsSL setup-skills.sh)</p>
             <div class="t-head">
               <p class="t-title">Setup skills</p>
               <p class="t-sub">design + engineering skills installer</p>
@@ -162,7 +162,7 @@
             </div>
             <p class="t-line t-note">ALL DONE - NEXT STEPS</p>
             <p class="t-line t-hint">1. Start your AI agent in this folder</p>
-            <p class="t-line t-last"><span class="t-prompt">$</span> <span class="t-cursor"></span></p>
+            <p class="t-line t-last"><span class="t-prompt" data-term-static-prompt>$</span> <span class="t-cursor"></span></p>
           </div>
           <p class="sr-only">Animated preview: the Setup skills script picks a design system, installs the design skills, registers Playwright MCP and prints an install report.</p>
         </div>

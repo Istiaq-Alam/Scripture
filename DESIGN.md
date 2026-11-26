@@ -76,9 +76,12 @@ scroll. The tagline lights one word at a time. `prefers-reduced-motion` removes 
 
 The hero terminal replays the setup-skills wizard: the command types in, the design menu
 moves, the skill steps print with a braille spinner, and the run ends on INSTALL REPORT.
-It loops while the card is on screen and stops when it scrolls away. A 24px pause control
-sits in the title bar (44px on touch). The text is decorative and `aria-hidden`; a static
-summary replaces it for screen readers, `prefers-reduced-motion` users and no-JS visits.
+It loops while the card is on screen and stops when it scrolls away, and it follows the
+platform switch: bash under `$` for Linux and macOS, `irm` and `.\setup-skills.ps1` under
+`PS>` with a `pwsh` label for Windows. A 24px pause control sits in the title bar (44px on
+touch). The text is decorative and `aria-hidden`; a static summary replaces it for screen
+readers, `prefers-reduced-motion` users and no-JS visits. Reduced-motion visitors get the
+same control as an explicit Play action, so the animation is opt-in rather than automatic.
 
 ## Deviations from the skill defaults, on purpose
 
