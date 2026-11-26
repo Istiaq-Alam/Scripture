@@ -560,6 +560,54 @@ summary {
   color: var(--text-2);
 }
 
+[data-term-body] {
+  height: 384px;
+  overflow: hidden;
+}
+
+.term__tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.term__pause {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin: 0 -4px 0 0;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 160ms var(--ease), background-color 160ms var(--ease);
+}
+
+.term__pause:hover {
+  color: var(--text);
+  background: var(--raised);
+}
+
+.term__pause .i {
+  width: 12px;
+  height: 12px;
+}
+
+.term__icon-play {
+  display: none;
+}
+
+.term__pause[aria-pressed="true"] .term__icon-pause {
+  display: none;
+}
+
+.term__pause[aria-pressed="true"] .term__icon-play {
+  display: block;
+}
+
 .t-line {
   white-space: nowrap;
   overflow: hidden;
@@ -717,6 +765,128 @@ summary {
   vertical-align: -2px;
   background: var(--amber);
   animation: blink 1.06s steps(1) infinite;
+}
+
+.term.is-paused .t-cursor {
+  animation-play-state: paused;
+}
+
+.t-step {
+  margin-top: 20px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+
+.t-key,
+.t-step__key {
+  color: var(--amber);
+}
+
+.t-task {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.t-braille {
+  display: inline-block;
+  width: 1ch;
+  flex: none;
+  color: var(--amber);
+}
+
+.t-menu {
+  display: grid;
+  gap: 2px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.t-menu li {
+  position: relative;
+  padding-left: 16px;
+  color: var(--muted);
+}
+
+.t-menu li::before {
+  content: " ";
+  position: absolute;
+  left: 0;
+  color: var(--amber);
+}
+
+.t-menu li.is-active {
+  color: var(--text);
+}
+
+.t-menu li.is-active::before {
+  content: "❯";
+}
+
+.t-hint {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--muted);
+}
+
+.t-ok {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 6px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  color: var(--text-2);
+}
+
+.t-ok .i {
+  width: 12px;
+  height: 12px;
+  margin-top: 2px;
+  flex: none;
+  color: var(--ok);
+}
+
+.t-note {
+  margin-top: 14px;
+  color: var(--amber);
+}
+
+.t-panel {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.t-panel__title {
+  margin-bottom: 2px;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--muted);
+}
+
+.t-panel p {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-2);
+}
+
+.t-flag {
+  flex: none;
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ok);
 }
 
 /* ---------- sections ---------- */
@@ -2050,10 +2220,30 @@ kbd {
     line-height: 36px;
   }
 
+  .term__bar {
+    height: 44px;
+    padding: 0 8px 0 16px;
+  }
+
+  .term__pause {
+    width: 44px;
+    height: 44px;
+    margin-right: 0;
+  }
+
+  .term__pause .i {
+    width: 14px;
+    height: 14px;
+  }
+
   .term__body {
     padding: 20px;
     font-size: 12px;
     line-height: 16px;
+  }
+
+  [data-term-body] {
+    height: 356px;
   }
 
   .t-title {
@@ -2197,7 +2387,12 @@ kbd {
   }
 
   .t-cursor {
+    animation: none;
     opacity: 1;
+  }
+
+  .term__pause {
+    display: none;
   }
 
   .t-spin {

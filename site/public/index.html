@@ -1,589 +1,812 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Scripture — setup scripts for Linux, macOS and Windows</title>
-<meta name="description" content="Five setup scripts for Laravel, design skills, GitHub, Freebuff and Claude Code, in Linux, macOS and Windows versions. Read the source, check the hash, run it.">
-<link rel="canonical" href="https://istiaq-alam.github.io/Scripture/">
-<meta name="theme-color" content="#131209">
-<link rel="icon" href="favicon.ico" sizes="48x48">
-<link rel="icon" href="favicon-32x32.png" type="image/png" sizes="32x32">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
-<link rel="manifest" href="manifest.json">
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Scripture">
-<meta property="og:locale" content="en_US">
-<meta property="og:url" content="https://istiaq-alam.github.io/Scripture/">
-<meta property="og:title" content="Scripture — setup scripts for Linux, macOS and Windows">
-<meta property="og:description" content="Five setup scripts for Laravel, design skills, GitHub, Freebuff and Claude Code, in Linux, macOS and Windows versions. Every download hashed.">
-<meta property="og:image" content="https://istiaq-alam.github.io/Scripture/og.png">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Scripture: your dev setup in one script, for Linux, macOS and Windows.">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Scripture — setup scripts for Linux, macOS and Windows">
-<meta name="twitter:description" content="Five setup scripts for Linux, macOS and Windows: Laravel, design skills, GitHub, Freebuff and Claude Code.">
-<meta name="twitter:image" content="https://istiaq-alam.github.io/Scripture/og.png">
-<meta name="twitter:image:alt" content="Scripture: your dev setup in one script, for Linux, macOS and Windows.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<noscript><style>[data-copy], .filters, .filter-count, .os-switch { display: none; }</style></noscript>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scripture — setup scripts for Linux, macOS and Windows</title>
+  <meta name="description"
+    content="Five setup scripts for Laravel, design skills, GitHub, Freebuff and Claude Code, in Linux, macOS and Windows versions. Read the source, check the hash, run it.">
+  <link rel="canonical" href="https://istiaq-alam.github.io/Scripture/">
+  <meta name="theme-color" content="#131209">
+  <link rel="icon" href="favicon.ico" sizes="48x48">
+  <link rel="icon" href="favicon-32x32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png" sizes="180x180">
+  <link rel="manifest" href="manifest.json">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Scripture">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:url" content="https://istiaq-alam.github.io/Scripture/">
+  <meta property="og:title" content="Scripture — setup scripts for Linux, macOS and Windows">
+  <meta property="og:description"
+    content="Five setup scripts for Laravel, design skills, GitHub, Freebuff and Claude Code, in Linux, macOS and Windows versions. Every download hashed.">
+  <meta property="og:image" content="https://istiaq-alam.github.io/Scripture/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Scripture: your dev setup in one script, for Linux, macOS and Windows.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Scripture — setup scripts for Linux, macOS and Windows">
+  <meta name="twitter:description"
+    content="Five setup scripts for Linux, macOS and Windows: Laravel, design skills, GitHub, Freebuff and Claude Code.">
+  <meta name="twitter:image" content="https://istiaq-alam.github.io/Scripture/og.png">
+  <meta name="twitter:image:alt" content="Scripture: your dev setup in one script, for Linux, macOS and Windows.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <noscript>
+    <style>
+      [data-copy],
+      .filters,
+      .filter-count,
+      .os-switch {
+        display: none;
+      }
+    </style>
+  </noscript>
 </head>
+
 <body data-downloads="downloads/">
-<a class="skip" href="#main">Skip to content</a>
+  <a class="skip" href="#main">Skip to content</a>
 
-<svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3 8.4 6.2 11.6 13 4.8"/></symbol>
-  <symbol id="i-download" viewBox="0 0 20 20"><path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M3.5 15.5h13"/></symbol>
-  <symbol id="i-copy" viewBox="0 0 20 20"><rect x="7" y="7" width="9.5" height="9.5" rx="2"/><path d="M13 5.5A2.5 2.5 0 0 0 10.5 3h-5A2.5 2.5 0 0 0 3 5.5v5A2.5 2.5 0 0 0 5.5 13"/></symbol>
-  <symbol id="i-arrow" viewBox="0 0 20 20"><path d="M4 10h11m0 0-4-4m4 4-4 4"/></symbol>
-  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5"/><path d="m13.2 13.2 3.3 3.3"/></symbol>
-</svg>
+  <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="i-check" viewBox="0 0 16 16">
+      <path d="M3 8.4 6.2 11.6 13 4.8" />
+    </symbol>
+    <symbol id="i-download" viewBox="0 0 20 20">
+      <path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M3.5 15.5h13" />
+    </symbol>
+    <symbol id="i-copy" viewBox="0 0 20 20">
+      <rect x="7" y="7" width="9.5" height="9.5" rx="2" />
+      <path d="M13 5.5A2.5 2.5 0 0 0 10.5 3h-5A2.5 2.5 0 0 0 3 5.5v5A2.5 2.5 0 0 0 5.5 13" />
+    </symbol>
+    <symbol id="i-arrow" viewBox="0 0 20 20">
+      <path d="M4 10h11m0 0-4-4m4 4-4 4" />
+    </symbol>
+      <symbol id="i-search" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5"/><path d="m13.2 13.2 3.3 3.3"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 16 16"><path d="M6 3v10M10 3v10"/></symbol>
+  <symbol id="i-play" viewBox="0 0 16 16"><path d="M5.5 3.6v8.8L12.5 8z" fill="currentColor" stroke="none"/></symbol>
+  </svg>
 
-<header class="nav" id="top">
-  <div class="nav__pill">
-    <a class="brand" href="#top" aria-label="Scripture, back to top">
-      <span class="brand__mark" aria-hidden="true"></span>
-      <span class="brand__name">Scripture</span>
-    </a>
-    <nav class="nav__links" aria-label="Sections">
-      <a href="#scripts">Scripts</a>
-      <a href="#how">How it works</a>
-      <a href="#safety">Safety</a>
-      <a href="#themes">Design library</a>
-      <a href="#faq">FAQ</a>
+  <header class="nav" id="top">
+    <div class="nav__pill">
+      <a class="brand" href="#top" aria-label="Scripture, back to top">
+        <span class="brand__mark" aria-hidden="true"></span>
+        <span class="brand__name">Scripture</span>
+      </a>
+      <nav class="nav__links" aria-label="Sections">
+        <a href="#scripts">Scripts</a>
+        <a href="#how">How it works</a>
+        <a href="#safety">Safety</a>
+        <a href="#themes">Design library</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+      <button class="nav__menu" id="menu-open" type="button" aria-expanded="false" aria-controls="mobile-menu">
+        <span class="sr-only">Open menu</span>
+        <span class="nav__lines" aria-hidden="true"><i></i><i></i></span>
+      </button>
+    </div>
+  </header>
+
+  <div class="mobile" id="mobile-menu" aria-hidden="true">
+    <div class="mobile__top">
+      <span class="brand"><span class="brand__mark" aria-hidden="true"></span><span
+          class="brand__name">Scripture</span></span>
+      <button class="mobile__close" id="menu-close" type="button">
+        <span class="sr-only">Close menu</span>
+        <span class="nav__lines nav__lines--close" aria-hidden="true"><i></i><i></i></span>
+      </button>
+    </div>
+    <nav class="mobile__links" aria-label="Sections">
+      <a href="#scripts" style="--i:0">Scripts</a>
+      <a href="#how" style="--i:1">How it works</a>
+      <a href="#safety" style="--i:2">Safety</a>
+      <a href="#themes" style="--i:3">Design library</a>
+      <a href="#faq" style="--i:4">FAQ</a>
     </nav>
-    <button class="nav__menu" id="menu-open" type="button" aria-expanded="false" aria-controls="mobile-menu">
-      <span class="sr-only">Open menu</span>
-      <span class="nav__lines" aria-hidden="true"><i></i><i></i></span>
-    </button>
+    <p class="mobile__foot">Linux, macOS and Windows. Read every script before you run it.</p>
   </div>
-</header>
 
-<div class="mobile" id="mobile-menu" aria-hidden="true">
-  <div class="mobile__top">
-    <span class="brand"><span class="brand__mark" aria-hidden="true"></span><span class="brand__name">Scripture</span></span>
-    <button class="mobile__close" id="menu-close" type="button">
-      <span class="sr-only">Close menu</span>
-      <span class="nav__lines nav__lines--close" aria-hidden="true"><i></i><i></i></span>
-    </button>
-  </div>
-  <nav class="mobile__links" aria-label="Sections">
-    <a href="#scripts" style="--i:0">Scripts</a>
-    <a href="#how" style="--i:1">How it works</a>
-    <a href="#safety" style="--i:2">Safety</a>
-    <a href="#themes" style="--i:3">Design library</a>
-    <a href="#faq" style="--i:4">FAQ</a>
-  </nav>
-  <p class="mobile__foot">Linux, macOS and Windows. Read every script before you run it.</p>
-</div>
-
-<main id="main">
-  <section class="hero" aria-labelledby="hero-title">
-    <div class="wrap hero__grid">
-      <div class="hero__text">
-        <h1 id="hero-title" data-enter>Your dev setup,<br>in one script.</h1>
-        <p class="lead" data-enter style="--d:1">Five setup scripts for Laravel, design skills, GitHub, Freebuff and Claude Code, each written for Linux, macOS and Windows. Pick your platform, run the script in the folder you want it to change, then read the report.</p>
-        <div class="hero__actions" data-enter style="--d:2">
-          <a class="btn btn--primary" href="#scripts">Browse the scripts<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-          <a class="link-quiet" href="#safety">Read the safety notes</a>
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero__grid">
+        <div class="hero__text">
+          <h1 id="hero-title" data-enter>Your dev setup,<br>in one script.</h1>
+          <p class="lead" data-enter style="--d:1">Five setup scripts for Laravel, design skills, GitHub, Freebuff and
+            Claude Code, each written for Linux, macOS and Windows. Pick your platform, run the script in the folder you
+            want it to change, then read the report.</p>
+          <div class="hero__actions" data-enter style="--d:2">
+            <a class="btn btn--primary" href="#scripts">Browse the scripts<svg class="i" aria-hidden="true">
+                <use href="#i-arrow" />
+              </svg></a>
+            <a class="link-quiet" href="#safety">Read the safety notes</a>
+          </div>
+          <p class="hero__proof" data-enter style="--d:3">5 scripts<span aria-hidden="true"> · </span>3 platforms<span
+              aria-hidden="true"> · </span><span data-total-lines>7,417</span> lines<span aria-hidden="true"> ·
+            </span>every download hashed</p>
         </div>
-        <p class="hero__proof" data-enter style="--d:3">5 scripts<span aria-hidden="true"> · </span>3 platforms<span aria-hidden="true"> · </span><span data-total-lines>7,417</span> lines<span aria-hidden="true"> · </span>every download hashed</p>
-      </div>
 
-      <div class="hero__art" data-enter style="--d:2">
-        <div class="term" role="img" aria-label="Preview of a Setup skills install: a progress row showing step 2 of 4, two finished steps and a written report">
+              <div class="hero__art" data-enter style="--d:2">
+        <div class="term" data-term-demo>
           <div class="term__bar">
             <span class="term__path">~/projects/acme</span>
-            <span class="term__shell">bash</span>
+            <span class="term__tools">
+              <span class="term__shell">bash</span>
+              <button class="term__pause" type="button" data-term-toggle aria-pressed="false" aria-label="Pause the demo">
+                <svg class="i term__icon-pause" aria-hidden="true"><use href="#i-pause"/></svg>
+                <svg class="i term__icon-play" aria-hidden="true"><use href="#i-play"/></svg>
+              </button>
+            </span>
           </div>
-          <div class="term__body" aria-hidden="true">
-            <p class="t-line t-cmd"><span class="t-prompt">$</span> bash &lt;(curl -fsSL downloads/linux/setup-skills.sh)</p>
+          <div class="term__body" aria-hidden="true" data-term-body>
+            <p class="t-line t-cmd"><span class="t-prompt">$</span> bash &lt;(curl -fsSL setup-skills.sh)</p>
             <div class="t-head">
               <p class="t-title">Setup skills</p>
-              <p class="t-sub">design system, agent rules, MCP</p>
+              <p class="t-sub">design + engineering skills installer</p>
             </div>
-            <div class="t-progress">
-              <span class="t-dots"><i class="is-done"></i><i class="is-done"></i><i class="is-now"></i><i></i></span>
-              <span class="t-meta">install 2 of 4</span>
+            <p class="t-step"><span class="t-key">❯</span> <span class="t-step__key">5/5</span> <span class="t-step__label">Playwright MCP</span></p>
+            <p class="t-line t-ok"><svg class="i" aria-hidden="true"><use href="#i-check"/></svg><span>Created .mcp.json with Playwright MCP</span></p>
+            <p class="t-step"><span class="t-key">❯</span> <span class="t-step__label">SUMMARY</span></p>
+            <div class="t-panel">
+              <p class="t-panel__title">INSTALL REPORT</p>
+              <p><span class="t-flag">[OK]</span> Folder: ~/projects/acme</p>
+              <p><span class="t-flag">[OK]</span> DESIGN.md (design system)</p>
+              <p><span class="t-flag">[OK]</span> CLAUDE.md (agent rules)</p>
+              <p><span class="t-flag">[OK]</span> Playwright MCP (.mcp.json)</p>
+              <p><span class="t-flag">[OK]</span> Skill: Impeccable</p>
+              <p><span class="t-flag">[OK]</span> Skill: Taste Skill</p>
             </div>
-            <ul class="t-steps">
-              <li class="is-done"><svg class="i"><use href="#i-check"/></svg>design skills</li>
-              <li class="is-done"><svg class="i"><use href="#i-check"/></svg>DESIGN.md</li>
-              <li class="is-now"><span class="t-spin"></span>playwright mcp</li>
-              <li><span class="t-box"></span>agent rules</li>
-            </ul>
-            <div class="t-report">
-              <p class="t-meta">report</p>
-              <p><svg class="i"><use href="#i-check"/></svg>.claude/skills</p>
-              <p><svg class="i"><use href="#i-check"/></svg>.agents/skills</p>
-              <p><svg class="i"><use href="#i-check"/></svg>CLAUDE.md</p>
-            </div>
+            <p class="t-line t-note">ALL DONE - NEXT STEPS</p>
+            <p class="t-line t-hint">1. Start your AI agent in this folder</p>
             <p class="t-line t-last"><span class="t-prompt">$</span> <span class="t-cursor"></span></p>
           </div>
+          <p class="sr-only">Animated preview: the Setup skills script picks a design system, installs Impeccable, Taste Skill, Vercel Guidelines and LP Design, registers Playwright MCP and prints an install report.</p>
         </div>
       </div>
-    </div>
-  </section>
+      </div>
+    </section>
 
-  <section class="section tagline-section" aria-labelledby="tagline">
-    <div class="wrap">
-      <h2 class="tagline" id="tagline" data-words>Each script checks its own dependencies, prints every step, and ends with a report of the files it wrote.</h2>
-    </div>
-  </section>
+    <section class="section tagline-section" aria-labelledby="tagline">
+      <div class="wrap">
+        <h2 class="tagline" id="tagline" data-words>Each script checks its own dependencies, prints every step, and ends
+          with a report of the files it wrote.</h2>
+      </div>
+    </section>
 
-  <section class="section section--first" aria-labelledby="why-title">
-    <div class="wrap">
-      <div class="split">
-        <div>
-          <h2 id="why-title">Built for the first hour of a new machine</h2>
-          <p class="body body--wide">A new laptop means a dozen setup pages, a few forgotten exports and one command that only works on the author’s machine. These scripts replace that hour with a run you can read first.</p>
+    <section class="section section--first" aria-labelledby="why-title">
+      <div class="wrap">
+        <div class="split">
+          <div>
+            <h2 id="why-title">Built for the first hour of a new machine</h2>
+            <p class="body body--wide">A new laptop means a dozen setup pages, a few forgotten exports and one command
+              that only works on the author’s machine. These scripts replace that hour with a run you can read first.
+            </p>
+          </div>
+          <ul class="facts">
+            <li><span class="facts__label">Readable</span><span class="facts__text">Plain bash and PowerShell, no build
+                step, no package to trust. Open the file before you run it.</span></li>
+            <li><span class="facts__label">Auditable</span><span class="facts__text">Each of the fifteen downloads
+                carries a sha256, a line count and the commit it came from.</span></li>
+            <li><span class="facts__label">Honest</span><span class="facts__text">Failures are collected and shown at
+                the end, not swallowed mid run.</span></li>
+          </ul>
         </div>
-        <ul class="facts">
-          <li><span class="facts__label">Readable</span><span class="facts__text">Plain bash and PowerShell, no build step, no package to trust. Open the file before you run it.</span></li>
-          <li><span class="facts__label">Auditable</span><span class="facts__text">Each of the fifteen downloads carries a sha256, a line count and the commit it came from.</span></li>
-          <li><span class="facts__label">Honest</span><span class="facts__text">Failures are collected and shown at the end, not swallowed mid run.</span></li>
+      </div>
+    </section>
+
+    <section class="section" id="scripts" aria-labelledby="scripts-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="scripts-title">Five scripts, three platforms</h2>
+          <p class="body body--wide">Pick your system once and every row switches: the command, the download and the
+            source page. Each file is verified against the hash in its row.</p>
+        </div>
+
+        <div class="os-switch" role="group" aria-label="Choose your operating system">
+          <span class="os-switch__label">Your system</span>
+          <button class="filter-btn" type="button" data-os-set="linux" aria-pressed="true">Linux</button>
+          <button class="filter-btn" type="button" data-os-set="mac" aria-pressed="false">macOS</button>
+          <button class="filter-btn" type="button" data-os-set="windows" aria-pressed="false">Windows</button>
+        </div>
+
+        <div class="filters">
+          <div class="search">
+            <label class="sr-only" for="script-search">Search scripts</label>
+            <svg class="i" aria-hidden="true">
+              <use href="#i-search" />
+            </svg>
+            <input id="script-search" type="search" placeholder="Search name, file or requirement" autocomplete="off"
+              spellcheck="false" aria-controls="script-list">
+          </div>
+          <div class="filter-group" role="group" aria-label="Filter by privileges">
+            <button class="filter-btn" type="button" data-filter="all" aria-pressed="true">All</button>
+            <button class="filter-btn" type="button" data-filter="no" aria-pressed="false">No sudo</button>
+            <button class="filter-btn" type="button" data-filter="yes" aria-pressed="false">Uses sudo</button>
+          </div>
+        </div>
+        <p class="filter-count" id="filter-count" role="status" aria-live="polite">5 scripts</p>
+
+        <div class="script-list" id="script-list" data-os="linux">
+          <article class="script" data-sudo="no" data-sudo-linux="no" data-sudo-mac="no" data-sudo-windows="no"
+            data-tag-linux="no sudo" data-tag-mac="no sudo" data-tag-windows="no admin"
+            aria-labelledby="s-setup-skills">
+            <div class="script__head">
+              <h3 id="s-setup-skills"><a data-detail="setup-skills" href="scripts/setup-skills-linux.html">Setup
+                  skills</a></h3>
+              <span class="tag" data-tag>no sudo</span>
+            </div>
+            <p class="script__desc">Installs five design skills, a DESIGN.md and the rules file your agent reads at the
+              start of every session. Prints a report at the end, including what it skipped.</p>
+            <div class="variant" data-os="linux">
+              <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
+              <code class="script__cmd"
+                data-cmd="linux/setup-skills.sh">bash &lt;(curl -fsSL downloads/linux/setup-skills.sh)</code>
+              <p class="script__meta" data-meta="linux/setup-skills.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/linux/setup-skills.sh" download
+                  aria-label="Download setup-skills.sh for Linux">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-skills.sh"
+                  aria-label="Copy the Linux install command for Setup skills">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="mac">
+              <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
+              <code class="script__cmd"
+                data-cmd="mac/setup-skills.sh">bash &lt;(curl -fsSL downloads/mac/setup-skills.sh)</code>
+              <p class="script__meta" data-meta="mac/setup-skills.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/mac/setup-skills.sh" download
+                  aria-label="Download setup-skills.sh for macOS">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-skills.sh"
+                  aria-label="Copy the macOS install command for Setup skills">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="windows">
+              <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
+              <code class="script__cmd"
+                data-cmd="windows/setup-skills.ps1">irm downloads/windows/setup-skills.ps1 -OutFile setup-skills.ps1; .\setup-skills.ps1</code>
+              <p class="script__meta" data-meta="windows/setup-skills.ps1">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/windows/setup-skills.ps1" download
+                  aria-label="Download setup-skills.ps1 for Windows">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-skills.ps1"
+                  aria-label="Copy the Windows install command for Setup skills">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes"
+            data-tag-linux="sudo" data-tag-mac="no sudo" data-tag-windows="admin for winget"
+            aria-labelledby="s-laravel">
+            <div class="script__head">
+              <h3 id="s-laravel"><a data-detail="laravel" href="scripts/laravel-linux.html">Laravel</a></h3>
+              <span class="tag tag--warn" data-tag>sudo</span>
+            </div>
+            <p class="script__desc">A guided Laravel install: choose PHP, choose a database, run migrations and finish
+              with a working app in a new folder.</p>
+            <div class="variant" data-os="linux">
+              <p class="script__needs"><span>Needs</span> PHP 8.2+, Composer, a database</p>
+              <code class="script__cmd"
+                data-cmd="linux/setup-laravel.sh">bash &lt;(curl -fsSL downloads/linux/setup-laravel.sh)</code>
+              <p class="script__meta" data-meta="linux/setup-laravel.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/linux/setup-laravel.sh" download
+                  aria-label="Download setup-laravel.sh for Linux">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-laravel.sh"
+                  aria-label="Copy the Linux install command for Laravel">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="mac">
+              <p class="script__needs"><span>Needs</span> Homebrew, PHP 8.2+, Composer</p>
+              <code class="script__cmd"
+                data-cmd="mac/setup-laravel.sh">bash &lt;(curl -fsSL downloads/mac/setup-laravel.sh)</code>
+              <p class="script__meta" data-meta="mac/setup-laravel.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/mac/setup-laravel.sh" download
+                  aria-label="Download setup-laravel.sh for macOS">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-laravel.sh"
+                  aria-label="Copy the macOS install command for Laravel">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="windows">
+              <p class="script__needs"><span>Needs</span> PowerShell 5.1+, PHP 8.2+ or winget</p>
+              <code class="script__cmd"
+                data-cmd="windows/setup-laravel.ps1">irm downloads/windows/setup-laravel.ps1 -OutFile setup-laravel.ps1; .\setup-laravel.ps1</code>
+              <p class="script__meta" data-meta="windows/setup-laravel.ps1">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/windows/setup-laravel.ps1" download
+                  aria-label="Download setup-laravel.ps1 for Windows">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-laravel.ps1"
+                  aria-label="Copy the Windows install command for Laravel">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="script" data-sudo="no" data-sudo-linux="no" data-sudo-mac="no" data-sudo-windows="no"
+            data-tag-linux="no sudo" data-tag-mac="no sudo" data-tag-windows="no admin"
+            aria-labelledby="s-freebuff-zsh">
+            <div class="script__head">
+              <h3 id="s-freebuff-zsh"><a data-detail="freebuff-zsh" href="scripts/freebuff-zsh-linux.html">Freebuff</a>
+              </h3>
+              <span class="tag" data-tag>no sudo</span>
+            </div>
+            <p class="script__desc">Checks your Gemini key, installs the Freebuff CLI and adds one marked block to your
+              shell profile. Removes the older block it used to write.</p>
+            <div class="variant" data-os="linux">
+              <p class="script__needs"><span>Needs</span> zsh, npm, a Gemini key</p>
+              <code class="script__cmd"
+                data-cmd="linux/setup-freebuff-zsh.sh">bash &lt;(curl -fsSL downloads/linux/setup-freebuff-zsh.sh)</code>
+              <p class="script__meta" data-meta="linux/setup-freebuff-zsh.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/linux/setup-freebuff-zsh.sh" download
+                  aria-label="Download setup-freebuff-zsh.sh for Linux">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-freebuff-zsh.sh"
+                  aria-label="Copy the Linux install command for Freebuff">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="mac">
+              <p class="script__needs"><span>Needs</span> zsh, npm, a Gemini key</p>
+              <code class="script__cmd"
+                data-cmd="mac/setup-freebuff-zsh.sh">bash &lt;(curl -fsSL downloads/mac/setup-freebuff-zsh.sh)</code>
+              <p class="script__meta" data-meta="mac/setup-freebuff-zsh.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/mac/setup-freebuff-zsh.sh" download
+                  aria-label="Download setup-freebuff-zsh.sh for macOS">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-freebuff-zsh.sh"
+                  aria-label="Copy the macOS install command for Freebuff">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="windows">
+              <p class="script__needs"><span>Needs</span> PowerShell 5.1+, npm, a Gemini key</p>
+              <code class="script__cmd"
+                data-cmd="windows/setup-freebuff.ps1">irm downloads/windows/setup-freebuff.ps1 -OutFile setup-freebuff.ps1; .\setup-freebuff.ps1</code>
+              <p class="script__meta" data-meta="windows/setup-freebuff.ps1">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/windows/setup-freebuff.ps1" download
+                  aria-label="Download setup-freebuff.ps1 for Windows">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-freebuff.ps1"
+                  aria-label="Copy the Windows install command for Freebuff">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes"
+            data-tag-linux="sudo for deps" data-tag-mac="no sudo" data-tag-windows="admin for winget"
+            aria-labelledby="s-gitcli">
+            <div class="script__head">
+              <h3 id="s-gitcli"><a data-detail="gitcli" href="scripts/gitcli-linux.html">GitHub helper</a></h3>
+              <span class="tag tag--warn" data-tag>sudo for deps</span>
+            </div>
+            <p class="script__desc">First push for a local project: checks git, writes a .gitignore, stages what is
+              safe, commits and pushes to your repository.</p>
+            <div class="variant" data-os="linux">
+              <p class="script__needs"><span>Needs</span> git, curl, figlet, lolcat</p>
+              <code class="script__cmd"
+                data-cmd="linux/gitcli.sh">bash &lt;(curl -fsSL downloads/linux/gitcli.sh)</code>
+              <p class="script__meta" data-meta="linux/gitcli.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/linux/gitcli.sh" download
+                  aria-label="Download gitcli.sh for Linux">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/gitcli.sh"
+                  aria-label="Copy the Linux install command for GitHub helper">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="mac">
+              <p class="script__needs"><span>Needs</span> git, curl (figlet and lolcat optional)</p>
+              <code class="script__cmd" data-cmd="mac/gitcli.sh">bash &lt;(curl -fsSL downloads/mac/gitcli.sh)</code>
+              <p class="script__meta" data-meta="mac/gitcli.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/mac/gitcli.sh" download
+                  aria-label="Download gitcli.sh for macOS">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/gitcli.sh"
+                  aria-label="Copy the macOS install command for GitHub helper">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="windows">
+              <p class="script__needs"><span>Needs</span> git, PowerShell 5.1+</p>
+              <code class="script__cmd"
+                data-cmd="windows/gitcli.ps1">irm downloads/windows/gitcli.ps1 -OutFile gitcli.ps1; .\gitcli.ps1</code>
+              <p class="script__meta" data-meta="windows/gitcli.ps1">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/windows/gitcli.ps1" download
+                  aria-label="Download gitcli.ps1 for Windows">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/gitcli.ps1"
+                  aria-label="Copy the Windows install command for GitHub helper">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+          </article>
+
+          <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes"
+            data-tag-linux="sudo" data-tag-mac="no sudo" data-tag-windows="admin for winget"
+            aria-labelledby="s-claude-code">
+            <div class="script__head">
+              <h3 id="s-claude-code"><a data-detail="claude-code" href="scripts/claude-code-linux.html">Claude Code on
+                  Ollama</a></h3>
+              <span class="tag tag--warn" data-tag>sudo</span>
+            </div>
+            <p class="script__desc">Installs Ollama, picks a Gemma model for your RAM, adds Node.js and Claude Code,
+              then writes the local Anthropic endpoints to your shell config. Ends with a test prompt.</p>
+            <div class="variant" data-os="linux">
+              <p class="script__needs"><span>Needs</span> curl, sudo, Node.js if missing</p>
+              <code class="script__cmd"
+                data-cmd="linux/claude-code.sh">bash &lt;(curl -fsSL downloads/linux/claude-code.sh)</code>
+              <p class="script__meta" data-meta="linux/claude-code.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/linux/claude-code.sh" download
+                  aria-label="Download claude-code.sh for Linux">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/claude-code.sh"
+                  aria-label="Copy the Linux install command for Claude Code on Ollama">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="mac">
+              <p class="script__needs"><span>Needs</span> Homebrew, curl, network</p>
+              <code class="script__cmd"
+                data-cmd="mac/claude-code.sh">bash &lt;(curl -fsSL downloads/mac/claude-code.sh)</code>
+              <p class="script__meta" data-meta="mac/claude-code.sh">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/mac/claude-code.sh" download
+                  aria-label="Download claude-code.sh for macOS">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/claude-code.sh"
+                  aria-label="Copy the macOS install command for Claude Code on Ollama">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+            <div class="variant" data-os="windows">
+              <p class="script__needs"><span>Needs</span> PowerShell 5.1+, winget</p>
+              <code class="script__cmd"
+                data-cmd="windows/claude-code.ps1">irm downloads/windows/claude-code.ps1 -OutFile claude-code.ps1; .\claude-code.ps1</code>
+              <p class="script__meta" data-meta="windows/claude-code.ps1">Reading metadata</p>
+              <div class="script__actions">
+                <a class="btn btn--primary btn--sm" href="downloads/windows/claude-code.ps1" download
+                  aria-label="Download claude-code.ps1 for Windows">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-download" />
+                  </svg>Download
+                </a>
+                <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/claude-code.ps1"
+                  aria-label="Copy the Windows install command for Claude Code on Ollama">
+                  <svg class="i" aria-hidden="true">
+                    <use href="#i-copy" />
+                  </svg><span>Copy command</span>
+                </button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="empty" id="script-empty" hidden>
+          <p>No script matches those filters.</p>
+          <button class="btn btn--ghost btn--sm" type="button" id="clear-filters">Clear filters</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how" aria-labelledby="how-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="how-title">How a run goes</h2>
+          <p class="body body--wide">The wizards use arrow keys. Enter confirms, Esc backs out, and nothing is written
+            until you say yes.</p>
+        </div>
+        <ol class="steps">
+          <li class="step">
+            <span class="step__n" aria-hidden="true">01</span>
+            <h3>Choose a script</h3>
+            <p>Each row lists what it needs and what it writes. Download the file or copy the command into your
+              terminal.</p>
+          </li>
+          <li class="step">
+            <span class="step__n" aria-hidden="true">02</span>
+            <h3>Run it in place</h3>
+            <p>Start it from the folder you want it to change. It asks for the few choices it cannot guess, such as a
+              database or a design.</p>
+          </li>
+          <li class="step">
+            <span class="step__n" aria-hidden="true">03</span>
+            <h3>Read the report</h3>
+            <p>The last panel lists the files it wrote, the steps it skipped and anything that failed, with the log path
+              when there is one.</p>
+          </li>
+        </ol>
+        <p class="keys">
+          <kbd>↑</kbd><kbd>↓</kbd><span>move</span><kbd>Enter</kbd><span>confirm</span><kbd>Esc</kbd><span>back
+            out</span></p>
+      </div>
+    </section>
+
+    <section class="section" id="safety" aria-labelledby="safety-title">
+      <div class="wrap split split--safety">
+        <div>
+          <h2 id="safety-title">What it touches, before you run it</h2>
+          <p class="body body--wide">These installers write real files. That is the point, so each one says where it
+            writes and records a failure instead of hiding it.</p>
+
+          <ul class="safety-list">
+            <li>
+              <h3>Elevation only where a package manager needs it</h3>
+              <p>On Linux the Laravel installer calls apt, dnf, pacman or zypper. On macOS it uses Homebrew without
+                sudo. On Windows, winget may ask for an administrator prompt. Setup skills never asks for either.</p>
+            </li>
+            <li>
+              <h3>Writes stay where you started</h3>
+              <p>The skills installer and the Laravel wizard write inside the current folder. The Freebuff script adds
+                one marked block to <code>~/.zshrc</code> on Linux and macOS, or to <code>$PROFILE</code> on Windows,
+                and replaces that block on later runs.</p>
+            </li>
+            <li>
+              <h3>Read it first, then run it</h3>
+              <p>Every download shows its sha256 and line count. Save it, open it in your editor, compare the hash, then
+                run it with bash.</p>
+            </li>
+          </ul>
+        </div>
+
+        <div class="panel">
+          <h3 class="panel__title">Footprint by script</h3>
+          <table class="footprint">
+            <caption class="sr-only">What each script writes and whether it uses sudo</caption>
+            <thead>
+              <tr>
+                <th scope="col">Script</th>
+                <th scope="col">Writes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <th scope="row">Setup skills</th>
+                <td><code>.claude/skills</code>, <code>.agents/skills</code>, <code>DESIGN.md</code>,
+                  <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.mcp.json</code>,
+                  <code>skill-instructions.md</code></td>
+              </tr>
+              <tr>
+                <th scope="row">Laravel</th>
+                <td>A new project folder, its <code>.env</code>, system packages and a database</td>
+              </tr>
+              <tr>
+                <th scope="row">Freebuff</th>
+                <td><code>~/.zshrc</code> on Linux and macOS, <code>$PROFILE</code> on Windows, one marked block, and
+                  the global npm package</td>
+              </tr>
+              <tr>
+                <th scope="row">GitHub helper</th>
+                <td><code>.gitignore</code>, a commit, and the push to your remote</td>
+              </tr>
+              <tr>
+                <th scope="row">Claude Code</th>
+                <td>Ollama, a Gemma model, Claude Code and six <code>ANTHROPIC_</code> export lines in
+                  <code>.zshrc</code> or <code>.bashrc</code>, or as user variables on Windows</td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="panel__note">To undo: delete the folders and rule files the report lists, remove the marked block
+            between the freebuff lines in your shell config, delete the <code>ANTHROPIC_</code> exports or user
+            variables, and drop the database the Laravel run created.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="themes" aria-labelledby="themes-title">
+      <div class="wrap">
+        <div class="section__head">
+          <h2 id="themes-title">The design library behind the skills</h2>
+          <p class="body body--wide">The skills installer can pull one of nine design analyses and turn it into your
+            DESIGN.md. These are the references it ships with.</p>
+        </div>
+        <ul class="themes">
+          <li><span>Apple</span><span class="themes__meta">product restraint</span></li>
+          <li><span>Linear</span><span class="themes__meta">dense, quiet UI</span></li>
+          <li><span>Notion</span><span class="themes__meta">document first</span></li>
+          <li><span>Resend</span><span class="themes__meta">developer polish</span></li>
+          <li><span>Cal.com</span><span class="themes__meta">open scheduling</span></li>
+          <li><span>Intercom</span><span class="themes__meta">warm product</span></li>
+          <li><span>Mintlify</span><span class="themes__meta">docs and code</span></li>
+          <li><span>SAP</span><span class="themes__meta">enterprise scale</span></li>
+          <li><span>Zapier</span><span class="themes__meta">playful utility</span></li>
         </ul>
       </div>
+    </section>
+
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="wrap">
+        <h2 id="faq-title">Questions before a run</h2>
+        <div class="faq">
+          <details>
+            <summary>Do I need sudo or admin rights?</summary>
+            <p>It depends on the platform. Linux uses sudo for PHP, database and helper packages. macOS uses Homebrew
+              and never calls sudo. Windows may show an administrator prompt when winget installs PHP, Ollama or the
+              database. Setup skills and Freebuff never ask for either.</p>
+          </details>
+          <details>
+            <summary>Which systems are supported?</summary>
+            <p>Every script ships in three versions: bash for Linux, bash for macOS, and PowerShell for Windows 10 and
+              11. Package installs cover apt, dnf, pacman and zypper on Linux, Homebrew on macOS, and winget on Windows.
+              Pick your system above and the downloads follow.</p>
+          </details>
+          <details>
+            <summary>Can I read a script before running it?</summary>
+            <p>Yes, and you should. Download the file, open it in an editor, and compare its sha256 with the hash on
+              this page. The copy command is there for convenience, not to hide the source.</p>
+          </details>
+          <details>
+            <summary>What happens when a step fails?</summary>
+            <p>The run continues where it can, records the failure, and prints a report at the end. Long commands write
+              a log under <code>.design-setup-logs</code> in the folder you ran from.</p>
+          </details>
+          <details>
+            <summary>Will it overwrite my files?</summary>
+            <p>The Laravel wizard creates a new project folder. The skills installer adds files to the current folder
+              and keeps an existing DESIGN.md as DESIGN.md.bak. Freebuff and Claude Code only touch their own marked
+              block in your shell config or, on Windows, their own user variables.</p>
+          </details>
+          <details>
+            <summary>How do I remove what it installed?</summary>
+            <p>Delete the folders and rule files named in the final report. For Freebuff, remove the block between the
+              freebuff markers in <code>~/.zshrc</code> or <code>$PROFILE</code>. For Claude Code, delete the
+              <code>ANTHROPIC_</code> exports or user variables. For Laravel, drop the database and delete the project
+              folder.</p>
+          </details>
+          <details>
+            <summary>Why shell scripts and not a package manager?</summary>
+            <p>Bash is already on Linux and macOS, and PowerShell is already on Windows. A script is one file you can
+              read end to end, with no runtime, no registry and no build step. The trade off is that you should read
+              what you run.</p>
+          </details>
+          <details>
+            <summary>Where do the downloads come from?</summary>
+            <p>This site copies them from the repository at build time, hashes each file and serves that exact copy. The
+              footer shows the commit the current downloads came from.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section--last" aria-labelledby="cta-title">
+      <div class="wrap">
+        <div class="cta">
+          <div>
+            <h2 id="cta-title">Start with the script you need</h2>
+            <p class="body">No account, no email, no install command hidden behind a form.</p>
+          </div>
+          <div class="cta__actions">
+            <a class="btn btn--primary" href="#scripts">Browse the scripts<svg class="i" aria-hidden="true">
+                <use href="#i-arrow" />
+              </svg></a>
+            <a class="link-quiet" href="#safety">Read the safety notes</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap footer__inner">
+      <p>Scripts are provided as is. Read them before you run them.</p>
+      <p class="footer__meta">
+        <span data-sync>Local build</span>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+      </p>
     </div>
-  </section>
+  </footer>
 
-  <section class="section" id="scripts" aria-labelledby="scripts-title">
-    <div class="wrap">
-      <div class="section__head">
-        <h2 id="scripts-title">Five scripts, three platforms</h2>
-        <p class="body body--wide">Pick your system once and every row switches: the command, the download and the source page. Each file is verified against the hash in its row.</p>
-      </div>
+  <p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
 
-      <div class="os-switch" role="group" aria-label="Choose your operating system">
-        <span class="os-switch__label">Your system</span>
-        <button class="filter-btn" type="button" data-os-set="linux" aria-pressed="true">Linux</button>
-        <button class="filter-btn" type="button" data-os-set="mac" aria-pressed="false">macOS</button>
-        <button class="filter-btn" type="button" data-os-set="windows" aria-pressed="false">Windows</button>
-      </div>
-
-      <div class="filters">
-        <div class="search">
-          <label class="sr-only" for="script-search">Search scripts</label>
-          <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
-          <input id="script-search" type="search" placeholder="Search name, file or requirement" autocomplete="off" spellcheck="false" aria-controls="script-list">
-        </div>
-        <div class="filter-group" role="group" aria-label="Filter by privileges">
-          <button class="filter-btn" type="button" data-filter="all" aria-pressed="true">All</button>
-          <button class="filter-btn" type="button" data-filter="no" aria-pressed="false">No sudo</button>
-          <button class="filter-btn" type="button" data-filter="yes" aria-pressed="false">Uses sudo</button>
-        </div>
-      </div>
-      <p class="filter-count" id="filter-count" role="status" aria-live="polite">5 scripts</p>
-
-      <div class="script-list" id="script-list" data-os="linux">
-        <article class="script" data-sudo="no" data-sudo-linux="no" data-sudo-mac="no" data-sudo-windows="no" data-tag-linux="no sudo" data-tag-mac="no sudo" data-tag-windows="no admin" aria-labelledby="s-setup-skills">
-          <div class="script__head">
-            <h3 id="s-setup-skills"><a data-detail="setup-skills" href="scripts/setup-skills-linux.html">Setup skills</a></h3>
-            <span class="tag" data-tag>no sudo</span>
-          </div>
-          <p class="script__desc">Installs five design skills, a DESIGN.md and the rules file your agent reads at the start of every session. Prints a report at the end, including what it skipped.</p>
-        <div class="variant" data-os="linux">
-          <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
-          <code class="script__cmd" data-cmd="linux/setup-skills.sh">bash &lt;(curl -fsSL downloads/linux/setup-skills.sh)</code>
-          <p class="script__meta" data-meta="linux/setup-skills.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/linux/setup-skills.sh" download aria-label="Download setup-skills.sh for Linux">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-skills.sh" aria-label="Copy the Linux install command for Setup skills">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="mac">
-          <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
-          <code class="script__cmd" data-cmd="mac/setup-skills.sh">bash &lt;(curl -fsSL downloads/mac/setup-skills.sh)</code>
-          <p class="script__meta" data-meta="mac/setup-skills.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/mac/setup-skills.sh" download aria-label="Download setup-skills.sh for macOS">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-skills.sh" aria-label="Copy the macOS install command for Setup skills">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="windows">
-          <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
-          <code class="script__cmd" data-cmd="windows/setup-skills.ps1">irm downloads/windows/setup-skills.ps1 -OutFile setup-skills.ps1; .\setup-skills.ps1</code>
-          <p class="script__meta" data-meta="windows/setup-skills.ps1">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/windows/setup-skills.ps1" download aria-label="Download setup-skills.ps1 for Windows">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-skills.ps1" aria-label="Copy the Windows install command for Setup skills">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        </article>
-
-        <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes" data-tag-linux="sudo" data-tag-mac="no sudo" data-tag-windows="admin for winget" aria-labelledby="s-laravel">
-          <div class="script__head">
-            <h3 id="s-laravel"><a data-detail="laravel" href="scripts/laravel-linux.html">Laravel</a></h3>
-            <span class="tag tag--warn" data-tag>sudo</span>
-          </div>
-          <p class="script__desc">A guided Laravel install: choose PHP, choose a database, run migrations and finish with a working app in a new folder.</p>
-        <div class="variant" data-os="linux">
-          <p class="script__needs"><span>Needs</span> PHP 8.2+, Composer, a database</p>
-          <code class="script__cmd" data-cmd="linux/setup-laravel.sh">bash &lt;(curl -fsSL downloads/linux/setup-laravel.sh)</code>
-          <p class="script__meta" data-meta="linux/setup-laravel.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/linux/setup-laravel.sh" download aria-label="Download setup-laravel.sh for Linux">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-laravel.sh" aria-label="Copy the Linux install command for Laravel">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="mac">
-          <p class="script__needs"><span>Needs</span> Homebrew, PHP 8.2+, Composer</p>
-          <code class="script__cmd" data-cmd="mac/setup-laravel.sh">bash &lt;(curl -fsSL downloads/mac/setup-laravel.sh)</code>
-          <p class="script__meta" data-meta="mac/setup-laravel.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/mac/setup-laravel.sh" download aria-label="Download setup-laravel.sh for macOS">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-laravel.sh" aria-label="Copy the macOS install command for Laravel">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="windows">
-          <p class="script__needs"><span>Needs</span> PowerShell 5.1+, PHP 8.2+ or winget</p>
-          <code class="script__cmd" data-cmd="windows/setup-laravel.ps1">irm downloads/windows/setup-laravel.ps1 -OutFile setup-laravel.ps1; .\setup-laravel.ps1</code>
-          <p class="script__meta" data-meta="windows/setup-laravel.ps1">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/windows/setup-laravel.ps1" download aria-label="Download setup-laravel.ps1 for Windows">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-laravel.ps1" aria-label="Copy the Windows install command for Laravel">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        </article>
-
-        <article class="script" data-sudo="no" data-sudo-linux="no" data-sudo-mac="no" data-sudo-windows="no" data-tag-linux="no sudo" data-tag-mac="no sudo" data-tag-windows="no admin" aria-labelledby="s-freebuff-zsh">
-          <div class="script__head">
-            <h3 id="s-freebuff-zsh"><a data-detail="freebuff-zsh" href="scripts/freebuff-zsh-linux.html">Freebuff</a></h3>
-            <span class="tag" data-tag>no sudo</span>
-          </div>
-          <p class="script__desc">Checks your Gemini key, installs the Freebuff CLI and adds one marked block to your shell profile. Removes the older block it used to write.</p>
-        <div class="variant" data-os="linux">
-          <p class="script__needs"><span>Needs</span> zsh, npm, a Gemini key</p>
-          <code class="script__cmd" data-cmd="linux/setup-freebuff-zsh.sh">bash &lt;(curl -fsSL downloads/linux/setup-freebuff-zsh.sh)</code>
-          <p class="script__meta" data-meta="linux/setup-freebuff-zsh.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/linux/setup-freebuff-zsh.sh" download aria-label="Download setup-freebuff-zsh.sh for Linux">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/setup-freebuff-zsh.sh" aria-label="Copy the Linux install command for Freebuff">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="mac">
-          <p class="script__needs"><span>Needs</span> zsh, npm, a Gemini key</p>
-          <code class="script__cmd" data-cmd="mac/setup-freebuff-zsh.sh">bash &lt;(curl -fsSL downloads/mac/setup-freebuff-zsh.sh)</code>
-          <p class="script__meta" data-meta="mac/setup-freebuff-zsh.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/mac/setup-freebuff-zsh.sh" download aria-label="Download setup-freebuff-zsh.sh for macOS">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/setup-freebuff-zsh.sh" aria-label="Copy the macOS install command for Freebuff">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="windows">
-          <p class="script__needs"><span>Needs</span> PowerShell 5.1+, npm, a Gemini key</p>
-          <code class="script__cmd" data-cmd="windows/setup-freebuff.ps1">irm downloads/windows/setup-freebuff.ps1 -OutFile setup-freebuff.ps1; .\setup-freebuff.ps1</code>
-          <p class="script__meta" data-meta="windows/setup-freebuff.ps1">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/windows/setup-freebuff.ps1" download aria-label="Download setup-freebuff.ps1 for Windows">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/setup-freebuff.ps1" aria-label="Copy the Windows install command for Freebuff">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        </article>
-
-        <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes" data-tag-linux="sudo for deps" data-tag-mac="no sudo" data-tag-windows="admin for winget" aria-labelledby="s-gitcli">
-          <div class="script__head">
-            <h3 id="s-gitcli"><a data-detail="gitcli" href="scripts/gitcli-linux.html">GitHub helper</a></h3>
-            <span class="tag tag--warn" data-tag>sudo for deps</span>
-          </div>
-          <p class="script__desc">First push for a local project: checks git, writes a .gitignore, stages what is safe, commits and pushes to your repository.</p>
-        <div class="variant" data-os="linux">
-          <p class="script__needs"><span>Needs</span> git, curl, figlet, lolcat</p>
-          <code class="script__cmd" data-cmd="linux/gitcli.sh">bash &lt;(curl -fsSL downloads/linux/gitcli.sh)</code>
-          <p class="script__meta" data-meta="linux/gitcli.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/linux/gitcli.sh" download aria-label="Download gitcli.sh for Linux">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/gitcli.sh" aria-label="Copy the Linux install command for GitHub helper">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="mac">
-          <p class="script__needs"><span>Needs</span> git, curl (figlet and lolcat optional)</p>
-          <code class="script__cmd" data-cmd="mac/gitcli.sh">bash &lt;(curl -fsSL downloads/mac/gitcli.sh)</code>
-          <p class="script__meta" data-meta="mac/gitcli.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/mac/gitcli.sh" download aria-label="Download gitcli.sh for macOS">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/gitcli.sh" aria-label="Copy the macOS install command for GitHub helper">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="windows">
-          <p class="script__needs"><span>Needs</span> git, PowerShell 5.1+</p>
-          <code class="script__cmd" data-cmd="windows/gitcli.ps1">irm downloads/windows/gitcli.ps1 -OutFile gitcli.ps1; .\gitcli.ps1</code>
-          <p class="script__meta" data-meta="windows/gitcli.ps1">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/windows/gitcli.ps1" download aria-label="Download gitcli.ps1 for Windows">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/gitcli.ps1" aria-label="Copy the Windows install command for GitHub helper">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        </article>
-
-        <article class="script" data-sudo="yes" data-sudo-linux="yes" data-sudo-mac="no" data-sudo-windows="yes" data-tag-linux="sudo" data-tag-mac="no sudo" data-tag-windows="admin for winget" aria-labelledby="s-claude-code">
-          <div class="script__head">
-            <h3 id="s-claude-code"><a data-detail="claude-code" href="scripts/claude-code-linux.html">Claude Code on Ollama</a></h3>
-            <span class="tag tag--warn" data-tag>sudo</span>
-          </div>
-          <p class="script__desc">Installs Ollama, picks a Gemma model for your RAM, adds Node.js and Claude Code, then writes the local Anthropic endpoints to your shell config. Ends with a test prompt.</p>
-        <div class="variant" data-os="linux">
-          <p class="script__needs"><span>Needs</span> curl, sudo, Node.js if missing</p>
-          <code class="script__cmd" data-cmd="linux/claude-code.sh">bash &lt;(curl -fsSL downloads/linux/claude-code.sh)</code>
-          <p class="script__meta" data-meta="linux/claude-code.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/linux/claude-code.sh" download aria-label="Download claude-code.sh for Linux">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="linux/claude-code.sh" aria-label="Copy the Linux install command for Claude Code on Ollama">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="mac">
-          <p class="script__needs"><span>Needs</span> Homebrew, curl, network</p>
-          <code class="script__cmd" data-cmd="mac/claude-code.sh">bash &lt;(curl -fsSL downloads/mac/claude-code.sh)</code>
-          <p class="script__meta" data-meta="mac/claude-code.sh">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/mac/claude-code.sh" download aria-label="Download claude-code.sh for macOS">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="mac/claude-code.sh" aria-label="Copy the macOS install command for Claude Code on Ollama">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        <div class="variant" data-os="windows">
-          <p class="script__needs"><span>Needs</span> PowerShell 5.1+, winget</p>
-          <code class="script__cmd" data-cmd="windows/claude-code.ps1">irm downloads/windows/claude-code.ps1 -OutFile claude-code.ps1; .\claude-code.ps1</code>
-          <p class="script__meta" data-meta="windows/claude-code.ps1">Reading metadata</p>
-          <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="downloads/windows/claude-code.ps1" download aria-label="Download claude-code.ps1 for Windows">
-              <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
-            </a>
-            <button class="btn btn--ghost btn--sm" type="button" data-copy="windows/claude-code.ps1" aria-label="Copy the Windows install command for Claude Code on Ollama">
-              <svg class="i" aria-hidden="true"><use href="#i-copy"/></svg><span>Copy command</span>
-            </button>
-          </div>
-        </div>
-        </article>
-      </div>
-
-      <div class="empty" id="script-empty" hidden>
-        <p>No script matches those filters.</p>
-        <button class="btn btn--ghost btn--sm" type="button" id="clear-filters">Clear filters</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="how" aria-labelledby="how-title">
-    <div class="wrap">
-      <div class="section__head">
-        <h2 id="how-title">How a run goes</h2>
-        <p class="body body--wide">The wizards use arrow keys. Enter confirms, Esc backs out, and nothing is written until you say yes.</p>
-      </div>
-      <ol class="steps">
-        <li class="step">
-          <span class="step__n" aria-hidden="true">01</span>
-          <h3>Choose a script</h3>
-          <p>Each row lists what it needs and what it writes. Download the file or copy the command into your terminal.</p>
-        </li>
-        <li class="step">
-          <span class="step__n" aria-hidden="true">02</span>
-          <h3>Run it in place</h3>
-          <p>Start it from the folder you want it to change. It asks for the few choices it cannot guess, such as a database or a design.</p>
-        </li>
-        <li class="step">
-          <span class="step__n" aria-hidden="true">03</span>
-          <h3>Read the report</h3>
-          <p>The last panel lists the files it wrote, the steps it skipped and anything that failed, with the log path when there is one.</p>
-        </li>
-      </ol>
-      <p class="keys"><kbd>↑</kbd><kbd>↓</kbd><span>move</span><kbd>Enter</kbd><span>confirm</span><kbd>Esc</kbd><span>back out</span></p>
-    </div>
-  </section>
-
-  <section class="section" id="safety" aria-labelledby="safety-title">
-    <div class="wrap split split--safety">
-      <div>
-        <h2 id="safety-title">What it touches, before you run it</h2>
-        <p class="body body--wide">These installers write real files. That is the point, so each one says where it writes and records a failure instead of hiding it.</p>
-
-        <ul class="safety-list">
-          <li>
-            <h3>Elevation only where a package manager needs it</h3>
-            <p>On Linux the Laravel installer calls apt, dnf, pacman or zypper. On macOS it uses Homebrew without sudo. On Windows, winget may ask for an administrator prompt. Setup skills never asks for either.</p>
-          </li>
-          <li>
-            <h3>Writes stay where you started</h3>
-            <p>The skills installer and the Laravel wizard write inside the current folder. The Freebuff script adds one marked block to <code>~/.zshrc</code> on Linux and macOS, or to <code>$PROFILE</code> on Windows, and replaces that block on later runs.</p>
-          </li>
-          <li>
-            <h3>Read it first, then run it</h3>
-            <p>Every download shows its sha256 and line count. Save it, open it in your editor, compare the hash, then run it with bash.</p>
-          </li>
-        </ul>
-      </div>
-
-      <div class="panel">
-        <h3 class="panel__title">Footprint by script</h3>
-        <table class="footprint">
-          <caption class="sr-only">What each script writes and whether it uses sudo</caption>
-          <thead>
-            <tr><th scope="col">Script</th><th scope="col">Writes</th></tr>
-          </thead>
-          <tbody>
-            <tr><th scope="row">Setup skills</th><td><code>.claude/skills</code>, <code>.agents/skills</code>, <code>DESIGN.md</code>, <code>CLAUDE.md</code>, <code>AGENTS.md</code>, <code>.mcp.json</code>, <code>skill-instructions.md</code></td></tr>
-            <tr><th scope="row">Laravel</th><td>A new project folder, its <code>.env</code>, system packages and a database</td></tr>
-            <tr><th scope="row">Freebuff</th><td><code>~/.zshrc</code> on Linux and macOS, <code>$PROFILE</code> on Windows, one marked block, and the global npm package</td></tr>
-            <tr><th scope="row">GitHub helper</th><td><code>.gitignore</code>, a commit, and the push to your remote</td></tr>
-            <tr><th scope="row">Claude Code</th><td>Ollama, a Gemma model, Claude Code and six <code>ANTHROPIC_</code> export lines in <code>.zshrc</code> or <code>.bashrc</code>, or as user variables on Windows</td></tr>
-          </tbody>
-        </table>
-        <p class="panel__note">To undo: delete the folders and rule files the report lists, remove the marked block between the freebuff lines in your shell config, delete the <code>ANTHROPIC_</code> exports or user variables, and drop the database the Laravel run created.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="themes" aria-labelledby="themes-title">
-    <div class="wrap">
-      <div class="section__head">
-        <h2 id="themes-title">The design library behind the skills</h2>
-        <p class="body body--wide">The skills installer can pull one of nine design analyses and turn it into your DESIGN.md. These are the references it ships with.</p>
-      </div>
-      <ul class="themes">
-        <li><span>Apple</span><span class="themes__meta">product restraint</span></li>
-        <li><span>Linear</span><span class="themes__meta">dense, quiet UI</span></li>
-        <li><span>Notion</span><span class="themes__meta">document first</span></li>
-        <li><span>Resend</span><span class="themes__meta">developer polish</span></li>
-        <li><span>Cal.com</span><span class="themes__meta">open scheduling</span></li>
-        <li><span>Intercom</span><span class="themes__meta">warm product</span></li>
-        <li><span>Mintlify</span><span class="themes__meta">docs and code</span></li>
-        <li><span>SAP</span><span class="themes__meta">enterprise scale</span></li>
-        <li><span>Zapier</span><span class="themes__meta">playful utility</span></li>
-      </ul>
-    </div>
-  </section>
-
-  <section class="section" id="faq" aria-labelledby="faq-title">
-    <div class="wrap">
-      <h2 id="faq-title">Questions before a run</h2>
-      <div class="faq">
-        <details>
-          <summary>Do I need sudo or admin rights?</summary>
-          <p>It depends on the platform. Linux uses sudo for PHP, database and helper packages. macOS uses Homebrew and never calls sudo. Windows may show an administrator prompt when winget installs PHP, Ollama or the database. Setup skills and Freebuff never ask for either.</p>
-        </details>
-        <details>
-          <summary>Which systems are supported?</summary>
-          <p>Every script ships in three versions: bash for Linux, bash for macOS, and PowerShell for Windows 10 and 11. Package installs cover apt, dnf, pacman and zypper on Linux, Homebrew on macOS, and winget on Windows. Pick your system above and the downloads follow.</p>
-        </details>
-        <details>
-          <summary>Can I read a script before running it?</summary>
-          <p>Yes, and you should. Download the file, open it in an editor, and compare its sha256 with the hash on this page. The copy command is there for convenience, not to hide the source.</p>
-        </details>
-        <details>
-          <summary>What happens when a step fails?</summary>
-          <p>The run continues where it can, records the failure, and prints a report at the end. Long commands write a log under <code>.design-setup-logs</code> in the folder you ran from.</p>
-        </details>
-        <details>
-          <summary>Will it overwrite my files?</summary>
-          <p>The Laravel wizard creates a new project folder. The skills installer adds files to the current folder and keeps an existing DESIGN.md as DESIGN.md.bak. Freebuff and Claude Code only touch their own marked block in your shell config or, on Windows, their own user variables.</p>
-        </details>
-        <details>
-          <summary>How do I remove what it installed?</summary>
-          <p>Delete the folders and rule files named in the final report. For Freebuff, remove the block between the freebuff markers in <code>~/.zshrc</code> or <code>$PROFILE</code>. For Claude Code, delete the <code>ANTHROPIC_</code> exports or user variables. For Laravel, drop the database and delete the project folder.</p>
-        </details>
-        <details>
-          <summary>Why shell scripts and not a package manager?</summary>
-          <p>Bash is already on Linux and macOS, and PowerShell is already on Windows. A script is one file you can read end to end, with no runtime, no registry and no build step. The trade off is that you should read what you run.</p>
-        </details>
-        <details>
-          <summary>Where do the downloads come from?</summary>
-          <p>This site copies them from the repository at build time, hashes each file and serves that exact copy. The footer shows the commit the current downloads came from.</p>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <section class="section section--last" aria-labelledby="cta-title">
-    <div class="wrap">
-      <div class="cta">
-        <div>
-          <h2 id="cta-title">Start with the script you need</h2>
-          <p class="body">No account, no email, no install command hidden behind a form.</p>
-        </div>
-        <div class="cta__actions">
-          <a class="btn btn--primary" href="#scripts">Browse the scripts<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
-          <a class="link-quiet" href="#safety">Read the safety notes</a>
-        </div>
-      </div>
-    </div>
-  </section>
-</main>
-
-<footer class="footer">
-  <div class="wrap footer__inner">
-    <p>Scripts are provided as is. Read them before you run them.</p>
-    <p class="footer__meta">
-      <span data-sync>Local build</span>
-      <a href="privacy.html">Privacy</a>
-      <a href="terms.html">Terms</a>
-    </p>
-  </div>
-</footer>
-
-<p class="sr-only" id="copy-status" role="status" aria-live="polite"></p>
-
-<script type="application/ld+json">
+  <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "FAQPage",
@@ -599,6 +822,7 @@
   ]
 }
 </script>
-<script src="app.js" defer></script>
+  <script src="app.js" defer></script>
 </body>
+
 </html>
