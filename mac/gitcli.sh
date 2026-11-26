@@ -52,7 +52,7 @@ ask() { # prompt default
   if [ -z "$INPUT_DEV" ]; then printf '%s' "${d:-$q}"; return 0; fi
   printf '  %s%s%s ' "$BOLD" "$q" "$NC"
   IFS= read -r a <"$INPUT_DEV" || a=""
-  [ -z "$a" ] && a="$d"
+  if [ -z "$a" ]; then a="$d"; fi
   printf '%s' "$a"
 }
 ask_secret() {
@@ -68,7 +68,7 @@ confirm() { # question default
   [ -z "$INPUT_DEV" ] && { [ "$d" = "y" ]; return; }
   printf '  %s%s%s [%s/%s] ' "$BOLD" "$q" "$NC" "$([ "$d" = y ] && echo Y || echo y)" "$([ "$d" = y ] && echo n || echo N)"
   IFS= read -r a <"$INPUT_DEV" || a=""
-  [ -z "$a" ] && a="$d"
+  if [ -z "$a" ]; then a="$d"; fi
   case "$a" in y|Y|yes|YES) return 0 ;; *) return 1 ;; esac
 }
 
@@ -154,8 +154,9 @@ show_banner
 kv "Project" "$PROJECT_ROOT"
 echo
 
-[ -e .git ] && ! git rev-parse --is-inside-work-tree >/dev/null 2>&1 && \
+if [ -e .git ] && ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
   die "A .git path exists but Git cannot use it. Check it before continuing."
+fi
 
 git init >/dev/null
 git branch -M main 2>/dev/null || true

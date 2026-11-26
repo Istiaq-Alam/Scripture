@@ -384,21 +384,21 @@ ui_step 4 5 "Optional packs"
 ui_panel "$YELLOW" "WARNING: offensive security pack" \
   "About 50-80 red-team skills." \
   "Use them ONLY on systems you own or are authorized to test."
-if ui_confirm "Install the Claude-Red security skills?" "${WANT_SECURITY:-n}"; then
+if [ "$WANT_SECURITY" = "1" ] || { [ -z "$WANT_SECURITY" ] && ui_confirm "Install the Claude-Red security skills?" "n"; }; then
   install_skill "Claude-Red security skills" "offensive-advanced-redteam" "SnailSploit/Claude-Red" "" \
     SnailSploit/Claude-Red --skill '*'
 else
   ok "Skipped security skills"
 fi
 
-if ui_confirm "Install the Superpowers workflow skills?" "${WANT_SUPERPOWERS:-n}"; then
+if [ "$WANT_SUPERPOWERS" = "1" ] || { [ -z "$WANT_SUPERPOWERS" ] && ui_confirm "Install the Superpowers workflow skills?" "n"; }; then
   install_skill "Superpowers skills" "using-superpowers,brainstorming,test-driven-development" "obra/superpowers" "" \
     obra/superpowers --skill '*'
 else
   ok "Skipped Superpowers"
 fi
 
-if ui_confirm "Install the Unslop skill?" "${WANT_UNSLOP:-n}"; then
+if [ "$WANT_UNSLOP" = "1" ] || { [ -z "$WANT_UNSLOP" ] && ui_confirm "Install the Unslop skill?" "n"; }; then
   install_skill "Unslop skill" "unslop" "heydamir/unslop" "unslop" heydamir/unslop --skill unslop
 else
   ok "Skipped Unslop"

@@ -184,9 +184,9 @@ not part of the build.
 
 ## Notes
 
-- The Linux scripts are the originals and have been exercised on that platform. The macOS
-  and Windows ports mirror their steps with Homebrew and winget; their syntax is checked
-  in this repository, but CI does not execute installers on those systems.
+- The Linux scripts are the originals in this repository. The macOS and Windows ports
+  mirror their steps with Homebrew and winget; all fifteen files are syntax checked here,
+  but CI does not execute installers on any platform.
 - Several scripts change system packages, databases or shell profiles. Read the source
   before you run it.
 - External services and models (Ollama, Gemini, Claude Code, GitHub, Homebrew, winget) are

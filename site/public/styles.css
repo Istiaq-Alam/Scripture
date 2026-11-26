@@ -1374,12 +1374,13 @@ summary {
 
 .script__actions {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
 .script__actions .btn {
-  width: 100%;
+  width: auto;
 }
 
 /* ---------- per-OS switch and variants ---------- */
@@ -1965,7 +1966,8 @@ kbd {
   }
 
   .script__actions {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
   .script__actions .btn {

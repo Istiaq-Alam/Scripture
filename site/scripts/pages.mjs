@@ -189,11 +189,10 @@ for (const script of SCRIPTS) {
     </div>
 
     <dl class="meta-grid">
-      <div><dt>Platform</dt><dd>${esc(os.label)} · ${esc(os.shell)}</dd></div>
+      <div><dt>Platform</dt><dd>${esc(os.label)} · ${esc(os.shell)}<br>${meta.lines.toLocaleString("en-US")} lines · ${Math.max(1, Math.round(meta.bytes / 1024))} KB</dd></div>
       <div><dt>Needs</dt><dd>${esc(variant.needs)}</dd></div>
       <div><dt>Writes</dt><dd>${esc(variant.writes)}</dd></div>
       <div><dt>Privileges</dt><dd>${esc(variant.sudo)}</dd></div>
-      <div><dt>Size</dt><dd>${meta.lines.toLocaleString("en-US")} lines · ${Math.max(1, Math.round(meta.bytes / 1024))} KB</dd></div>
     </dl>
 
     <div class="detail__body">
