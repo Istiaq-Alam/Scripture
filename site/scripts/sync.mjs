@@ -6,20 +6,12 @@ import { execFileSync } from "node:child_process";
 import { copyFile, mkdir, readFile, stat, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { SCRIPTS } from "./data.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const siteRoot = resolve(here, "..");
 const repoRoot = resolve(siteRoot, "..");
 const outDir = join(siteRoot, "public", "downloads");
-
-// source name in the repo -> name served to visitors
-const SCRIPTS = [
-  ["Setup-skills.sh", "setup-skills.sh"],
-  ["setup-laravel.sh", "setup-laravel.sh"],
-  ["setup-freebuff-zsh.sh", "setup-freebuff-zsh.sh"],
-  ["gitcli.sh", "gitcli.sh"],
-  ["ClaudeCode.sh", "ClaudeCode.sh"],
-];
 
 function shortCommit() {
   try {
@@ -37,7 +29,7 @@ await mkdir(outDir, { recursive: true });
 
 const files = {};
 
-for (const [sourceName, name] of SCRIPTS) {
+for (const { source: sourceName, file: name } of SCRIPTS) {
   const source = join(repoRoot, sourceName);
   const bytes = await readFile(source);
   const info = await stat(source);

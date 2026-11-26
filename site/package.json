@@ -6,8 +6,9 @@
   "description": "Download page for the terminal setup scripts in this repo",
   "scripts": {
     "sync": "node scripts/sync.mjs",
-    "start": "node scripts/sync.mjs && node server.mjs",
-    "build": "node scripts/sync.mjs",
+    "pages": "node scripts/pages.mjs",
+    "start": "node scripts/sync.mjs && node scripts/pages.mjs && node server.mjs",
+    "build": "node scripts/sync.mjs && node scripts/pages.mjs",
     "shots": "node scripts/shots.mjs",
     "og": "node scripts/og.mjs"
   },

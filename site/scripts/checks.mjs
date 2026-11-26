@@ -113,6 +113,97 @@ const fail = (label, detail) => {
   await page.close();
 }
 
+/* ---------- search and filters ---------- */
+
+{
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+  await page.goto(BASE, { waitUntil: "networkidle" });
+
+  const search = page.locator("#script-search");
+  const visibleRows = () => page.locator("#script-list .script:visible").count();
+
+  await search.fill("laravel");
+  await page.waitForTimeout(120);
+  if ((await visibleRows()) === 1) pass("search narrows the list to one script");
+  else fail("search", `${await visibleRows()} rows visible`);
+
+  const countText = await page.locator("#filter-count").innerText();
+  if (countText === "1 of 5 scripts") pass("result count updates");
+  else fail("result count", countText);
+
+  if (new URL(page.url()).searchParams.get("q") === "laravel") pass("search writes the query into the URL");
+  else fail("search URL", page.url());
+
+  await search.fill("");
+  await page.getByRole("button", { name: "Uses sudo" }).click();
+  await page.waitForTimeout(120);
+  if ((await visibleRows()) === 3) pass("sudo filter keeps the three scripts that use it");
+  else fail("sudo filter", `${await visibleRows()} rows`);
+
+  if (await page.getByRole("button", { name: "Uses sudo" }).getAttribute("aria-pressed") === "true") {
+    pass("active filter reports aria-pressed");
+  } else {
+    fail("filter state", "aria-pressed not set");
+  }
+
+  await search.fill("zzzz");
+  await page.waitForTimeout(120);
+  if (await page.locator("#script-empty").isVisible()) pass("empty state appears when nothing matches");
+  else fail("empty state", "not visible");
+
+  await page.locator("#clear-filters").click();
+  await page.waitForTimeout(120);
+  if ((await visibleRows()) === 5 && (await search.inputValue()) === "") {
+    pass("clear filters restores the full list");
+  } else {
+    fail("clear filters", `${await visibleRows()} rows`);
+  }
+
+  await page.close();
+}
+
+/* ---------- detail pages and source viewer ---------- */
+
+{
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  const manifest = await (await page.request.get(`${BASE}/downloads/manifest.json`)).json();
+  const pages = [
+    ["setup-skills", "setup-skills.sh"],
+    ["laravel", "setup-laravel.sh"],
+    ["freebuff-zsh", "setup-freebuff-zsh.sh"],
+    ["gitcli", "gitcli.sh"],
+    ["claude-code", "ClaudeCode.sh"],
+  ];
+
+  for (const [slug, file] of pages) {
+    const response = await page.request.get(`${BASE}/scripts/${slug}.html`);
+    const html = await response.text();
+    const lines = manifest.files[file].lines;
+
+    if (response.ok()) pass(`page /scripts/${slug}`);
+    else fail(`page /scripts/${slug}`, `status ${response.status()}`);
+
+    if (html.includes('id="L1"') && html.includes(`id="L${lines}"`)) {
+      pass(`line anchors 1-${lines} on ${slug}`);
+    } else {
+      fail(`line anchors ${slug}`, `missing L1 or L${lines}`);
+    }
+  }
+
+  await page.goto(`${BASE}/scripts/laravel.html`, { waitUntil: "networkidle" });
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+  );
+  if (overflow === 0) pass("detail page has no overflow at 390px");
+  else fail("detail overflow", `${overflow}px`);
+
+  const label = await page.locator(".viewer").getAttribute("aria-label");
+  if (label.includes("setup-laravel.sh") && label.includes("1765")) pass("viewer names the file and line count");
+  else fail("viewer label", label);
+
+  await page.close();
+}
+
 /* ---------- narrow viewport, reduced motion, no JS ---------- */
 
 {

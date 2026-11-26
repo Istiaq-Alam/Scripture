@@ -11,14 +11,14 @@
 
   /* ---------- downloads: command text + metadata ---------- */
 
-  const origin = location.origin && location.origin !== "null" ? location.origin : "";
+  const downloadsBase = document.body.dataset.downloads || "downloads/";
+  const downloadUrl = (file) => new URL(`${downloadsBase}${file}`, location.href).href;
 
   document.querySelectorAll("[data-cmd]").forEach((node) => {
-    const file = node.dataset.cmd;
-    node.textContent = `bash <(curl -fsSL ${origin}/downloads/${file})`;
+    node.textContent = `bash <(curl -fsSL ${downloadUrl(node.dataset.cmd)})`;
   });
 
-  fetch("/downloads/manifest.json", { cache: "no-cache" })
+  fetch(new URL(`${downloadsBase}manifest.json`, location.href), { cache: "no-cache" })
     .then((response) => (response.ok ? response.json() : Promise.reject(new Error("no manifest"))))
     .then((manifest) => {
       Object.entries(manifest.files || {}).forEach(([file, meta]) => {
@@ -27,6 +27,14 @@
           const lines = Number(meta.lines).toLocaleString("en-US");
           node.textContent = `${lines} lines · ${kb} KB · sha256 ${meta.sha256.slice(0, 12)}`;
         });
+      });
+
+      const totalLines = Object.values(manifest.files || {}).reduce(
+        (sum, meta) => sum + Number(meta.lines || 0),
+        0
+      );
+      document.querySelectorAll("[data-total-lines]").forEach((node) => {
+        node.textContent = totalLines.toLocaleString("en-US");
       });
 
       const sync = document.querySelector("[data-sync]");
@@ -74,7 +82,7 @@
       if (label) label.textContent = "Copying…";
 
       try {
-        await copyText(`bash <(curl -fsSL ${origin}/downloads/${file})`);
+        await copyText(`bash <(curl -fsSL ${downloadUrl(file)})`);
         if (label) label.textContent = "Copied";
         say(`Install command for ${file} copied to the clipboard.`);
       } catch {
@@ -89,6 +97,73 @@
       }
     });
   });
+
+  /* ---------- search and filters ---------- */
+
+  const searchInput = document.getElementById("script-search");
+  const filterButtons = [...document.querySelectorAll("[data-filter]")];
+  const scriptRows = [...document.querySelectorAll("#script-list .script")];
+  const filterCount = document.getElementById("filter-count");
+  const emptyState = document.getElementById("script-empty");
+  const clearFilters = document.getElementById("clear-filters");
+
+  if (searchInput && filterCount && scriptRows.length) {
+    scriptRows.forEach((row) => {
+      row.dataset.search = row.textContent.replace(/\s+/g, " ").trim().toLowerCase();
+    });
+
+    let privilege = "all";
+    const params = new URLSearchParams(location.search);
+    if (params.get("q")) searchInput.value = params.get("q");
+    if (["no", "yes"].includes(params.get("sudo"))) privilege = params.get("sudo");
+
+    const applyFilters = (updateUrl = true) => {
+      const terms = searchInput.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      let shown = 0;
+
+      scriptRows.forEach((row) => {
+        const matchesTerms = terms.every((term) => row.dataset.search.includes(term));
+        const matchesPrivilege = privilege === "all" || row.dataset.sudo === privilege;
+        const visible = matchesTerms && matchesPrivilege;
+        row.hidden = !visible;
+        if (visible) shown += 1;
+      });
+
+      filterButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.filter === privilege));
+      });
+
+      filterCount.textContent =
+        shown === scriptRows.length ? `${scriptRows.length} scripts` : `${shown} of ${scriptRows.length} scripts`;
+      if (emptyState) emptyState.hidden = shown !== 0;
+
+      if (updateUrl) {
+        const next = new URLSearchParams();
+        if (searchInput.value.trim()) next.set("q", searchInput.value.trim());
+        if (privilege !== "all") next.set("sudo", privilege);
+        const query = next.toString();
+        history.replaceState(null, "", `${location.pathname}${query ? `?${query}` : ""}${location.hash}`);
+      }
+    };
+
+    searchInput.addEventListener("input", () => applyFilters());
+
+    filterButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        privilege = button.dataset.filter;
+        applyFilters();
+      });
+    });
+
+    clearFilters?.addEventListener("click", () => {
+      searchInput.value = "";
+      privilege = "all";
+      applyFilters();
+      searchInput.focus();
+    });
+
+    applyFilters(false);
+  }
 
   /* ---------- mobile menu ---------- */
 

@@ -7,7 +7,6 @@
 <meta name="description" content="Scripture collects five bash installers for Laravel, design skills, GitHub, Freebuff and Claude Code. Read the source, check the hash, run one command.">
 <meta name="theme-color" content="#131209">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="canonical" href="/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Scripture — your dev setup, in one script">
 <meta property="og:description" content="Five bash installers for Laravel, design skills, GitHub, Freebuff and Claude Code. Every download hashed.">
@@ -20,9 +19,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
-<noscript><style>[data-copy] { display: none; }</style></noscript>
+<noscript><style>[data-copy], .filters, .filter-count { display: none; }</style></noscript>
 </head>
-<body>
+<body data-downloads="downloads/">
 <a class="skip" href="#main">Skip to content</a>
 
 <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
@@ -30,6 +29,7 @@
   <symbol id="i-download" viewBox="0 0 20 20"><path d="M10 3v9m0 0 3.5-3.5M10 12 6.5 8.5M3.5 15.5h13"/></symbol>
   <symbol id="i-copy" viewBox="0 0 20 20"><rect x="7" y="7" width="9.5" height="9.5" rx="2"/><path d="M13 5.5A2.5 2.5 0 0 0 10.5 3h-5A2.5 2.5 0 0 0 3 5.5v5A2.5 2.5 0 0 0 5.5 13"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 20 20"><path d="M4 10h11m0 0-4-4m4 4-4 4"/></symbol>
+  <symbol id="i-search" viewBox="0 0 20 20"><circle cx="9" cy="9" r="5.5"/><path d="m13.2 13.2 3.3 3.3"/></symbol>
 </svg>
 
 <header class="nav" id="top">
@@ -80,7 +80,7 @@
           <a class="btn btn--primary" href="#scripts">Browse the scripts<svg class="i" aria-hidden="true"><use href="#i-arrow"/></svg></a>
           <a class="link-quiet" href="#safety">Read the safety notes</a>
         </div>
-        <p class="hero__proof" data-enter style="--d:3">5 scripts<span aria-hidden="true"> · </span>3,486 lines of bash<span aria-hidden="true"> · </span>every download hashed</p>
+        <p class="hero__proof" data-enter style="--d:3">5 scripts<span aria-hidden="true"> · </span><span data-total-lines>3,709</span> lines of bash<span aria-hidden="true"> · </span>every download hashed</p>
       </div>
 
       <div class="hero__art" data-enter style="--d:2">
@@ -90,7 +90,7 @@
             <span class="term__shell">bash</span>
           </div>
           <div class="term__body" aria-hidden="true">
-            <p class="t-line t-cmd"><span class="t-prompt">$</span> bash &lt;(curl -fsSL /downloads/setup-skills.sh)</p>
+            <p class="t-line t-cmd"><span class="t-prompt">$</span> bash &lt;(curl -fsSL downloads/setup-skills.sh)</p>
             <div class="t-head">
               <p class="t-title">Setup skills</p>
               <p class="t-sub">design system, agent rules, MCP</p>
@@ -147,21 +147,35 @@
         <p class="body body--wide">Download the file or copy the command. Both run the same script from this site, verified against the hash in its row.</p>
       </div>
 
-      <div class="script-list">
-        <article class="script" aria-labelledby="s-skills">
+      <div class="filters">
+        <div class="search">
+          <label class="sr-only" for="script-search">Search scripts</label>
+          <svg class="i" aria-hidden="true"><use href="#i-search"/></svg>
+          <input id="script-search" type="search" placeholder="Search name, file or requirement" autocomplete="off" spellcheck="false" aria-controls="script-list">
+        </div>
+        <div class="filter-group" role="group" aria-label="Filter by privileges">
+          <button class="filter-btn" type="button" data-filter="all" aria-pressed="true">All</button>
+          <button class="filter-btn" type="button" data-filter="no" aria-pressed="false">No sudo</button>
+          <button class="filter-btn" type="button" data-filter="yes" aria-pressed="false">Uses sudo</button>
+        </div>
+      </div>
+      <p class="filter-count" id="filter-count" role="status" aria-live="polite">5 scripts</p>
+
+      <div class="script-list" id="script-list">
+        <article class="script" data-sudo="no" aria-labelledby="s-skills">
           <div class="script__main">
             <div class="script__head">
-              <h3 id="s-skills">Setup skills</h3>
-              <code class="chip">setup-skills.sh</code>
+              <h3 id="s-skills"><a href="scripts/setup-skills.html">Setup skills</a></h3>
+              <a class="chip chip--link" href="scripts/setup-skills.html" aria-label="Read the setup-skills.sh source">setup-skills.sh</a>
               <span class="tag">no sudo</span>
             </div>
             <p class="script__desc">Installs five design skills, a DESIGN.md and the rules file your agent reads at the start of every session. Prints a report at the end, including what it skipped.</p>
             <p class="script__needs"><span>Needs</span> git, Node 18+, npx</p>
-            <code class="script__cmd" data-cmd="setup-skills.sh">bash &lt;(curl -fsSL /downloads/setup-skills.sh)</code>
+            <code class="script__cmd" data-cmd="setup-skills.sh">bash &lt;(curl -fsSL downloads/setup-skills.sh)</code>
             <p class="script__meta" data-meta="setup-skills.sh">Reading metadata</p>
           </div>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="/downloads/setup-skills.sh" download aria-label="Download setup-skills.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/setup-skills.sh" download aria-label="Download setup-skills.sh">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
             <button class="btn btn--ghost btn--sm" type="button" data-copy="setup-skills.sh" aria-label="Copy the install command for Setup skills">
@@ -170,20 +184,20 @@
           </div>
         </article>
 
-        <article class="script" aria-labelledby="s-laravel">
+        <article class="script" data-sudo="yes" aria-labelledby="s-laravel">
           <div class="script__main">
             <div class="script__head">
-              <h3 id="s-laravel">Laravel</h3>
-              <code class="chip">setup-laravel.sh</code>
+              <h3 id="s-laravel"><a href="scripts/laravel.html">Laravel</a></h3>
+              <a class="chip chip--link" href="scripts/laravel.html" aria-label="Read the setup-laravel.sh source">setup-laravel.sh</a>
               <span class="tag tag--warn">sudo</span>
             </div>
             <p class="script__desc">A guided Laravel install: choose PHP, choose a database, run migrations and finish with a working app in a new folder.</p>
             <p class="script__needs"><span>Needs</span> PHP 8.2+, Composer, a database</p>
-            <code class="script__cmd" data-cmd="setup-laravel.sh">bash &lt;(curl -fsSL /downloads/setup-laravel.sh)</code>
+            <code class="script__cmd" data-cmd="setup-laravel.sh">bash &lt;(curl -fsSL downloads/setup-laravel.sh)</code>
             <p class="script__meta" data-meta="setup-laravel.sh">Reading metadata</p>
           </div>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="/downloads/setup-laravel.sh" download aria-label="Download setup-laravel.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/setup-laravel.sh" download aria-label="Download setup-laravel.sh">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
             <button class="btn btn--ghost btn--sm" type="button" data-copy="setup-laravel.sh" aria-label="Copy the install command for Laravel">
@@ -192,20 +206,20 @@
           </div>
         </article>
 
-        <article class="script" aria-labelledby="s-freebuff">
+        <article class="script" data-sudo="no" aria-labelledby="s-freebuff">
           <div class="script__main">
             <div class="script__head">
-              <h3 id="s-freebuff">Freebuff on zsh</h3>
-              <code class="chip">setup-freebuff-zsh.sh</code>
+              <h3 id="s-freebuff"><a href="scripts/freebuff-zsh.html">Freebuff on zsh</a></h3>
+              <a class="chip chip--link" href="scripts/freebuff-zsh.html" aria-label="Read the setup-freebuff-zsh.sh source">setup-freebuff-zsh.sh</a>
               <span class="tag">no sudo</span>
             </div>
             <p class="script__desc">Checks your Gemini key, installs the Freebuff CLI and adds one marked block to .zshrc. Removes the older .bashrc block it used to write.</p>
             <p class="script__needs"><span>Needs</span> zsh, npm, a Gemini key</p>
-            <code class="script__cmd" data-cmd="setup-freebuff-zsh.sh">bash &lt;(curl -fsSL /downloads/setup-freebuff-zsh.sh)</code>
+            <code class="script__cmd" data-cmd="setup-freebuff-zsh.sh">bash &lt;(curl -fsSL downloads/setup-freebuff-zsh.sh)</code>
             <p class="script__meta" data-meta="setup-freebuff-zsh.sh">Reading metadata</p>
           </div>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="/downloads/setup-freebuff-zsh.sh" download aria-label="Download setup-freebuff-zsh.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/setup-freebuff-zsh.sh" download aria-label="Download setup-freebuff-zsh.sh">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
             <button class="btn btn--ghost btn--sm" type="button" data-copy="setup-freebuff-zsh.sh" aria-label="Copy the install command for Freebuff on zsh">
@@ -214,20 +228,20 @@
           </div>
         </article>
 
-        <article class="script" aria-labelledby="s-git">
+        <article class="script" data-sudo="yes" aria-labelledby="s-git">
           <div class="script__main">
             <div class="script__head">
-              <h3 id="s-git">GitHub helper</h3>
-              <code class="chip">gitcli.sh</code>
+              <h3 id="s-git"><a href="scripts/gitcli.html">GitHub helper</a></h3>
+              <a class="chip chip--link" href="scripts/gitcli.html" aria-label="Read the gitcli.sh source">gitcli.sh</a>
               <span class="tag tag--warn">sudo for deps</span>
             </div>
             <p class="script__desc">First push for a local project: checks git, writes a .gitignore, stages what is safe, commits and pushes to your repository.</p>
             <p class="script__needs"><span>Needs</span> git, curl, figlet, lolcat</p>
-            <code class="script__cmd" data-cmd="gitcli.sh">bash &lt;(curl -fsSL /downloads/gitcli.sh)</code>
+            <code class="script__cmd" data-cmd="gitcli.sh">bash &lt;(curl -fsSL downloads/gitcli.sh)</code>
             <p class="script__meta" data-meta="gitcli.sh">Reading metadata</p>
           </div>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="/downloads/gitcli.sh" download aria-label="Download gitcli.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/gitcli.sh" download aria-label="Download gitcli.sh">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
             <button class="btn btn--ghost btn--sm" type="button" data-copy="gitcli.sh" aria-label="Copy the install command for the GitHub helper">
@@ -236,20 +250,20 @@
           </div>
         </article>
 
-        <article class="script" aria-labelledby="s-claude">
+        <article class="script" data-sudo="yes" aria-labelledby="s-claude">
           <div class="script__main">
             <div class="script__head">
-              <h3 id="s-claude">Claude Code on Ollama</h3>
-              <code class="chip">ClaudeCode.sh</code>
-              <span class="tag">two lines</span>
+              <h3 id="s-claude"><a href="scripts/claude-code.html">Claude Code on Ollama</a></h3>
+              <a class="chip chip--link" href="scripts/claude-code.html" aria-label="Read the ClaudeCode.sh source">ClaudeCode.sh</a>
+              <span class="tag tag--warn">sudo</span>
             </div>
-            <p class="script__desc">Launches Claude Code through Ollama on a local model. No setup, no prompts, no files written.</p>
-            <p class="script__needs"><span>Needs</span> Ollama with the gemma model pulled</p>
-            <code class="script__cmd" data-cmd="ClaudeCode.sh">bash &lt;(curl -fsSL /downloads/ClaudeCode.sh)</code>
+            <p class="script__desc">Installs Ollama, picks a Gemma model for your RAM, adds Node.js and Claude Code, then writes the local Anthropic endpoints to your shell config. Ends with a test prompt.</p>
+            <p class="script__needs"><span>Needs</span> curl, sudo, Node.js if missing</p>
+            <code class="script__cmd" data-cmd="ClaudeCode.sh">bash &lt;(curl -fsSL downloads/ClaudeCode.sh)</code>
             <p class="script__meta" data-meta="ClaudeCode.sh">Reading metadata</p>
           </div>
           <div class="script__actions">
-            <a class="btn btn--primary btn--sm" href="/downloads/ClaudeCode.sh" download aria-label="Download ClaudeCode.sh">
+            <a class="btn btn--primary btn--sm" href="downloads/ClaudeCode.sh" download aria-label="Download ClaudeCode.sh">
               <svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Download
             </a>
             <button class="btn btn--ghost btn--sm" type="button" data-copy="ClaudeCode.sh" aria-label="Copy the install command for Claude Code on Ollama">
@@ -257,6 +271,11 @@
             </button>
           </div>
         </article>
+      </div>
+
+      <div class="empty" id="script-empty" hidden>
+        <p>No script matches those filters.</p>
+        <button class="btn btn--ghost btn--sm" type="button" id="clear-filters">Clear filters</button>
       </div>
     </div>
   </section>
@@ -297,7 +316,7 @@
         <ul class="safety-list">
           <li>
             <h3>Root only where a package manager needs it</h3>
-            <p>The Laravel installer calls apt, dnf, pacman or zypper. The GitHub helper installs figlet and lolcat when they are missing. The other three never ask for sudo.</p>
+            <p>The Laravel installer calls apt, dnf, pacman or zypper. The GitHub helper installs figlet and lolcat, and the Claude Code installer adds Node.js when it is missing. Setup skills and Freebuff never ask for sudo.</p>
           </li>
           <li>
             <h3>Writes stay where you started</h3>
@@ -322,10 +341,10 @@
             <tr><th scope="row">Laravel</th><td>A new project folder, its <code>.env</code>, system packages and a database</td></tr>
             <tr><th scope="row">Freebuff on zsh</th><td><code>~/.zshrc</code>, one marked block, and the global npm package</td></tr>
             <tr><th scope="row">GitHub helper</th><td><code>.gitignore</code>, a commit, and the push to your remote</td></tr>
-            <tr><th scope="row">Claude Code</th><td>Nothing. It only starts a process</td></tr>
+            <tr><th scope="row">Claude Code</th><td>Ollama, a Gemma model, Claude Code and six <code>ANTHROPIC_</code> export lines in <code>.zshrc</code> or <code>.bashrc</code></td></tr>
           </tbody>
         </table>
-        <p class="panel__note">To undo: delete the folders and rule files the report lists, remove the marked block between the freebuff lines in <code>~/.zshrc</code>, and drop the database the Laravel run created.</p>
+        <p class="panel__note">To undo: delete the folders and rule files the report lists, remove the marked block between the freebuff lines in <code>~/.zshrc</code>, delete the <code>ANTHROPIC_</code> exports, and drop the database the Laravel run created.</p>
       </div>
     </div>
   </section>
@@ -356,7 +375,7 @@
       <div class="faq">
         <details>
           <summary>Do I need sudo?</summary>
-          <p>Only two scripts ask for it. The Laravel installer uses your package manager for PHP and database packages. The GitHub helper installs figlet and lolcat if they are missing. Setup skills, Freebuff and Claude Code never call sudo.</p>
+          <p>Three scripts ask for it. The Laravel installer uses your package manager for PHP and database packages. The GitHub helper installs figlet and lolcat, and the Claude Code installer adds Node.js when it is missing. Setup skills and Freebuff never call sudo.</p>
         </details>
         <details>
           <summary>Which systems are supported?</summary>
@@ -372,11 +391,11 @@
         </details>
         <details>
           <summary>Will it overwrite my files?</summary>
-          <p>The Laravel wizard creates a new project folder. The skills installer adds files to the current folder and keeps an existing DESIGN.md as DESIGN.md.bak. The Freebuff script replaces only its own marked block.</p>
+          <p>The Laravel wizard creates a new project folder. The skills installer adds files to the current folder and keeps an existing DESIGN.md as DESIGN.md.bak. The Freebuff and Claude Code scripts append only their own marked export lines to your shell config.</p>
         </details>
         <details>
           <summary>How do I remove what it installed?</summary>
-          <p>Delete the folders and rule files named in the final report. For Freebuff, remove the block between the freebuff markers in ~/.zshrc. For Laravel, drop the database and delete the project folder.</p>
+          <p>Delete the folders and rule files named in the final report. For Freebuff, remove the block between the freebuff markers in ~/.zshrc. For Claude Code, delete the ANTHROPIC_ exports. For Laravel, drop the database and delete the project folder.</p>
         </details>
         <details>
           <summary>Why bash and not a package manager?</summary>
